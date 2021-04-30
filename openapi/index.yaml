@@ -16,8 +16,28 @@ schemes:
 paths:
   /online-merchants:
     parameters:
-      - "$ref": "#/parameters/Name"
-      - "$ref": "#/parameters/ProductCategories"
+      - name: merchantName
+        in: query
+        description: Text used for searching merchants by their name
+        required: false
+        type: string
+      - name: productCategories
+        in: query
+        description: List of product categories to filter the results
+        required: false
+        collectionFormat: csv
+        type: array
+        items:
+          type: string
+          enum:
+            - entertainments
+            - travels
+            - transportation
+            - connectivity
+            - books
+            - arts
+            - sports
+            - health
     get:
       operationId: getOnlineMerchants
       summary: List of online merchants
@@ -31,8 +51,28 @@ paths:
 
   /offline-merchants:
     parameters:
-      - "$ref": "#/parameters/Name"
-      - "$ref": "#/parameters/ProductCategories"
+      - name: merchantName
+        in: query
+        description: Text used for searching merchants by their name
+        required: false
+        type: string
+      - name: productCategories
+        in: query
+        description: List of product categories to filter the results
+        required: false
+        collectionFormat: csv
+        type: array
+        items:
+          type: string
+          enum:
+            - entertainments
+            - travels
+            - transportation
+            - connectivity
+            - books
+            - arts
+            - sports
+            - health
       - name: latitude
         in: query
         type: number
@@ -87,23 +127,6 @@ paths:
         "404":
           "$ref": "#/responses/NotFound"
 
-parameters:
-  Name:
-    name: merchantName
-    in: query
-    description: Text used for searching merchants by their name
-    required: false
-    type: string
-  ProductCategories:
-    name: productCategories
-    in: query
-    description: List of product categories to filter the results
-    required: false
-    collectionFormat: csv
-    type: array
-    items:
-      type: string
-
 definitions:
   Merchant:
     type: object
@@ -133,15 +156,12 @@ definitions:
   Discount:
     type: object
     required:
-      - id
       - name
       - startDate
       - endDate
       - productCategories
       - discount
     properties:
-      id:
-        type: string
       name:
         type: string
       description:
@@ -155,12 +175,10 @@ definitions:
       productCategories:
         type: array
         items:
-          type: string
+          "$ref": "#/definitions/ProductCategory"
       discount:
         type: number
         format: double
-        minimum: 0
-        maximum: 100
       condition:
         type: string
       staticCode:
@@ -191,7 +209,7 @@ definitions:
       productCategories:
         type: array
         items:
-          type: string
+          "$ref": "#/definitions/ProductCategory"
       websiteUrl:
         type: string
 
@@ -221,7 +239,7 @@ definitions:
       productCategories:
         type: array
         items:
-          type: string
+          "$ref": "#/definitions/ProductCategory"
       address:
         $ref: "#/definitions/Address"
       distance:
@@ -252,6 +270,18 @@ definitions:
         type: number
       longitude:
         type: number
+
+  ProductCategory:
+    type: string
+    enum:
+      - entertainments
+      - travels
+      - transportation
+      - connectivity
+      - books
+      - arts
+      - sports
+      - health
 
 responses:
   InvalidRequest:
