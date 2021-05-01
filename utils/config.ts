@@ -16,6 +16,10 @@ export type IConfig = t.TypeOf<typeof IConfig>;
 export const IConfig = t.interface({
   AzureWebJobsStorage: NonEmptyString,
 
+  CDN_MERCHANT_IMAGES_BASE_URL: NonEmptyString,
+
+  CGN_POSTGRES_DB_RO_URI: NonEmptyString,
+
   COSMOSDB_KEY: NonEmptyString,
   COSMOSDB_NAME: NonEmptyString,
   COSMOSDB_URI: NonEmptyString,
