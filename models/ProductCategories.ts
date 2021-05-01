@@ -35,3 +35,28 @@ export const ProductCategoryFromModel = (
       throw new Error(`Invalid product category value: ${productCategory}`);
   }
 };
+
+export const ProductCategoryToQueryColumn = (
+  productCategory: ProductCategoryEnum
+): string => {
+  switch (productCategory) {
+    case ProductCategoryEnum.arts:
+      return "arts";
+    case ProductCategoryEnum.books:
+      return "books";
+    case ProductCategoryEnum.connectivity:
+      return "connectivity";
+    case ProductCategoryEnum.entertainments:
+      return "entertainments";
+    case ProductCategoryEnum.health:
+      return "health";
+    case ProductCategoryEnum.sports:
+      return "sports";
+    case ProductCategoryEnum.transportation:
+      return "transportation";
+    case ProductCategoryEnum.travels:
+      return "travels";
+    default:
+      throw Error(`Invalid product category value: ${productCategory}`);
+  }
+};
