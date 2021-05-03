@@ -1,49 +1,322 @@
 swagger: "2.0"
 info:
-  version: 1.1.0
-  title: IO Function API
+  version: 1.0.0
+  title: IO Functions CGN operator search
   contact:
     name: IO team
     url: https://forum.italia.it/c/progetto-io
   x-logo:
     url: https://io.italia.it/assets/img/io-logo-blue.svg
   description: >
-    Documentation of the IO Function API here.
-host: api.cd.italia.it
-basePath: "/template"
+    Documentation of the IO operator search API here.
+host: search.cgn.italia.it
+basePath: "/api/v1"
 schemes:
   - https
 paths:
-  "/echo/{input}":
+  /online-merchants:
     parameters:
-      - name: input
+      - name: merchantName
+        in: query
+        description: Text used for searching merchants by their name
+        required: false
+        type: string
+      - name: productCategories
+        in: query
+        description: List of product categories to filter the results
+        required: false
+        collectionFormat: csv
+        type: array
+        items:
+          type: string
+          enum:
+            - entertainments
+            - travels
+            - transportation
+            - connectivity
+            - books
+            - arts
+            - sports
+            - health
+      - name: page
+        in: query
+        description: page of result
+        required: false
+        type: integer
+        default: 0
+      - name: pageSize
+        in: query
+        description: elements per page
+        required: false
+        type: integer
+        default: 100
+    get:
+      operationId: getOnlineMerchants
+      summary: List of online merchants
+      description: |
+        List of online merchants alphabetically ordered
+      responses:
+        "200":
+          description: List of online merchants for the given query parameters
+          schema:
+            "$ref": "#/definitions/OnlineMerchants"
+
+  /offline-merchants:
+    parameters:
+      - name: merchantName
+        in: query
+        description: Text used for searching merchants by their name
+        required: false
+        type: string
+      - name: productCategories
+        in: query
+        description: List of product categories to filter the results
+        required: false
+        collectionFormat: csv
+        type: array
+        items:
+          type: string
+          enum:
+            - entertainments
+            - travels
+            - transportation
+            - connectivity
+            - books
+            - arts
+            - sports
+            - health
+      - name: latitude
+        in: query
+        type: number
+        required: true
+        description: User latitude
+      - name: longitude
+        in: query
+        type: number
+        required: true
+        description: User longitude
+      - name: maxDistance
+        in: query
+        type: integer
+        required: true
+        description: Max distance (in meters) from current user position used to filter the results
+      - name: ordering
+        in: query
+        type: string
+        enum:
+          - distance
+          - alphabetic
+        default: distance
+        required: false
+        description: Ordering type, by distance or alphabetical
+      - name: page
+        in: query
+        description: page of result
+        required: false
+        type: integer
+        default: 0
+      - name: pageSize
+        in: query
+        description: elements per page
+        required: false
+        type: integer
+        default: 100
+    get:
+      operationId: getOfflineMerchants
+      summary: List of merchants with a physical address
+      description: |
+        List of merchants with physical address, ordered by distance from the user by default
+      responses:
+        "200":
+          description: List of physical merchants for the given query parameters
+          schema:
+            "$ref": "#/definitions/OfflineMerchants"
+
+  /merchants/{merchantId}:
+    parameters:
+      - name: merchantId
         in: path
         type: string
         required: true
-        description: test input.
+        description: Merchant Identifier
     get:
-      operationId: echo
-      summary: Echo API
-      description: Some API description here.
+      operationId: getMerchant
+      summary: Retrieve merchant details
+      description: |
+        Retrieve merchant details together with published discounts
       responses:
         "200":
-          description: Found.
+          description: Found
           schema:
-            "$ref": "#/definitions/Input"
-          examples:
-            application/json:
-              id: "10000AAAA"
-              output: "hello world !"
-        "401":
-          description: Unauthorized
+            "$ref": "#/definitions/Merchant"
         "404":
-          description: Not found.
-      parameters: []
+          "$ref": "#/responses/NotFound"
+
 definitions:
-  Input:
+  Merchant:
     type: object
+    required:
+      - id
+      - name
+      - description
+      - discounts
     properties:
       id:
         type: string
-      output:
+      name:
         type: string
+      description:
+        type: string
+      websiteUrl:
+        type: string
+      imageUrl:
+        type: string
+      discounts:
+        type: array
+        items:
+          "$ref": "#/definitions/Discount"
+      addresses:
+        type: array
+        items:
+          "$ref": "#/definitions/Address"
+
+  Discount:
+    type: object
+    required:
+      - name
+      - startDate
+      - endDate
+      - productCategories
+      - discount
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      startDate:
+        type: string
+        format: date
+      endDate:
+        type: string
+        format: date
+      productCategories:
+        type: array
+        items:
+          "$ref": "#/definitions/ProductCategory"
+      discount:
+        type: number
+        format: double
+      condition:
+        type: string
+      staticCode:
+        type: string
+
+  OnlineMerchants:
+    type: object
+    required:
+      - items
+    properties:
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/OnlineMerchant"
+
+  OnlineMerchant:
+    type: object
+    required:
+      - id
+      - name
+      - productCategories
+      - websiteUrl
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      productCategories:
+        type: array
+        items:
+          "$ref": "#/definitions/ProductCategory"
+      websiteUrl:
+        type: string
+
+  OfflineMerchants:
+    type: object
+    required:
+      - items
+    properties:
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/OfflineMerchant"
+
+  OfflineMerchant:
+    type: object
+    required:
+      - id
+      - name
+      - productCategories
+      - address
+      - distance
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      productCategories:
+        type: array
+        items:
+          "$ref": "#/definitions/ProductCategory"
+      address:
+        $ref: "#/definitions/Address"
+      distance:
+        description: Distance in meters
+        type: integer
+
+  Address:
+    type: object
+    required:
+      - street
+      - zipCode
+      - city
+      - district
+    properties:
+      street:
+        type: string
+      zipCode:
+        type: string
+        minLength: 5
+        maxLength: 5
+      city:
+        type: string
+      district:
+        type: string
+        minLength: 2
+        maxLength: 2
+      latitude:
+        type: number
+      longitude:
+        type: number
+
+  ProductCategory:
+    type: string
+    enum:
+      - entertainments
+      - travels
+      - transportation
+      - connectivity
+      - books
+      - arts
+      - sports
+      - health
+
+responses:
+  InvalidRequest:
+    description: Bad request
+    #content: {} #TODO
+  Forbidden:
+    description: Forbidden
+    #content: {} #TODO
+  NotFound:
+    description: Not found
+    #content: {} #TODO
