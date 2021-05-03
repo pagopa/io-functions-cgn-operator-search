@@ -38,6 +38,18 @@ paths:
             - arts
             - sports
             - health
+      - name: page
+        in: query
+        description: page of result
+        required: false
+        type: integer
+        default: 0
+      - name: pageSize
+        in: query
+        description: elements per page
+        required: false
+        type: integer
+        default: 100
     get:
       operationId: getOnlineMerchants
       summary: List of online merchants
@@ -94,8 +106,21 @@ paths:
         enum:
           - distance
           - alphabetic
-        required: true
+        default: distance
+        required: false
         description: Ordering type, by distance or alphabetical
+      - name: page
+        in: query
+        description: page of result
+        required: false
+        type: integer
+        default: 0
+      - name: pageSize
+        in: query
+        description: elements per page
+        required: false
+        type: integer
+        default: 100
     get:
       operationId: getOfflineMerchants
       summary: List of merchants with a physical address
