@@ -33,55 +33,56 @@ describe("GetMerchantHandler", () => {
           ]);
         });
       })
-      .mockImplementation(
-        (query: string, params) =>
-          new Promise(resolve => {
-            if (query.includes("FROM address")) {
-              expect(params.replacements.profile_key).toBe(123);
+      .mockImplementation((query: string, params) => {
+        if (query.includes("FROM address")) {
+          expect(params.replacements.profile_key).toBe(123);
 
-              const addressResponse = [
-                {
-                  city: "roma",
-                  district: "rm",
-                  latitude: 1,
-                  longitude: 2,
-                  street: "la rue 17",
-                  zip_code: "1231"
-                },
-                {
-                  city: "milano",
-                  district: "mi",
-                  latitude: 12,
-                  longitude: 21,
-                  street: "la rue 17",
-                  zip_code: "1231"
-                }
-              ];
-              resolve(addressResponse);
-            } else if (query.includes("FROM discount")) {
-              expect(params.replacements.agreement_key).toBe(agreementId);
-
-              const discountResponse = [
-                {
-                  condition: "mah",
-                  description: "something something",
-                  discount_value: 20,
-                  end_date: new Date("2021-01-01"),
-                  name: "name 1",
-                  product_categories: [
-                    ProductCategoryEnumModelType.arts,
-                    ProductCategoryEnumModelType.books
-                  ],
-                  start_date: new Date("2020-01-01"),
-                  static_code: "xxx"
-                }
-              ];
-              resolve(discountResponse);
-            } else {
-              fail("Unexpected SQL query");
+          const addressResponse = [
+            {
+              city: "roma",
+              district: "rm",
+              latitude: 1,
+              longitude: 2,
+              street: "la rue 17",
+              zip_code: "1231"
+            },
+            {
+              city: "milano",
+              district: "mi",
+              latitude: 12,
+              longitude: 21,
+              street: "la rue 17",
+              zip_code: "1231"
             }
-          })
-      );
+          ];
+          return new Promise(resolve => {
+            resolve(addressResponse);
+          });
+        } else if (query.includes("FROM discount")) {
+          expect(params.replacements.agreement_key).toBe(agreementId);
+
+          const discountResponse = [
+            {
+              condition: "mah",
+              description: "something something",
+              discount_value: 20,
+              end_date: new Date("2021-01-01"),
+              name: "name 1",
+              product_categories: [
+                ProductCategoryEnumModelType.arts,
+                ProductCategoryEnumModelType.books
+              ],
+              start_date: new Date("2020-01-01"),
+              static_code: "xxx"
+            }
+          ];
+          return new Promise(resolve => {
+            resolve(discountResponse);
+          });
+        } else {
+          fail("Unexpected SQL query");
+        }
+      });
 
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
@@ -153,36 +154,37 @@ describe("GetMerchantHandler", () => {
           ]);
         });
       })
-      .mockImplementation(
-        (query: string, params) =>
-          new Promise(resolve => {
-            if (query.includes("FROM address")) {
-              expect(params.replacements.profile_key).toBe(123);
-              resolve([]);
-            } else if (query.includes("FROM discount")) {
-              expect(params.replacements.agreement_key).toBe(agreementId);
+      .mockImplementation((query: string, params) => {
+        if (query.includes("FROM address")) {
+          expect(params.replacements.profile_key).toBe(123);
+          return new Promise(resolve => {
+            resolve([]);
+          });
+        } else if (query.includes("FROM discount")) {
+          expect(params.replacements.agreement_key).toBe(agreementId);
 
-              const discountResponse = [
-                {
-                  condition: "mah",
-                  description: "something something",
-                  discount_value: 20,
-                  end_date: new Date("2021-01-01"),
-                  name: "name 1",
-                  product_categories: [
-                    ProductCategoryEnumModelType.entertainments,
-                    ProductCategoryEnumModelType.sports
-                  ],
-                  start_date: new Date("2020-01-01"),
-                  static_code: "xxx"
-                }
-              ];
-              resolve(discountResponse);
-            } else {
-              fail("Unexpected SQL query");
+          const discountResponse = [
+            {
+              condition: "mah",
+              description: "something something",
+              discount_value: 20,
+              end_date: new Date("2021-01-01"),
+              name: "name 1",
+              product_categories: [
+                ProductCategoryEnumModelType.entertainments,
+                ProductCategoryEnumModelType.sports
+              ],
+              start_date: new Date("2020-01-01"),
+              static_code: "xxx"
             }
-          })
-      );
+          ];
+          return new Promise(resolve => {
+            resolve(discountResponse);
+          });
+        } else {
+          fail("Unexpected SQL query");
+        }
+      });
 
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
@@ -238,7 +240,7 @@ describe("GetMerchantHandler", () => {
     queryMock.mockImplementationOnce((query, params) => {
       expect(params.replacements.merchant_id).toBe("agreement_k");
 
-      return new Promise(resolve => {
+      return new Promise(_ => {
         throw Error("Query error!");
       });
     });

@@ -32,31 +32,6 @@ export const ProductCategoryFromModel = (
     case ProductCategoryEnumModelType.travels:
       return ProductCategoryEnum.travels;
     default:
-      throw new Error(`Invalid enum value: ${productCategory}`);
-  }
-};
-
-export const ProductCategoryToModel = (
-  productCategory: ProductCategoryEnum
-): ProductCategoryEnumModelType => {
-  switch (productCategory) {
-    case ProductCategoryEnum.arts:
-      return ProductCategoryEnumModelType.arts;
-    case ProductCategoryEnum.books:
-      return ProductCategoryEnumModelType.books;
-    case ProductCategoryEnum.connectivity:
-      return ProductCategoryEnumModelType.connectivity;
-    case ProductCategoryEnum.entertainments:
-      return ProductCategoryEnumModelType.entertainments;
-    case ProductCategoryEnum.health:
-      return ProductCategoryEnumModelType.health;
-    case ProductCategoryEnum.sports:
-      return ProductCategoryEnumModelType.sports;
-    case ProductCategoryEnum.transportation:
-      return ProductCategoryEnumModelType.transportation;
-    case ProductCategoryEnum.travels:
-      return ProductCategoryEnumModelType.travels;
-    default:
-      throw new Error(`Invalid enum value: ${productCategory}`);
+      throw new Error(`Invalid product category value: ${productCategory}`);
   }
 };
