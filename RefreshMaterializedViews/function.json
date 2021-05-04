@@ -1,0 +1,11 @@
+{
+  "bindings": [
+    {
+      "name": "refreshMaterializedViews",
+      "type": "timerTrigger",
+      "direction": "in",
+      "schedule": "0 0 0 * * *"
+    }
+  ],
+  "scriptFile": "../dist/RefreshMaterializedViews/index.js"
+}

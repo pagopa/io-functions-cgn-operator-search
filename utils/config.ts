@@ -18,6 +18,7 @@ export const IConfig = t.interface({
 
   CDN_MERCHANT_IMAGES_BASE_URL: NonEmptyString,
 
+  CGN_POSTGRES_DB_ADMIN_URI: NonEmptyString,
   CGN_POSTGRES_DB_RO_URI: NonEmptyString,
 
   COSMOSDB_KEY: NonEmptyString,
