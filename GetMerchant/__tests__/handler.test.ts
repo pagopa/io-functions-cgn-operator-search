@@ -4,7 +4,91 @@ import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory
 import { ProductCategoryEnumModelType } from "../../models/ProductCategories";
 import { GetMerchantHandler } from "../handler";
 
-const queryMock = jest.fn().mockImplementation(_ => {});
+const anAgreementId = "abc-123-def";
+const aMerchantProfileModel = {
+  agreement_fk: anAgreementId,
+  description: "description something",
+  image_url: "/images/1.png",
+  name: "PagoPa",
+  profile_k: 123,
+  website_url: "https://pagopa.it"
+};
+const aMerchantProfileModelList = [aMerchantProfileModel];
+
+const anAddress = {
+  city: "roma",
+  district: "rm",
+  latitude: 1,
+  longitude: 2,
+  street: "la rue 17",
+  zip_code: "1231"
+};
+const anAddressModelList = [anAddress, { ...anAddress, city: "milano" }];
+
+const aDiscountModel = {
+  condition: "mah",
+  description: "something something",
+  discount_value: 20,
+  end_date: new Date("2021-01-01"),
+  name: "name 1",
+  product_categories: [
+    ProductCategoryEnumModelType.arts,
+    ProductCategoryEnumModelType.books
+  ],
+  start_date: new Date("2020-01-01"),
+  static_code: "xxx"
+};
+const aDiscountModelList = [aDiscountModel];
+
+const anExpectedResponse = {
+  description: aMerchantProfileModel.description,
+  name: aMerchantProfileModel.name,
+  id: anAgreementId,
+  imageUrl: aMerchantProfileModel.image_url,
+  websiteUrl: aMerchantProfileModel.website_url,
+  addresses: anAddressModelList.map(address => ({
+    city: address.city,
+    district: address.district,
+    latitude: address.latitude,
+    longitude: address.longitude,
+    street: address.street,
+    zipCode: address.zip_code
+  })),
+  discounts: aDiscountModelList.map(discount => ({
+    condition: discount.condition,
+    description: discount.description,
+    name: discount.name,
+    endDate: discount.end_date,
+    discount: discount.discount_value,
+    startDate: discount.start_date,
+    staticCode: discount.static_code,
+    productCategories: [ProductCategoryEnum.arts, ProductCategoryEnum.books]
+  }))
+};
+
+const queryMock = jest.fn().mockImplementation((query: string, params) => {
+  if (query.includes("FROM profile")) {
+    expect(params.replacements.merchant_id).toBe(anAgreementId);
+
+    return new Promise(resolve => {
+      resolve(aMerchantProfileModelList);
+    });
+  } else if (query.includes("FROM address")) {
+    expect(params.replacements.profile_key).toBe(123);
+
+    return new Promise(resolve => {
+      resolve(anAddressModelList);
+    });
+  } else if (query.includes("FROM discount")) {
+    expect(params.replacements.agreement_key).toBe(anAgreementId);
+
+    return new Promise(resolve => {
+      resolve(aDiscountModelList);
+    });
+  } else {
+    fail("Unexpected SQL query");
+  }
+});
 
 const cgnOperatorDbMock = { query: queryMock };
 
@@ -14,214 +98,55 @@ beforeEach(() => {
 
 describe("GetMerchantHandler", () => {
   it("should return a merchant given its ID, together with the address list and the published discount list", async () => {
-    const agreementId: string = "abc-123-def";
-
-    queryMock
-      .mockImplementationOnce((query, params) => {
-        expect(params.replacements.merchant_id).toBe(agreementId);
-
-        return new Promise(resolve => {
-          resolve([
-            {
-              agreement_fk: agreementId,
-              description: "description something",
-              image_url: "/images/1.png",
-              name: "PagoPa",
-              profile_k: 123,
-              website_url: "https://pagopa.it"
-            }
-          ]);
-        });
-      })
-      .mockImplementation((query: string, params) => {
-        if (query.includes("FROM address")) {
-          expect(params.replacements.profile_key).toBe(123);
-
-          const addressResponse = [
-            {
-              city: "roma",
-              district: "rm",
-              latitude: 1,
-              longitude: 2,
-              street: "la rue 17",
-              zip_code: "1231"
-            },
-            {
-              city: "milano",
-              district: "mi",
-              latitude: 12,
-              longitude: 21,
-              street: "la rue 17",
-              zip_code: "1231"
-            }
-          ];
-          return new Promise(resolve => {
-            resolve(addressResponse);
-          });
-        } else if (query.includes("FROM discount")) {
-          expect(params.replacements.agreement_key).toBe(agreementId);
-
-          const discountResponse = [
-            {
-              condition: "mah",
-              description: "something something",
-              discount_value: 20,
-              end_date: new Date("2021-01-01"),
-              name: "name 1",
-              product_categories: [
-                ProductCategoryEnumModelType.arts,
-                ProductCategoryEnumModelType.books
-              ],
-              start_date: new Date("2020-01-01"),
-              static_code: "xxx"
-            }
-          ];
-          return new Promise(resolve => {
-            resolve(discountResponse);
-          });
-        } else {
-          fail("Unexpected SQL query");
-        }
-      });
-
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
-      agreementId
+      anAgreementId
     );
     expect(response.kind).toBe("IResponseSuccessJson");
     expect(queryMock).toBeCalledTimes(3);
     if (response.kind === "IResponseSuccessJson") {
-      expect(response.value).toEqual({
-        id: agreementId,
-        description: "description something",
-        imageUrl: "/images/1.png",
-        name: "PagoPa",
-        websiteUrl: "https://pagopa.it",
-        addresses: [
-          {
-            city: "roma",
-            district: "rm",
-            latitude: 1,
-            longitude: 2,
-            street: "la rue 17",
-            zipCode: "1231"
-          },
-          {
-            city: "milano",
-            district: "mi",
-            latitude: 12,
-            longitude: 21,
-            street: "la rue 17",
-            zipCode: "1231"
-          }
-        ],
-        discounts: [
-          {
-            condition: "mah",
-            description: "something something",
-            discount: 20,
-            endDate: new Date("2021-01-01"),
-            name: "name 1",
-            productCategories: [
-              ProductCategoryEnum.arts,
-              ProductCategoryEnum.books
-            ],
-            startDate: new Date("2020-01-01"),
-            staticCode: "xxx"
-          }
-        ]
-      });
+      expect(response.value).toEqual(anExpectedResponse);
     }
   });
 
   it("should return a merchant given its ID, also if there is no address associated", async () => {
-    const agreementId: string = "abc-123-def";
-
-    queryMock
-      .mockImplementationOnce((query, params) => {
-        expect(params.replacements.merchant_id).toBe(agreementId);
+    queryMock.mockImplementation((query: string, params) => {
+      if (query.includes("FROM profile")) {
+        expect(params.replacements.merchant_id).toBe(anAgreementId);
 
         return new Promise(resolve => {
-          resolve([
-            {
-              agreement_fk: agreementId,
-              description: "description something",
-              image_url: "/images/1.png",
-              name: "PagoPa",
-              profile_k: 123,
-              website_url: "https://pagopa.it"
-            }
-          ]);
+          resolve(aMerchantProfileModelList);
         });
-      })
-      .mockImplementation((query: string, params) => {
-        if (query.includes("FROM address")) {
-          expect(params.replacements.profile_key).toBe(123);
-          return new Promise(resolve => {
-            resolve([]);
-          });
-        } else if (query.includes("FROM discount")) {
-          expect(params.replacements.agreement_key).toBe(agreementId);
+      } else if (query.includes("FROM address")) {
+        expect(params.replacements.profile_key).toBe(123);
+        return new Promise(resolve => {
+          resolve([]);
+        });
+      } else if (query.includes("FROM discount")) {
+        expect(params.replacements.agreement_key).toBe(anAgreementId);
 
-          const discountResponse = [
-            {
-              condition: "mah",
-              description: "something something",
-              discount_value: 20,
-              end_date: new Date("2021-01-01"),
-              name: "name 1",
-              product_categories: [
-                ProductCategoryEnumModelType.entertainments,
-                ProductCategoryEnumModelType.sports
-              ],
-              start_date: new Date("2020-01-01"),
-              static_code: "xxx"
-            }
-          ];
-          return new Promise(resolve => {
-            resolve(discountResponse);
-          });
-        } else {
-          fail("Unexpected SQL query");
-        }
-      });
+        return new Promise(resolve => {
+          resolve(aDiscountModelList);
+        });
+      } else {
+        fail("Unexpected SQL query");
+      }
+    });
 
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
-      agreementId
+      anAgreementId
     );
     expect(queryMock).toBeCalledTimes(3);
     expect(response.kind).toBe("IResponseSuccessJson");
     if (response.kind === "IResponseSuccessJson") {
-      expect(response.value).toEqual({
-        id: agreementId,
-        description: "description something",
-        imageUrl: "/images/1.png",
-        name: "PagoPa",
-        websiteUrl: "https://pagopa.it",
-        addresses: [],
-        discounts: [
-          {
-            condition: "mah",
-            description: "something something",
-            discount: 20,
-            endDate: new Date("2021-01-01"),
-            name: "name 1",
-            productCategories: [
-              ProductCategoryEnum.entertainments,
-              ProductCategoryEnum.sports
-            ],
-            startDate: new Date("2020-01-01"),
-            staticCode: "xxx"
-          }
-        ]
-      });
+      expect(response.value).toEqual({ ...anExpectedResponse, addresses: [] });
     }
   });
 
   it("should return a NotFound error if there is no merchant in the db", async () => {
     queryMock.mockImplementationOnce((query, params) => {
-      expect(params.replacements.merchant_id).toBe("agreement_k");
+      expect(params.replacements.merchant_id).toBe(anAgreementId);
 
       return new Promise(resolve => {
         resolve([]);
@@ -230,7 +155,7 @@ describe("GetMerchantHandler", () => {
 
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
-      "agreement_k"
+      anAgreementId
     );
     expect(response.kind).toBe("IResponseErrorNotFound");
     expect(queryMock).toBeCalledTimes(1);
@@ -238,7 +163,7 @@ describe("GetMerchantHandler", () => {
 
   it("should return an InternalServerError if there is an issue querying the db", async () => {
     queryMock.mockImplementationOnce((query, params) => {
-      expect(params.replacements.merchant_id).toBe("agreement_k");
+      expect(params.replacements.merchant_id).toBe(anAgreementId);
 
       return new Promise(_ => {
         throw Error("Query error!");
@@ -247,7 +172,7 @@ describe("GetMerchantHandler", () => {
 
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
-      "agreement_k"
+      anAgreementId
     );
     expect(response.kind).toBe("IResponseErrorInternal");
     expect(queryMock).toBeCalledTimes(1);
