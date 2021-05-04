@@ -48,13 +48,10 @@ type IGetMerchantHandler = (
   merchantId: string
 ) => Promise<ResponseTypes>;
 
-const addressesTask: (
+const addressesTask = (
   cgnOperatorDb: Sequelize,
   profileId: number
-) => TaskEither<IResponseErrorInternal, ReadonlyArray<AddressModel>> = (
-  cgnOperatorDb: Sequelize,
-  profileId: number
-) =>
+): TaskEither<IResponseErrorInternal, ReadonlyArray<AddressModel>> =>
   tryCatch(
     () =>
       cgnOperatorDb.query(SelectMerchantAddressListQuery, {
@@ -66,13 +63,10 @@ const addressesTask: (
     toError
   ).mapLeft<IResponseErrorInternal>(e => ResponseErrorInternal(e.message));
 
-const discountsTask: (
+const discountsTask = (
   cgnOperatorDb: Sequelize,
   merchantId: string
-) => TaskEither<IResponseErrorInternal, ReadonlyArray<DiscountModel>> = (
-  cgnOperatorDb: Sequelize,
-  merchantId: string
-) =>
+): TaskEither<IResponseErrorInternal, ReadonlyArray<DiscountModel>> =>
   tryCatch(
     () =>
       cgnOperatorDb.query(SelectDiscountsByMerchantQuery, {
