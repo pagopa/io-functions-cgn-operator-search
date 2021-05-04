@@ -41,15 +41,15 @@ type ResponseTypes =
 type IGetOnlineMerchantsHandler = (
   context: Context,
   nameFilter: Option<string>,
-  productCateogiresFilter: Option<ReadonlyArray<ProductCategory>>,
+  productCategoriesFilter: Option<ReadonlyArray<ProductCategory>>,
   page: Option<NonNegativeInteger>,
   maybePageSize: Option<NonNegativeInteger>
 ) => Promise<ResponseTypes>;
 
 const categoryFilter = (
-  productCateogiresFilter: Option<ReadonlyArray<ProductCategory>>
+  productCategoriesFilter: Option<ReadonlyArray<ProductCategory>>
 ): string =>
-  productCateogiresFilter
+productCategoriesFilter
     .map(s => s.map(c => ProductCategoryToQueryColumn(c)).join(" OR "))
     .map(s => `AND (${s})`)
     .getOrElse("");
@@ -67,7 +67,7 @@ const offset = (
 
 const SelectOnlineMerchantsQuery = (
   nameFilter: Option<string>,
-  productCateogiresFilter: Option<ReadonlyArray<ProductCategory>>,
+  productCategoriesFilter: Option<ReadonlyArray<ProductCategory>>,
   page: Option<NonNegativeInteger>,
   maybePageSize: Option<NonNegativeInteger>
 ): string => `
@@ -79,7 +79,7 @@ SELECT
 FROM online_merchant
 WHERE 1 = 1
   ${nameFilterQueryPart(nameFilter)}
-  ${categoryFilter(productCateogiresFilter)}
+  ${categoryFilter(productCategoriesFilter)}
 ORDER BY name ASC
 LIMIT ${pageSize(maybePageSize)}
 OFFSET ${offset(page, maybePageSize)}`;
@@ -89,7 +89,7 @@ export const GetOnlineMerchantsHandler = (
 ): IGetOnlineMerchantsHandler => async (
   _,
   nameFilter,
-  productCateogiresFilter,
+  productCategoriesFilter,
   page,
   maybePageSize
 ): Promise<ResponseTypes> =>
@@ -98,7 +98,7 @@ export const GetOnlineMerchantsHandler = (
       cgnOperatorDb.query(
         SelectOnlineMerchantsQuery(
           nameFilter,
-          productCateogiresFilter,
+          productCategoriesFilter,
           page,
           maybePageSize
         ),
