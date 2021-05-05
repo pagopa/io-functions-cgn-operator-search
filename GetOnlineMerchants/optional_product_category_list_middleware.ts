@@ -3,11 +3,12 @@ import {
   ResponseErrorFromValidationErrors
 } from "@pagopa/ts-commons/lib/responses";
 import { Either, right, left } from "fp-ts/lib/Either";
-import { none, Option, some } from "fp-ts/lib/Option";
+import { fromNullable, none, Option, some } from "fp-ts/lib/Option";
 import { IRequestMiddleware } from "io-functions-commons/dist/src/utils/request_middleware";
 import * as t from "io-ts";
 import * as A from "fp-ts/lib/Array";
 import { identity } from "fp-ts/lib/function";
+import { fromEither, taskEither } from "fp-ts/lib/TaskEither";
 import {
   ProductCategory,
   ProductCategoryEnum
@@ -30,6 +31,11 @@ const fromEnum = <EnumType>(
   );
 };
 
+const productCategoryCodec = fromEnum<ProductCategory>(
+  "ProductCategory",
+  ProductCategoryEnum
+);
+
 export const OptionalProductCategoryListMiddleware = (
   name: string
 ): IRequestMiddleware<
@@ -43,32 +49,42 @@ export const OptionalProductCategoryListMiddleware = (
     Option<ReadonlyArray<ProductCategory>>
   >
 > =>
-  new Promise(resolve => {
-    // If the parameter is not found return None
-    if (request.query[name] === undefined) {
-      resolve(right(none));
-      return;
-    }
-
-    const ProductCategoryCodec = fromEnum<ProductCategory>(
-      "ProductCategory",
-      ProductCategoryEnum
-    );
-
-    const validation = (request.query[name] as string)
-      .trim()
-      .split(",")
-      .map(ProductCategoryCodec.decode)
-      .map(cat =>
-        cat.bimap(ResponseErrorFromValidationErrors(ProductCategory), identity)
-      );
-
-    const errors = A.partitionMap(validation, identity).left;
-
-    if (errors.length > 0) {
-      resolve(left(errors[0]));
-      return;
-    }
-
-    resolve(right(some(A.partitionMap(validation, identity).right)));
-  });
+  taskEither
+    .of<IResponse<"IResponseErrorValidation">, Option<unknown>>(
+      fromNullable(request.query[name])
+    )
+    .chain(maybeQuery =>
+      maybeQuery.foldL(
+        () => taskEither.of(none),
+        query =>
+          fromEither(
+            A.array
+              .of(
+                A.partitionMap(
+                  (query as string)
+                    .trim()
+                    .split(",")
+                    .map(productCategoryCodec.decode)
+                    .map(cat =>
+                      cat.bimap(
+                        ResponseErrorFromValidationErrors(ProductCategory),
+                        identity
+                      )
+                    ),
+                  identity
+                )
+              )
+              .map<
+                Either<
+                  IResponse<"IResponseErrorValidation">,
+                  Option<ReadonlyArray<ProductCategory>>
+                >
+              >(separated =>
+                separated.left.length > 0
+                  ? left(separated.left[0])
+                  : right(some(separated.right))
+              )[0]
+          )
+      )
+    )
+    .run();

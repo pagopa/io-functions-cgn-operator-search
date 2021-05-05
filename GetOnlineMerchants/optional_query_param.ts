@@ -4,9 +4,10 @@ import {
   IResponse,
   ResponseErrorFromValidationErrors
 } from "@pagopa/ts-commons/lib/responses";
-import { none, Option, some } from "fp-ts/lib/Option";
-import { Either, right } from "fp-ts/lib/Either";
+import { fromNullable, none, Option, some } from "fp-ts/lib/Option";
+import { Either } from "fp-ts/lib/Either";
 import { IRequestMiddleware } from "io-functions-commons/dist/src/utils/request_middleware";
+import { fromEither, taskEither } from "fp-ts/lib/TaskEither";
 
 // TODO move to https://github.com/pagopa/io-functions-commons project
 /**
@@ -22,17 +23,18 @@ export const OptionalQueryParamMiddleware = <S, A>(
 ): IRequestMiddleware<"IResponseErrorValidation", Option<A>> => async (
   request
 ): Promise<Either<IResponse<"IResponseErrorValidation">, Option<A>>> =>
-  new Promise(resolve => {
-    // If the parameter is not found return None
-    if (request.query[name] === undefined) {
-      resolve(right(none));
-    }
-
-    const validation = type.decode(request.query[name]);
-    const result = validation.bimap(
-      ResponseErrorFromValidationErrors(type),
-      some
-    );
-
-    resolve(result);
-  });
+  taskEither
+    .of<IResponse<"IResponseErrorValidation">, Option<unknown>>(
+      fromNullable(request.query[name])
+    )
+    .chain(maybeQuery =>
+      maybeQuery.foldL(
+        () => taskEither.of(none),
+        query =>
+          fromEither(type.decode(query)).bimap(
+            ResponseErrorFromValidationErrors(type),
+            some
+          )
+      )
+    )
+    .run();

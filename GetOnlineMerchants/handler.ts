@@ -25,14 +25,12 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 import { OnlineMerchants } from "../generated/definitions/OnlineMerchants";
 
-import {
-  ProductCategoryFromModel,
-  ProductCategoryToQueryColumn
-} from "../models/ProductCategories";
+import { ProductCategoryFromModel } from "../models/ProductCategories";
 import OnlineMerchantModel from "../models/OnlineMerchantModel";
 import { ProductCategory } from "../generated/definitions/ProductCategory";
 import { OptionalProductCategoryListMiddleware } from "./optional_product_category_list_middleware";
 import { OptionalQueryParamMiddleware } from "./optional_query_param";
+import { selectOnlineMerchantsQuery } from "./postgres_queries";
 
 type ResponseTypes =
   | IResponseSuccessJson<OnlineMerchants>
@@ -46,44 +44,6 @@ type IGetOnlineMerchantsHandler = (
   maybePageSize: Option<NonNegativeInteger>
 ) => Promise<ResponseTypes>;
 
-const categoryFilter = (
-  productCategoriesFilter: Option<ReadonlyArray<ProductCategory>>
-): string =>
-productCategoriesFilter
-    .map(s => s.map(c => ProductCategoryToQueryColumn(c)).join(" OR "))
-    .map(s => `AND (${s})`)
-    .getOrElse("");
-
-const nameFilterQueryPart = (nameFilter: Option<string>): string =>
-  nameFilter.map(__ => " AND searchable_name LIKE :name_filter ").getOrElse("");
-
-const pageSize = (maybePageSize: Option<NonNegativeInteger>): number =>
-  maybePageSize.map(n => n as number).getOrElse(100);
-
-const offset = (
-  page: Option<NonNegativeInteger>,
-  maybePageSize: Option<NonNegativeInteger>
-): number => page.map(n => n as number).getOrElse(0) * pageSize(maybePageSize);
-
-const SelectOnlineMerchantsQuery = (
-  nameFilter: Option<string>,
-  productCategoriesFilter: Option<ReadonlyArray<ProductCategory>>,
-  page: Option<NonNegativeInteger>,
-  maybePageSize: Option<NonNegativeInteger>
-): string => `
-SELECT
-  id,
-  name,
-  product_categories,
-  website_url
-FROM online_merchant
-WHERE 1 = 1
-  ${nameFilterQueryPart(nameFilter)}
-  ${categoryFilter(productCategoriesFilter)}
-ORDER BY name ASC
-LIMIT ${pageSize(maybePageSize)}
-OFFSET ${offset(page, maybePageSize)}`;
-
 export const GetOnlineMerchantsHandler = (
   cgnOperatorDb: Sequelize
 ): IGetOnlineMerchantsHandler => async (
@@ -96,7 +56,7 @@ export const GetOnlineMerchantsHandler = (
   tryCatch(
     () =>
       cgnOperatorDb.query(
-        SelectOnlineMerchantsQuery(
+        selectOnlineMerchantsQuery(
           nameFilter,
           productCategoriesFilter,
           page,
