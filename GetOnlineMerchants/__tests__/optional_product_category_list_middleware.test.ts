@@ -22,7 +22,7 @@ describe("OptionalProductCategoryListMiddleware", () => {
     }
   });
 
-  it("should respond with a validation error if the parameter is present but is NOT valid", async () => {
+  it("should respond with a validation error if the parameter is present but NOT valid", async () => {
     const result = await middleware({
       query: {
         param: "something"
@@ -35,7 +35,7 @@ describe("OptionalProductCategoryListMiddleware", () => {
     }
   });
 
-  it("should extract the parameter if is present and valid", async () => {
+  it("should extract the parameter if it is present and valid", async () => {
     const result = await middleware({
       query: {
         param: "arts,entertainments"
