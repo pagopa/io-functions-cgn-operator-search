@@ -5,7 +5,9 @@ import { getMaterializedViewRefreshHandler } from "./handler";
 
 const config = getConfigOrThrow();
 
-const cgnOperatorDb = new Sequelize(config.CGN_POSTGRES_DB_ADMIN_URI);
+const cgnOperatorDb = new Sequelize(config.CGN_POSTGRES_DB_ADMIN_URI, {
+  ssl: true
+});
 
 const materializedViewRefreshHandler = getMaterializedViewRefreshHandler(
   cgnOperatorDb

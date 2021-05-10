@@ -21,8 +21,6 @@ export const IConfig = t.interface({
   CGN_POSTGRES_DB_ADMIN_URI: NonEmptyString,
   CGN_POSTGRES_DB_RO_URI: NonEmptyString,
 
-  QueueStorageConnection: NonEmptyString,
-
   isProduction: t.boolean
 });
 

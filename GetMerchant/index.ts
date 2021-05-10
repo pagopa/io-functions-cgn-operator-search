@@ -14,7 +14,9 @@ import { GetMerchant } from "./handler";
 
 const config = getConfigOrThrow();
 
-const cgnOperatorDb = new Sequelize(config.CGN_POSTGRES_DB_RO_URI);
+const cgnOperatorDb = new Sequelize(config.CGN_POSTGRES_DB_RO_URI, {
+  ssl: true
+});
 
 // eslint-disable-next-line functional/no-let
 let logger: Context["log"] | undefined;

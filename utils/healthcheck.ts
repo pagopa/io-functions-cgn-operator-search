@@ -103,7 +103,9 @@ export const checkPostgresHealth = (
   dbUri: string
 ): HealthCheck<"PostgresDB", true> =>
   tryCatch(() => {
-    const cgnOperatorDb = new Sequelize(dbUri);
+    const cgnOperatorDb = new Sequelize(dbUri, {
+      ssl: true
+    });
     return cgnOperatorDb.query(`SELECT 1`, {
       raw: true,
       type: QueryTypes.SELECT
