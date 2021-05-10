@@ -10,13 +10,15 @@ import createAzureFunctionHandler from "@pagopa/express-azure-functions/dist/src
 import { Sequelize } from "sequelize";
 
 import { getConfigOrThrow } from "../utils/config";
+import { sequelizePostgresOptions } from "../utils/sequelize-options";
 import { GetMerchant } from "./handler";
 
 const config = getConfigOrThrow();
 
-const cgnOperatorDb = new Sequelize(config.CGN_POSTGRES_DB_RO_URI, {
-  ssl: true
-});
+const cgnOperatorDb = new Sequelize(
+  config.CGN_POSTGRES_DB_RO_URI,
+  sequelizePostgresOptions()
+);
 
 // eslint-disable-next-line functional/no-let
 let logger: Context["log"] | undefined;

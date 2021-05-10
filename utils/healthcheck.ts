@@ -18,6 +18,7 @@ import {
 import { readableReport } from "italia-ts-commons/lib/reporters";
 import fetch from "node-fetch";
 import { getConfig, IConfig } from "./config";
+import { sequelizePostgresOptions } from "./sequelize-options";
 
 type ProblemSource = "PostgresDB" | "AzureStorage" | "Config" | "Url";
 // eslint-disable-next-line functional/prefer-readonly-type, @typescript-eslint/naming-convention
@@ -103,9 +104,7 @@ export const checkPostgresHealth = (
   dbUri: string
 ): HealthCheck<"PostgresDB", true> =>
   tryCatch(() => {
-    const cgnOperatorDb = new Sequelize(dbUri, {
-      ssl: true
-    });
+    const cgnOperatorDb = new Sequelize(dbUri, sequelizePostgresOptions());
     return cgnOperatorDb.query(`SELECT 1`, {
       raw: true,
       type: QueryTypes.SELECT

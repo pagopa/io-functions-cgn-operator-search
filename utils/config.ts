@@ -20,6 +20,7 @@ export const IConfig = t.interface({
 
   CGN_POSTGRES_DB_ADMIN_URI: NonEmptyString,
   CGN_POSTGRES_DB_RO_URI: NonEmptyString,
+  isPostgresSslEnabled: t.boolean,
 
   isProduction: t.boolean
 });
@@ -27,6 +28,7 @@ export const IConfig = t.interface({
 // No need to re-evaluate this object for each call
 const errorOrConfig: t.Validation<IConfig> = IConfig.decode({
   ...process.env,
+  isPostgresSslEnabled: process.env.CGN_POSTGRES_DB_SSL_ENABLED === "true",
   isProduction: process.env.NODE_ENV === "production"
 });
 
