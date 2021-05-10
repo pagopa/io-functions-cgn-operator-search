@@ -1,4 +1,4 @@
-import { CosmosClient } from "@azure/cosmos";
+import { QueryTypes, Sequelize } from "sequelize";
 import {
   common as azurestorageCommon,
   createBlobService,
@@ -19,7 +19,7 @@ import { readableReport } from "italia-ts-commons/lib/reporters";
 import fetch from "node-fetch";
 import { getConfig, IConfig } from "./config";
 
-type ProblemSource = "AzureCosmosDB" | "AzureStorage" | "Config" | "Url";
+type ProblemSource = "PostgresDB" | "AzureStorage" | "Config" | "Url";
 // eslint-disable-next-line functional/prefer-readonly-type, @typescript-eslint/naming-convention
 export type HealthProblem<S extends ProblemSource> = string & { __source: S };
 export type HealthCheck<
@@ -52,26 +52,6 @@ export const checkConfigHealth = (): HealthCheck<"Config", IConfig> =>
       formatProblem("Config", readableReport([e]))
     )
   );
-
-/**
- * Check the application can connect to an Azure CosmosDb instances
- *
- * @param dbUri uri of the database
- * @param dbUri connection string for the storage
- *
- * @returns either true or an array of error messages
- */
-export const checkAzureCosmosDbHealth = (
-  dbUri: string,
-  dbKey?: string
-): HealthCheck<"AzureCosmosDB", true> =>
-  tryCatch(() => {
-    const client = new CosmosClient({
-      endpoint: dbUri,
-      key: dbKey
-    });
-    return client.getDatabaseAccount();
-  }, toHealthProblems("AzureCosmosDB")).map(_ => true);
 
 /**
  * Check the application can connect to an Azure Storage
@@ -113,6 +93,24 @@ export const checkAzureStorageHealth = (
     .map(_ => true);
 
 /**
+ * Check the application can connect to a Postgres instances
+ *
+ * @param dbUri uri of the database
+ *
+ * @returns either true or an array of error messages
+ */
+export const checkPostgresHealth = (
+  dbUri: string
+): HealthCheck<"PostgresDB", true> =>
+  tryCatch(() => {
+    const cgnOperatorDb = new Sequelize(dbUri);
+    return cgnOperatorDb.query(`SELECT 1`, {
+      raw: true,
+      type: QueryTypes.SELECT
+    });
+  }, toHealthProblems("PostgresDB")).map(_ => true);
+
+/**
  * Check a url is reachable
  *
  * @param url url to connect with
@@ -139,9 +137,6 @@ export const checkApplicationHealth = (): HealthCheck<ProblemSource, true> =>
         ReadonlyArray<HealthProblem<ProblemSource>>,
         /* eslint-disable functional/prefer-readonly-type */
         Array<TaskEither<ReadonlyArray<HealthProblem<ProblemSource>>, true>>
-      >(
-        checkAzureCosmosDbHealth(config.COSMOSDB_URI, config.COSMOSDB_KEY),
-        checkAzureStorageHealth(config.QueueStorageConnection)
-      )
+      >(checkPostgresHealth(config.CGN_POSTGRES_DB_RO_URI))
     )
     .map(_ => true);
