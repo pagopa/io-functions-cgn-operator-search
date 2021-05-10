@@ -2,12 +2,10 @@ import {
   IResponse,
   ResponseErrorFromValidationErrors
 } from "@pagopa/ts-commons/lib/responses";
-import { Either, right, left } from "fp-ts/lib/Either";
+import { Either } from "fp-ts/lib/Either";
 import { fromNullable, none, Option, some } from "fp-ts/lib/Option";
 import { IRequestMiddleware } from "io-functions-commons/dist/src/utils/request_middleware";
 import * as t from "io-ts";
-import * as A from "fp-ts/lib/Array";
-import { identity } from "fp-ts/lib/function";
 import { fromEither, taskEither } from "fp-ts/lib/TaskEither";
 import {
   ProductCategory,
@@ -36,6 +34,28 @@ const productCategoryCodec = fromEnum<ProductCategory>(
   ProductCategoryEnum
 );
 
+const CommaSeparatedListOf = (
+  decoder: t.Mixed
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): t.Type<ReadonlyArray<any>, string, unknown> =>
+  new t.Type<ReadonlyArray<t.TypeOf<typeof decoder>>, string, unknown>(
+    `CommaSeparatedListOf<${decoder.name}>`,
+    (value: unknown): value is ReadonlyArray<t.TypeOf<typeof decoder>> =>
+      Array.isArray(value) && value.every(e => decoder.is(e)),
+    input =>
+      t.readonlyArray(decoder).decode(
+        typeof input === "string"
+          ? input
+              .split(",")
+              .map(e => e.trim())
+              .filter(Boolean)
+          : !input
+          ? [] // fallback to empty array in case of empty input
+          : input // it should not happen, but in case we let the decoder fail
+      ),
+    String
+  );
+
 export const OptionalProductCategoryListMiddleware = (
   name: string
 ): IRequestMiddleware<
@@ -58,33 +78,8 @@ export const OptionalProductCategoryListMiddleware = (
         () => taskEither.of(none),
         query =>
           fromEither(
-            A.array
-              .of(
-                A.partitionMap(
-                  (query as string)
-                    .trim()
-                    .split(",")
-                    .map(productCategoryCodec.decode)
-                    .map(cat =>
-                      cat.bimap(
-                        ResponseErrorFromValidationErrors(ProductCategory),
-                        identity
-                      )
-                    ),
-                  identity
-                )
-              )
-              .map<
-                Either<
-                  IResponse<"IResponseErrorValidation">,
-                  Option<ReadonlyArray<ProductCategory>>
-                >
-              >(separated =>
-                separated.left.length > 0
-                  ? left(separated.left[0])
-                  : right(some(separated.right))
-              )[0]
-          )
+            CommaSeparatedListOf(productCategoryCodec).decode(query)
+          ).bimap(ResponseErrorFromValidationErrors(ProductCategory), some)
       )
     )
     .run();
