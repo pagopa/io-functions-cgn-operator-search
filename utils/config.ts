@@ -21,10 +21,6 @@ export const IConfig = t.interface({
   CGN_POSTGRES_DB_ADMIN_URI: NonEmptyString,
   CGN_POSTGRES_DB_RO_URI: NonEmptyString,
 
-  COSMOSDB_KEY: NonEmptyString,
-  COSMOSDB_NAME: NonEmptyString,
-  COSMOSDB_URI: NonEmptyString,
-
   QueueStorageConnection: NonEmptyString,
 
   isProduction: t.boolean
