@@ -192,7 +192,7 @@ stages:
           - download: current
             artifact: Bundle
 
-          - task: AzureWebApp@1
+          - task: AzureFunctionApp@1
             inputs:
               azureSubscription: '$(AZURE_SUBSCRIPTION)'
               resourceGroupName: '$(WEB_APP_RESOURCE_GROUP_NAME)'
