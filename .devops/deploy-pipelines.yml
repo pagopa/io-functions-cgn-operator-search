@@ -122,7 +122,7 @@ stages:
           - task: CopyFiles@2
             inputs:
               SourceFolder: '$(System.DefaultWorkingDirectory)'
-              TargetFolder: '$(Build.ArtifactStagingDirectory)'
+              TargetFolder: '$(Build.ArtifactStagingDirectory)/Bundle'
               Contents: |
                 **/*
                 !.git/**/*
@@ -159,7 +159,7 @@ stages:
               resourceGroupName: '$(WEB_APP_RESOURCE_GROUP_NAME)'
               appType: 'functionApp'
               appName: '$(WEB_APP_NAME)'
-              package: '$(Build.ArtifactStagingDirectory)/'
+              package: '$(Build.ArtifactStagingDirectory)/Bundle'
               deploymentMethod: 'auto'
               deployToSlotOrASE: true
               slotName: 'staging'
@@ -197,7 +197,7 @@ stages:
               resourceGroupName: '$(WEB_APP_RESOURCE_GROUP_NAME)'
               appType: 'functionApp'
               appName: '$(WEB_APP_NAME)'
-              package: '$(Build.ArtifactStagingDirectory)/'
+              package: '$(Build.ArtifactStagingDirectory)/Bundle'
               deploymentMethod: 'auto'
               deployToSlotOrASE: true
               slotName: 'production'
