@@ -169,7 +169,6 @@ stages:
             parameters:
               azureSubscription: '$(AZURE_SUBSCRIPTION)'
               appName: '$(WEB_APP_NAME)'
-              resourceGroupName: '$(WEB_APP_RESOURCE_GROUP_NAME)'
               endpoint: '$(HEALTHCHECK_ENDPOINT)'
               endpointType: 'private'
               containerInstanceResourceGroup: '$(HEALTHCHECK_CONTAINER_RESOURCE_GROUP_NAME)'
