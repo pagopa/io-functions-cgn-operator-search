@@ -9,18 +9,41 @@ parameters:
       - minor
       - patch
     default: minor
+  - name: environment
+    displayName: Target Environment
+    type: string
+    default: uat
+    values:
+      - uat
+      - prod
 
 # Only manual activations are intended
 trigger: none
 pr: none
 
-# This pipeline has been implemented to be run on hosted agent pools based both
-# on 'windows' and 'ubuntu' virtual machine images and using the scripts defined
-# in the package.json file. Since we are deploying on Azure functions on Windows
-# runtime, the pipeline is currently configured to use a Windows hosted image for
-# the build and deploy.
+# variables setted on azdevops to avoid circular dependency warning
+# $(DEFAULT_BRANCH)
+# $(HEALTHCHECK_CONTAINER_SUBNET)
+variables:
+  ${{ if eq(parameters['environment'], 'uat') }}:
+    DEPLOY_TYPE: $[variables['UAT_DEPLOY_TYPE']]
+    AZURE_SUBSCRIPTION: $(UAT_AZURE_SUBSCRIPTION)
+    FUNCTION_APP_NAME: $(UAT_FUNCTION_APP_NAME)
+    FUNCTION_APP_RESOURCE_GROUP_NAME: $(UAT_WEB_APP_RESOURCE_GROUP_NAME)
+    HEALTHCHECK_ENDPOINT: $(UAT_HEALTHCHECK_ENDPOINT)
+    HEALTHCHECK_CONTAINER_RESOURCE_GROUP_NAME: $(UAT_HEALTHCHECK_CONTAINER_RESOURCE_GROUP_NAME)
+    HEALTHCHECK_CONTAINER_VNET: $(UAT_HEALTHCHECK_CONTAINER_VNET)
+  ${{ if eq(parameters['environment'], 'prod') }}:
+    DEPLOY_TYPE: $[variables['PROD_DEPLOY_TYPE']]
+    AZURE_SUBSCRIPTION: $(PROD_AZURE_SUBSCRIPTION)
+    FUNCTION_APP_NAME: $(PROD_FUNCTION_APP_NAME)
+    FUNCTION_APP_RESOURCE_GROUP_NAME: $(PROD_WEB_APP_RESOURCE_GROUP_NAME)
+    HEALTHCHECK_ENDPOINT: $(PROD_HEALTHCHECK_ENDPOINT)
+    HEALTHCHECK_CONTAINER_RESOURCE_GROUP_NAME: $(PROD_HEALTHCHECK_CONTAINER_RESOURCE_GROUP_NAME)
+    HEALTHCHECK_CONTAINER_VNET: $(PROD_HEALTHCHECK_CONTAINER_VNET)
+
 pool:
-  vmImage: 'windows-2019'
+  vmImage: 'ubuntu-latest'
 
 resources:
   repositories:
@@ -34,48 +57,47 @@ stages:
 
   # Create a relase
   # Activated when ONE OF these are met:
-  # - is on branch master 
+  # - is on branch $(DEFAULT_BRANCH)
   # - is a tag in the form v{version}-RELEASE
   - stage: Release
     condition:
-      and(
-        succeeded(),
-        or(
-          eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+      or(
+        eq(variables['Build.SourceBranch'], format('refs/heads/{0}', variables.DEFAULT_BRANCH)),
           and(
             startsWith(variables['Build.SourceBranch'], 'refs/tags'),
             endsWith(variables['Build.SourceBranch'], '-RELEASE')
           )
-        )
       )
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
       - job: make_release
+        condition: eq(variables['Build.SourceBranch'], format('refs/heads/{0}', variables.DEFAULT_BRANCH))
         steps:
-        - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
           - template: templates/node-job-setup/template.yaml@pagopaCommons
             parameters:
               persistCredentials: true
           - template: templates/node-github-release/template.yaml@pagopaCommons
             parameters:
               semver: '${{ parameters.RELEASE_SEMVER }}'
-              gitEmail: $(GIT_EMAIL)
-              gitUsername: $(GIT_USERNAME)
-              gitHubConnection: $(GITHUB_CONNECTION)
+              gitEmail: '$(GIT_EMAIL)'
+              gitUsername: '$(GIT_USERNAME)'
+              gitHubConnection: '$(GITHUB_CONNECTION)'
 
-        - ${{ if ne(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+      - job: skip_release
+        condition: ne(variables['Build.SourceBranch'], format('refs/heads/{0}', variables.DEFAULT_BRANCH))
+        steps:
           - script: |
               echo "We assume this reference to be a valid release: $(Build.SourceBranch). Therefore, there is no need to bundle a new release."
             displayName: 'Skip release bundle'
 
 
   # Prepare Artifact
-  - stage: Deploy_staging
+  - stage: Prepare_artifact
     dependsOn:
       - Release
     jobs:
-      - job: 'prepare_artifact_and_deploy'
+      - job: 'prepare_artifact'
         steps:
           # Build application
           - template: templates/node-job-setup/template.yaml@pagopaCommons
@@ -116,49 +138,66 @@ stages:
                 !test
                 !tsconfig.json
             displayName: 'Copy deploy files'
-            
-          - task: AzureFunctionApp@1  
+
+
+  # Deploy
+  - stage: 'Deploy_to_${{ parameters.environment }}'
+    dependsOn:
+      - Prepare_artifact
+    jobs:
+      - job: 'do_deploy_staging_slot_and_swap'
+        condition: eq(variables.DEPLOY_TYPE, 'staging_slot_and_swap')
+        steps:
+          - checkout: none
+          - download: current
+            artifact: Bundle
+
+          - task: AzureFunctionApp@1
             inputs:
-              azureSubscription: '$(PRODUCTION_AZURE_SUBSCRIPTION)'
-              resourceGroupName: '$(PRODUCTION_RESOURCE_GROUP_NAME)'
+              azureSubscription: '$(AZURE_SUBSCRIPTION)'
+              resourceGroupName: '$(FUNCTION_APP_RESOURCE_GROUP_NAME)'
               appType: 'functionApp'
-              appName: '$(PRODUCTION_APP_NAME)'
+              appName: '$(FUNCTION_APP_NAME)'
               package: '$(Build.ArtifactStagingDirectory)/'
               deploymentMethod: 'auto'
               deployToSlotOrASE: true
               slotName: 'staging'
-            displayName: Deploy to staging slot
+            displayName: 'Deploy to staging slot'
 
-  # Check that the staging instance is healthy
-  - stage: Healthcheck
-    dependsOn:
-      - Deploy_staging
-    jobs:
-      - job: 'do_healthcheck'       
-        steps:  
           - template: templates/rest-healthcheck/template.yaml@pagopaCommons
             parameters:
-              azureSubscription: '$(PRODUCTION_AZURE_SUBSCRIPTION)'
-              appName: '$(PRODUCTION_APP_NAME)'
-              endpoint: 'https://$(PRODUCTION_APP_NAME)-staging.azurewebsites.net/api/v1/info'
+              azureSubscription: '$(AZURE_SUBSCRIPTION)'
+              appName: '$(FUNCTION_APP_NAME)'
+              endpoint: '$(HEALTHCHECK_ENDPOINT)'
               endpointType: 'private'
-              containerInstanceResourceGroup: 'io-p-rg-common'
-              containerInstanceVNet: 'io-p-vnet-common'
-              containerInstanceSubnet: 'azure-devops' 
+              containerInstanceResourceGroup: '$(HEALTHCHECK_CONTAINER_RESOURCE_GROUP_NAME)'
+              containerInstanceVNet: '$(HEALTHCHECK_CONTAINER_VNET)'
+              containerInstanceSubnet: '$(HEALTHCHECK_CONTAINER_SUBNET)'
 
-  # Promote the staging instance to production
-  - stage: Deploy_production
-    dependsOn:
-      - Healthcheck
-      - Deploy_staging
-    jobs:
-      - job: 'do_deploy'       
-        steps:  
-          - task: AzureAppServiceManage@0   
+          - task: AzureAppServiceManage@0
             inputs:
-              azureSubscription: '$(PRODUCTION_AZURE_SUBSCRIPTION)'
-              resourceGroupName: '$(PRODUCTION_RESOURCE_GROUP_NAME)'
-              webAppName: '$(PRODUCTION_APP_NAME)'
-              sourceSlot: staging
+              azureSubscription: '$(AZURE_SUBSCRIPTION)'
+              resourceGroupName: '$(FUNCTION_APP_RESOURCE_GROUP_NAME)'
+              webAppName: '$(FUNCTION_APP_NAME)'
+              sourceSlot: 'staging'
               swapWithProduction: true
-            displayName: Swap with production slot
+            displayName: 'Swap with production slot'
+
+      - job: 'do_deploy_production_slot'
+        condition: eq(variables.DEPLOY_TYPE, 'production_slot')
+        steps:
+          - checkout: none
+          - download: current
+            artifact: Bundle
+
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: '$(AZURE_SUBSCRIPTION)'
+              resourceGroupName: '$(FUNCTION_APP_RESOURCE_GROUP_NAME)'
+              appType: 'functionApp'
+              appName: '$(FUNCTION_APP_NAME)'
+              package: '$(Build.ArtifactStagingDirectory)/'
+              deploymentMethod: 'auto'
+              deployToSlotOrASE: true
+              slotName: 'production'
+            displayName: 'Deploy to production slot'
