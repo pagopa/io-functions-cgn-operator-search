@@ -122,7 +122,7 @@ stages:
           - task: CopyFiles@2
             inputs:
               SourceFolder: '$(System.DefaultWorkingDirectory)'
-              TargetFolder: '$(Build.ArtifactStagingDirectory)/Bundle'
+              TargetFolder: '$(System.DefaultWorkingDirectory)/bundle'
               Contents: |
                 **/*
                 !.git/**/*
@@ -140,6 +140,8 @@ stages:
                 !tsconfig.json
             displayName: 'Copy deploy files'
 
+          - publish: $(System.DefaultWorkingDirectory)/bundle
+            artifact: Bundle
 
   # Deploy
   - stage: 'Deploy_to_${{ parameters.environment }}'
@@ -159,7 +161,7 @@ stages:
               resourceGroupName: '$(WEB_APP_RESOURCE_GROUP_NAME)'
               appType: 'functionApp'
               appName: '$(WEB_APP_NAME)'
-              package: '$(Build.ArtifactStagingDirectory)/Bundle'
+              package: '$(Pipeline.Workspace)/Bundle'
               deploymentMethod: 'auto'
               deployToSlotOrASE: true
               slotName: 'staging'
@@ -197,7 +199,7 @@ stages:
               resourceGroupName: '$(WEB_APP_RESOURCE_GROUP_NAME)'
               appType: 'functionApp'
               appName: '$(WEB_APP_NAME)'
-              package: '$(Build.ArtifactStagingDirectory)/Bundle'
+              package: '$(Pipeline.Workspace)/Bundle'
               deploymentMethod: 'auto'
               deployToSlotOrASE: true
               slotName: 'production'
