@@ -28,22 +28,22 @@ variables:
   ${{ if eq(parameters['environment'], 'uat') }}:
     DEPLOY_TYPE: $[variables['UAT_DEPLOY_TYPE']]
     AZURE_SUBSCRIPTION: $(UAT_AZURE_SUBSCRIPTION)
-    FUNCTION_APP_NAME: $(UAT_FUNCTION_APP_NAME)
-    FUNCTION_APP_RESOURCE_GROUP_NAME: $(UAT_WEB_APP_RESOURCE_GROUP_NAME)
+    WEB_APP_NAME: $(UAT_WEB_APP_NAME)
+    WEB_APP_RESOURCE_GROUP_NAME: $(UAT_WEB_APP_RESOURCE_GROUP_NAME)
     HEALTHCHECK_ENDPOINT: $(UAT_HEALTHCHECK_ENDPOINT)
     HEALTHCHECK_CONTAINER_RESOURCE_GROUP_NAME: $(UAT_HEALTHCHECK_CONTAINER_RESOURCE_GROUP_NAME)
     HEALTHCHECK_CONTAINER_VNET: $(UAT_HEALTHCHECK_CONTAINER_VNET)
   ${{ if eq(parameters['environment'], 'prod') }}:
     DEPLOY_TYPE: $[variables['PROD_DEPLOY_TYPE']]
     AZURE_SUBSCRIPTION: $(PROD_AZURE_SUBSCRIPTION)
-    FUNCTION_APP_NAME: $(PROD_FUNCTION_APP_NAME)
-    FUNCTION_APP_RESOURCE_GROUP_NAME: $(PROD_WEB_APP_RESOURCE_GROUP_NAME)
+    WEB_APP_NAME: $(PROD_WEB_APP_NAME)
+    WEB_APP_RESOURCE_GROUP_NAME: $(PROD_WEB_APP_RESOURCE_GROUP_NAME)
     HEALTHCHECK_ENDPOINT: $(PROD_HEALTHCHECK_ENDPOINT)
     HEALTHCHECK_CONTAINER_RESOURCE_GROUP_NAME: $(PROD_HEALTHCHECK_CONTAINER_RESOURCE_GROUP_NAME)
     HEALTHCHECK_CONTAINER_VNET: $(PROD_HEALTHCHECK_CONTAINER_VNET)
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'windows-2019'
 
 resources:
   repositories:
@@ -79,7 +79,8 @@ stages:
               persistCredentials: true
           - template: templates/node-github-release/template.yaml@pagopaCommons
             parameters:
-              semver: '${{ parameters.RELEASE_SEMVER }}'
+              release_branch: '$(DEFAULT_BRANCH)'
+              semver: '${{ parameters. DEFAULT_BRANCH }}'
               gitEmail: '$(GIT_EMAIL)'
               gitUsername: '$(GIT_USERNAME)'
               gitHubConnection: '$(GITHUB_CONNECTION)'
@@ -155,9 +156,9 @@ stages:
           - task: AzureFunctionApp@1
             inputs:
               azureSubscription: '$(AZURE_SUBSCRIPTION)'
-              resourceGroupName: '$(FUNCTION_APP_RESOURCE_GROUP_NAME)'
+              resourceGroupName: '$(WEB_APP_RESOURCE_GROUP_NAME)'
               appType: 'functionApp'
-              appName: '$(FUNCTION_APP_NAME)'
+              appName: '$(WEB_APP_NAME)'
               package: '$(Build.ArtifactStagingDirectory)/'
               deploymentMethod: 'auto'
               deployToSlotOrASE: true
@@ -167,7 +168,8 @@ stages:
           - template: templates/rest-healthcheck/template.yaml@pagopaCommons
             parameters:
               azureSubscription: '$(AZURE_SUBSCRIPTION)'
-              appName: '$(FUNCTION_APP_NAME)'
+              appName: '$(WEB_APP_NAME)'
+              resourceGroupName: '$(WEB_APP_RESOURCE_GROUP_NAME)'
               endpoint: '$(HEALTHCHECK_ENDPOINT)'
               endpointType: 'private'
               containerInstanceResourceGroup: '$(HEALTHCHECK_CONTAINER_RESOURCE_GROUP_NAME)'
@@ -177,8 +179,8 @@ stages:
           - task: AzureAppServiceManage@0
             inputs:
               azureSubscription: '$(AZURE_SUBSCRIPTION)'
-              resourceGroupName: '$(FUNCTION_APP_RESOURCE_GROUP_NAME)'
-              webAppName: '$(FUNCTION_APP_NAME)'
+              resourceGroupName: '$(WEB_APP_RESOURCE_GROUP_NAME)'
+              appName: '$(WEB_APP_NAME)'
               sourceSlot: 'staging'
               swapWithProduction: true
             displayName: 'Swap with production slot'
@@ -193,9 +195,9 @@ stages:
           - task: AzureWebApp@1
             inputs:
               azureSubscription: '$(AZURE_SUBSCRIPTION)'
-              resourceGroupName: '$(FUNCTION_APP_RESOURCE_GROUP_NAME)'
+              resourceGroupName: '$(WEB_APP_RESOURCE_GROUP_NAME)'
               appType: 'functionApp'
-              appName: '$(FUNCTION_APP_NAME)'
+              appName: '$(WEB_APP_NAME)'
               package: '$(Build.ArtifactStagingDirectory)/'
               deploymentMethod: 'auto'
               deployToSlotOrASE: true
