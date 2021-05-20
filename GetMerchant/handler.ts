@@ -111,12 +111,9 @@ export const GetMerchantHandler = (
     .map(__ => ({
       ...__,
       addresses: __.addresses.map(a => ({
-        city: a.city,
-        district: a.district,
+        full_address: a.full_address,
         latitude: a.latitude,
-        longitude: a.longitude,
-        street: a.street,
-        zipCode: a.zip_code
+        longitude: a.longitude
       })),
       discounts: __.discounts.map(d => ({
         condition: d.condition,

@@ -15,10 +15,7 @@ WHERE agreement_fk = :merchant_id
 
 export const SelectMerchantAddressListQuery = `
 SELECT 
-    street,
-    zip_code,
-    city,
-    district,
+    full_address,
     latitude,
     longitude
 FROM address
