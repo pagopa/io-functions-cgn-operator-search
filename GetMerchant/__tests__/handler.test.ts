@@ -16,12 +16,9 @@ const aMerchantProfileModel = {
 const aMerchantProfileModelList = [aMerchantProfileModel];
 
 const anAddress = {
-  city: "roma",
-  district: "rm",
+  full_address: "la rue 17, 1231, roma (rm)",
   latitude: 1,
-  longitude: 2,
-  street: "la rue 17",
-  zip_code: "1231"
+  longitude: 2
 };
 const anAddressModelList = [anAddress, { ...anAddress, city: "milano" }];
 
@@ -47,12 +44,9 @@ const anExpectedResponse = {
   imageUrl: aMerchantProfileModel.image_url,
   websiteUrl: aMerchantProfileModel.website_url,
   addresses: anAddressModelList.map(address => ({
-    city: address.city,
-    district: address.district,
+    full_address: address.full_address,
     latitude: address.latitude,
-    longitude: address.longitude,
-    street: address.street,
-    zipCode: address.zip_code
+    longitude: address.longitude
   })),
   discounts: aDiscountModelList.map(discount => ({
     condition: discount.condition,
