@@ -1,4 +1,3 @@
-import { NonNegativeInteger } from "@pagopa/ts-commons/lib/numbers";
 import { Option } from "fp-ts/lib/Option";
 import { ProductCategory } from "../generated/definitions/ProductCategory";
 import { ProductCategoryToQueryColumn } from "../models/ProductCategories";
@@ -14,19 +13,17 @@ const categoryFilter = (
 const nameFilterQueryPart = (nameFilter: Option<string>): string =>
   nameFilter.map(__ => " AND searchable_name LIKE :name_filter ").getOrElse("");
 
-const pageSize = (maybePageSize: Option<NonNegativeInteger>): number =>
-  maybePageSize.map(n => n as number).getOrElse(100);
+const pageSize = (maybePageSize: Option<number>): number =>
+  maybePageSize.getOrElse(100);
 
-const offset = (
-  page: Option<NonNegativeInteger>,
-  maybePageSize: Option<NonNegativeInteger>
-): number => page.map(n => n as number).getOrElse(0) * pageSize(maybePageSize);
+const offset = (page: Option<number>, maybePageSize: Option<number>): number =>
+  page.getOrElse(0) * pageSize(maybePageSize);
 
 export const selectOnlineMerchantsQuery = (
   nameFilter: Option<string>,
   productCategoriesFilter: Option<ReadonlyArray<ProductCategory>>,
-  page: Option<NonNegativeInteger>,
-  maybePageSize: Option<NonNegativeInteger>
+  page: Option<number>,
+  maybePageSize: Option<number>
 ): string => `
 SELECT
   id,

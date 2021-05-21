@@ -2,6 +2,7 @@
 
 import { NonNegativeInteger } from "@pagopa/ts-commons/lib/numbers";
 import { none, some } from "fp-ts/lib/Option";
+import { OnlineMerchantSearchRequest } from "../../generated/definitions/OnlineMerchantSearchRequest";
 import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory";
 import { ProductCategoryEnumModelType } from "../../models/ProductCategories";
 import { GetOnlineMerchantsHandler } from "../handler";
@@ -77,6 +78,8 @@ const queryMock = jest.fn().mockImplementation((_, __) => {
 
 const cgnOperatorDbMock = { query: queryMock };
 
+const searchRequestBody = {};
+
 beforeEach(() => {
   jest.clearAllMocks();
 });
@@ -85,10 +88,7 @@ describe("GetOnlineMerchantsHandler", () => {
   it("should return the result when no parameter is passed", async () => {
     const response = await GetOnlineMerchantsHandler(cgnOperatorDbMock as any)(
       {} as any,
-      none,
-      none,
-      none,
-      none
+      searchRequestBody as OnlineMerchantSearchRequest
     );
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
@@ -107,10 +107,7 @@ describe("GetOnlineMerchantsHandler", () => {
 
     const response = await GetOnlineMerchantsHandler(cgnOperatorDbMock as any)(
       {} as any,
-      some("A Company"),
-      none,
-      none,
-      none
+      {merchantName: "A Company"} as OnlineMerchantSearchRequest
     );
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
@@ -125,10 +122,7 @@ describe("GetOnlineMerchantsHandler", () => {
 
     const response = await GetOnlineMerchantsHandler(cgnOperatorDbMock as any)(
       {} as any,
-      none,
-      some([ProductCategoryEnum.arts, ProductCategoryEnum.entertainments]),
-      none,
-      none
+       {productCategories: [ProductCategoryEnum.arts, ProductCategoryEnum.entertainments]} as OnlineMerchantSearchRequest 
     );
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
@@ -145,17 +139,13 @@ describe("GetOnlineMerchantsHandler", () => {
 
     const response = await GetOnlineMerchantsHandler(cgnOperatorDbMock as any)(
       {} as any,
-      none,
-      some([
-        ProductCategoryEnum.travels,
+      {productCategories: [ProductCategoryEnum.travels,
         ProductCategoryEnum.transportation,
         ProductCategoryEnum.connectivity,
         ProductCategoryEnum.books,
         ProductCategoryEnum.sports,
-        ProductCategoryEnum.health
-      ]),
-      none,
-      none
+        ProductCategoryEnum.health]} as OnlineMerchantSearchRequest 
+
     );
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
@@ -170,10 +160,7 @@ describe("GetOnlineMerchantsHandler", () => {
 
     const response = await GetOnlineMerchantsHandler(cgnOperatorDbMock as any)(
       {} as any,
-      none,
-      none,
-      some(2 as NonNegativeInteger),
-      some(10 as NonNegativeInteger)
+      {page: 2, pageSize: 10} as OnlineMerchantSearchRequest 
     );
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
@@ -189,10 +176,7 @@ describe("GetOnlineMerchantsHandler", () => {
 
     const response = await GetOnlineMerchantsHandler(cgnOperatorDbMock as any)(
       {} as any,
-      none,
-      none,
-      some(0 as NonNegativeInteger),
-      some(20 as NonNegativeInteger)
+      {page: 0, pageSize: 20} as OnlineMerchantSearchRequest 
     );
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseErrorInternal");
