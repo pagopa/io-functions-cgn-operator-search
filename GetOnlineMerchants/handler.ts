@@ -54,12 +54,9 @@ export const GetOnlineMerchantsHandler = (
           model: OnlineMerchantModel,
           raw: true,
           replacements: {
-            name_filter:
-              "%" +
-              fromNullable(searchRequest.merchantName)
-                .getOrElse("")
-                .toLowerCase() +
-              "%"
+            name_filter: `%${fromNullable(searchRequest.merchantName)
+              .getOrElse("")
+              .toLowerCase()}%`
           },
           type: QueryTypes.SELECT
         }
