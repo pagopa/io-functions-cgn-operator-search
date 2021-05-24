@@ -15,46 +15,16 @@ schemes:
   - https
 paths:
   /online-merchants:
-    parameters:
-      - name: merchantName
-        in: query
-        description: Text used for searching merchants by their name
-        required: false
-        type: string
-      - name: productCategories
-        in: query
-        description: List of product categories to filter the results
-        required: false
-        collectionFormat: csv
-        type: array
-        items:
-          type: string
-          enum:
-            - entertainments
-            - travels
-            - transportation
-            - connectivity
-            - books
-            - arts
-            - sports
-            - health
-      - name: page
-        in: query
-        description: page of result
-        required: false
-        type: integer
-        default: 0
-      - name: pageSize
-        in: query
-        description: elements per page
-        required: false
-        type: integer
-        default: 100
-    get:
+    post:
       operationId: getOnlineMerchants
       summary: List of online merchants
       description: |
         List of online merchants alphabetically ordered
+      parameters:
+        - in: body
+          required: false
+          schema:
+            $ref: '#/definitions/OnlineMerchantSearchRequest'
       responses:
         "200":
           description: List of online merchants for the given query parameters
@@ -62,70 +32,16 @@ paths:
             "$ref": "#/definitions/OnlineMerchants"
 
   /offline-merchants:
-    parameters:
-      - name: merchantName
-        in: query
-        description: Text used for searching merchants by their name
-        required: false
-        type: string
-      - name: productCategories
-        in: query
-        description: List of product categories to filter the results
-        required: false
-        collectionFormat: csv
-        type: array
-        items:
-          type: string
-          enum:
-            - entertainments
-            - travels
-            - transportation
-            - connectivity
-            - books
-            - arts
-            - sports
-            - health
-      - name: latitude
-        in: query
-        type: number
-        required: true
-        description: User latitude
-      - name: longitude
-        in: query
-        type: number
-        required: true
-        description: User longitude
-      - name: maxDistance
-        in: query
-        type: integer
-        required: true
-        description: Max distance (in meters) from current user position used to filter the results
-      - name: ordering
-        in: query
-        type: string
-        enum:
-          - distance
-          - alphabetic
-        default: distance
-        required: false
-        description: Ordering type, by distance or alphabetical
-      - name: page
-        in: query
-        description: page of result
-        required: false
-        type: integer
-        default: 0
-      - name: pageSize
-        in: query
-        description: elements per page
-        required: false
-        type: integer
-        default: 100
-    get:
+    post:
       operationId: getOfflineMerchants
       summary: List of merchants with a physical address
       description: |
         List of merchants with physical address, ordered by distance from the user by default
+      parameters:
+        - in: body
+          required: true
+          schema:
+            $ref: '#/definitions/OfflineMerchantSearchRequest'
       responses:
         "200":
           description: List of physical merchants for the given query parameters
@@ -151,7 +67,6 @@ paths:
             "$ref": "#/definitions/Merchant"
         "404":
           "$ref": "#/responses/NotFound"
-
 definitions:
   Merchant:
     type: object
@@ -296,6 +211,72 @@ definitions:
       - arts
       - sports
       - health
+
+  OnlineMerchantSearchRequest:
+    type: object
+    properties:
+      merchantName:
+        type: string
+        description: Text used for searching merchants by their name
+      productCategories:
+        type: array
+        description: List of product categories to filter the results
+        items:
+          "$ref": "#/definitions/ProductCategory"
+      page:
+        type: integer
+        format: int32
+        description: page of result
+        default: 0
+      pageSize:
+        type: integer
+        format: int32
+        description: elements per page
+        default: 100
+
+  OfflineMerchantSearchRequest:
+    type: object
+    required:
+      - latitude
+      - longitude
+      - latitudeDelta
+      - longitudeDelta
+    properties:
+      merchantName:
+        type: string
+        description: Text used for searching merchants by their name
+      productCategories:
+        type: array
+        description: List of product categories to filter the results
+        items:
+          "$ref": "#/definitions/ProductCategory"
+      page:
+        type: integer
+        description: page of result
+        default: 0
+      pageSize:
+        type: integer
+        description: elements per page
+        default: 100
+      latitude:
+        type: number
+        description: User latitude
+      longitude:
+        type: number
+        description: User longitude
+      latitudeDelta:
+        type: number
+        description: User latitude delta
+      longitudeDelta:
+        type: number
+        description: User longitude delta
+      ordering:
+        type: string
+        enum:
+          - distance
+          - alphabetic
+        default: distance
+        description: Ordering type, by distance or alphabetical
 
 responses:
   InvalidRequest:

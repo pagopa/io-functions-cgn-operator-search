@@ -4,6 +4,7 @@ import { Context } from "@azure/functions";
 import { toError } from "fp-ts/lib/Either";
 import { tryCatch } from "fp-ts/lib/TaskEither";
 import { ContextMiddleware } from "io-functions-commons/dist/src/utils/middlewares/context_middleware";
+import { RequiredBodyPayloadMiddleware } from "io-functions-commons/dist/src/utils/middlewares/required_body_payload";
 import {
   withRequestMiddlewares,
   wrapRequestHandler
@@ -11,12 +12,7 @@ import {
 import { Sequelize, QueryTypes } from "sequelize";
 
 import { identity } from "fp-ts/lib/function";
-import { Option } from "fp-ts/lib/Option";
-import {
-  NonNegativeInteger,
-  NonNegativeIntegerFromString
-} from "@pagopa/ts-commons/lib/numbers";
-import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { fromNullable } from "fp-ts/lib/Option";
 import {
   IResponseErrorInternal,
   IResponseSuccessJson,
@@ -27,9 +23,7 @@ import { OnlineMerchants } from "../generated/definitions/OnlineMerchants";
 
 import { ProductCategoryFromModel } from "../models/ProductCategories";
 import OnlineMerchantModel from "../models/OnlineMerchantModel";
-import { ProductCategory } from "../generated/definitions/ProductCategory";
-import { OptionalProductCategoryListMiddleware } from "./optional_product_category_list_middleware";
-import { OptionalQueryParamMiddleware } from "./optional_query_param";
+import { OnlineMerchantSearchRequest } from "../generated/definitions/OnlineMerchantSearchRequest";
 import { selectOnlineMerchantsQuery } from "./postgres_queries";
 
 type ResponseTypes =
@@ -38,35 +32,31 @@ type ResponseTypes =
 
 type IGetOnlineMerchantsHandler = (
   context: Context,
-  nameFilter: Option<string>,
-  productCategoriesFilter: Option<ReadonlyArray<ProductCategory>>,
-  page: Option<NonNegativeInteger>,
-  maybePageSize: Option<NonNegativeInteger>
+  searchRequest: OnlineMerchantSearchRequest
 ) => Promise<ResponseTypes>;
 
 export const GetOnlineMerchantsHandler = (
   cgnOperatorDb: Sequelize
 ): IGetOnlineMerchantsHandler => async (
   _,
-  nameFilter,
-  productCategoriesFilter,
-  page,
-  maybePageSize
+  searchRequest
 ): Promise<ResponseTypes> =>
   tryCatch(
     () =>
       cgnOperatorDb.query(
         selectOnlineMerchantsQuery(
-          nameFilter,
-          productCategoriesFilter,
-          page,
-          maybePageSize
+          fromNullable(searchRequest.merchantName),
+          fromNullable(searchRequest.productCategories),
+          fromNullable(searchRequest.page),
+          fromNullable(searchRequest.pageSize)
         ),
         {
           model: OnlineMerchantModel,
           raw: true,
           replacements: {
-            name_filter: "%" + nameFilter.getOrElse("").toLowerCase() + "%"
+            name_filter: `%${fromNullable(searchRequest.merchantName)
+              .getOrElse("")
+              .toLowerCase()}%`
           },
           type: QueryTypes.SELECT
         }
@@ -94,10 +84,7 @@ export const GetOnlineMerchants = (
 
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),
-    OptionalQueryParamMiddleware("merchantName", NonEmptyString),
-    OptionalProductCategoryListMiddleware("productCategories"),
-    OptionalQueryParamMiddleware("page", NonNegativeIntegerFromString),
-    OptionalQueryParamMiddleware("pageSize", NonNegativeIntegerFromString)
+    RequiredBodyPayloadMiddleware(OnlineMerchantSearchRequest)
   );
 
   return wrapRequestHandler(middlewaresWrap(handler));
