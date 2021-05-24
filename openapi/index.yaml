@@ -22,7 +22,6 @@ paths:
         List of online merchants alphabetically ordered
       parameters:
         - in: body
-          name: searchParameter
           required: false
           schema:
             $ref: '#/definitions/OnlineMerchantSearchRequest'
@@ -40,7 +39,6 @@ paths:
         List of merchants with physical address, ordered by distance from the user by default
       parameters:
         - in: body
-          name: searchParameter
           required: true
           schema:
             $ref: '#/definitions/OfflineMerchantSearchRequest'
