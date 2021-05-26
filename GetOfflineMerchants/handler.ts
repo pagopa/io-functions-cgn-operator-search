@@ -19,72 +19,69 @@ import {
   ResponseErrorInternal,
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
-import { OnlineMerchants } from "../generated/definitions/OnlineMerchants";
+import { OfflineMerchants } from "../generated/definitions/OfflineMerchants";
 
 import { ProductCategoryFromModel } from "../models/ProductCategories";
-import OnlineMerchantModel from "../models/OnlineMerchantModel";
-import { OnlineMerchantSearchRequest } from "../generated/definitions/OnlineMerchantSearchRequest";
-import { selectOnlineMerchantsQuery } from "../utils/postgres_queries";
+import OfflineMerchantModel from "../models/OfflineMerchantModel";
+import { OfflineMerchantSearchRequest } from "../generated/definitions/OfflineMerchantSearchRequest";
+import { selectOfflineMerchantsQuery } from "../utils/postgres_queries";
 
 type ResponseTypes =
-  | IResponseSuccessJson<OnlineMerchants>
+  | IResponseSuccessJson<OfflineMerchants>
   | IResponseErrorInternal;
 
-type IGetOnlineMerchantsHandler = (
+type IGetOfflineMerchantsHandler = (
   context: Context,
-  searchRequest: OnlineMerchantSearchRequest
+  searchRequest: OfflineMerchantSearchRequest
 ) => Promise<ResponseTypes>;
 
-export const GetOnlineMerchantsHandler = (
+export const GetOfflineMerchantsHandler = (
   cgnOperatorDb: Sequelize
-): IGetOnlineMerchantsHandler => async (
+): IGetOfflineMerchantsHandler => async (
   _,
   searchRequest
 ): Promise<ResponseTypes> =>
   tryCatch(
     () =>
-      cgnOperatorDb.query(
-        selectOnlineMerchantsQuery(
-          fromNullable(searchRequest.merchantName),
-          fromNullable(searchRequest.productCategories),
-          fromNullable(searchRequest.page),
-          fromNullable(searchRequest.pageSize)
-        ),
-        {
-          model: OnlineMerchantModel,
-          raw: true,
-          replacements: {
-            name_filter: `%${fromNullable(searchRequest.merchantName)
-              .getOrElse("")
-              .toLowerCase()}%`
-          },
-          type: QueryTypes.SELECT
-        }
-      ),
+      cgnOperatorDb.query(selectOfflineMerchantsQuery(searchRequest), {
+        model: OfflineMerchantModel,
+        raw: true,
+        replacements: {
+          name_filter: `%${fromNullable(searchRequest.merchantName)
+            .getOrElse("")
+            .toLowerCase()}%`
+        },
+        type: QueryTypes.SELECT
+      }),
     toError
   )
     .map(merchants =>
       merchants.map(m => ({
+        address: {
+          full_address: m.address,
+          latitude: m.latitude,
+          longitude: m.longitude
+        },
+        distance: m.distance,
         id: m.id,
         name: m.name,
         productCategories: m.product_categories.map(pc =>
           ProductCategoryFromModel(pc)
-        ),
-        websiteUrl: m.website_url
+        )
       }))
     )
     .mapLeft(e => ResponseErrorInternal(e.message))
     .fold<ResponseTypes>(identity, items => ResponseSuccessJson({ items }))
     .run();
 
-export const GetOnlineMerchants = (
+export const GetOfflineMerchants = (
   cgnOperatorDb: Sequelize
 ): express.RequestHandler => {
-  const handler = GetOnlineMerchantsHandler(cgnOperatorDb);
+  const handler = GetOfflineMerchantsHandler(cgnOperatorDb);
 
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),
-    RequiredBodyPayloadMiddleware(OnlineMerchantSearchRequest)
+    RequiredBodyPayloadMiddleware(OfflineMerchantSearchRequest)
   );
 
   return wrapRequestHandler(middlewaresWrap(handler));

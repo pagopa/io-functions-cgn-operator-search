@@ -1,7 +1,7 @@
 import { getMaterializedViewRefreshHandler } from "../handler";
 
 const queryMock = jest.fn().mockImplementation((query, __) => {
-  expect(query).toBe("REFRESH MATERIALIZED VIEW CONCURRENTLY online_merchant");
+  expect(query).toBe("REFRESH MATERIALIZED VIEW CONCURRENTLY online_merchant; REFRESH MATERIALIZED VIEW CONCURRENTLY offline_merchant");
 
   return new Promise(resolve => {
     resolve([]);
