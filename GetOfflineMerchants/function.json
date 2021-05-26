@@ -1,0 +1,20 @@
+{
+  "bindings": [
+    {
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "route": "offline-merchants",
+      "methods": [
+        "post"
+      ]
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    }
+  ],
+  "scriptFile": "../dist/GetOfflineMerchants/index.js"
+}

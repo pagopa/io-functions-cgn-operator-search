@@ -9,7 +9,7 @@ export const getMaterializedViewRefreshHandler = (
   tryCatch(
     () =>
       cgnOperatorDb.query(
-        `REFRESH MATERIALIZED VIEW CONCURRENTLY online_merchant`,
+        `REFRESH MATERIALIZED VIEW CONCURRENTLY online_merchant; REFRESH MATERIALIZED VIEW CONCURRENTLY offline_merchant`,
         { type: QueryTypes.RAW }
       ),
     toError

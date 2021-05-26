@@ -192,6 +192,8 @@ definitions:
     type: object
     required:
       - full_address
+      - latitude
+      - longitude
     properties:
       full_address:
         type: string
@@ -237,10 +239,8 @@ definitions:
   OfflineMerchantSearchRequest:
     type: object
     required:
-      - latitude
-      - longitude
-      - latitudeDelta
-      - longitudeDelta
+      - userCoordinates
+      - boundingBox
     properties:
       merchantName:
         type: string
@@ -258,18 +258,12 @@ definitions:
         type: integer
         description: elements per page
         default: 100
-      latitude:
-        type: number
-        description: User latitude
-      longitude:
-        type: number
-        description: User longitude
-      latitudeDelta:
-        type: number
-        description: User latitude delta
-      longitudeDelta:
-        type: number
-        description: User longitude delta
+      userCoordinates:
+        "$ref": "#/definitions/Coordinates"
+        description: User coordinates
+      boundingBox:
+        "$ref": "#/definitions/BoundingBox"
+        description: search area bounding box
       ordering:
         type: string
         enum:
@@ -278,6 +272,33 @@ definitions:
         default: distance
         description: Ordering type, by distance or alphabetical
 
+  BoundingBox:
+    type: object
+    required:
+      - coordinates
+      - deltaLatitude
+      - deltaLongitude
+    properties:
+      coordinates:
+        "$ref": "#/definitions/Coordinates"
+      deltaLatitude:
+        type: number
+        description: Bounding box delta latitude
+      deltaLongitude:
+        type: number
+        description: Bounding box delta longitude
+
+  Coordinates:
+    type: object
+    required:
+      - latitude
+      - longitude
+    properties:
+      latitude:
+        type: number
+      longitude:
+        type: number
+  
 responses:
   InvalidRequest:
     description: Bad request
