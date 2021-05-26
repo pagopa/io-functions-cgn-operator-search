@@ -28,14 +28,14 @@ const getBoundingBoxMinLatitude = (boundingBox: BoundingBox): number =>
   boundingBox.coordinates.latitude - boundingBox.deltaLatitude / 2;
 
 const getBoundingBoxMaxLatitude = (boundingBox: BoundingBox): number =>
-  // tslint:disable-next-line:restrict-plus-operands
+  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
   boundingBox.coordinates.latitude + boundingBox.deltaLatitude / 2;
 
 const getBoundingBoxMinLongitude = (boundingBox: BoundingBox): number =>
   boundingBox.coordinates.longitude - boundingBox.deltaLongitude / 2;
 
 const getBoundingBoxMaxLongitude = (boundingBox: BoundingBox): number =>
-  // tslint:disable-next-line:restrict-plus-operands
+  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
   boundingBox.coordinates.longitude + boundingBox.deltaLongitude / 2;
 
 const boundingBoxFilter = (boundingBox: BoundingBox): string =>
