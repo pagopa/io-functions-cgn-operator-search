@@ -27,14 +27,15 @@ const offset = (page: Option<number>, maybePageSize: Option<number>): number =>
 const getBoundingBoxMinLatitude = (boundingBox: BoundingBox): number =>
   boundingBox.coordinates.latitude - boundingBox.deltaLatitude / 2;
 
-// tslint:disable-next-line:restrict-plus-operands
 const getBoundingBoxMaxLatitude = (boundingBox: BoundingBox): number =>
+  // tslint:disable-next-line:restrict-plus-operands
   boundingBox.coordinates.latitude + boundingBox.deltaLatitude / 2;
 
 const getBoundingBoxMinLongitude = (boundingBox: BoundingBox): number =>
   boundingBox.coordinates.longitude - boundingBox.deltaLongitude / 2;
-// tslint:disable-next-line:restrict-plus-operands
+
 const getBoundingBoxMaxLongitude = (boundingBox: BoundingBox): number =>
+  // tslint:disable-next-line:restrict-plus-operands
   boundingBox.coordinates.longitude + boundingBox.deltaLongitude / 2;
 
 const boundingBoxFilter = (boundingBox: BoundingBox): string =>
