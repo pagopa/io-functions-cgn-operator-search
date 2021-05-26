@@ -24,14 +24,24 @@ const pageSize = (maybePageSize: Option<number>): number =>
 const offset = (page: Option<number>, maybePageSize: Option<number>): number =>
   page.getOrElse(0) * pageSize(maybePageSize);
 
+const getBoundingBoxMinLatitude = (boundingBox: BoundingBox): number =>
+  boundingBox.coordinates.latitude - boundingBox.deltaLatitude / 2;
+
+const getBoundingBoxMaxLatitude = (boundingBox: BoundingBox): number =>
+  boundingBox.coordinates.latitude + boundingBox.deltaLatitude / 2;
+
+const getBoundingBoxMinLongitude = (boundingBox: BoundingBox): number =>
+  boundingBox.coordinates.longitude - boundingBox.deltaLongitude / 2;
+
+const getBoundingBoxMaxLongitude = (boundingBox: BoundingBox): number =>
+  boundingBox.coordinates.longitude + boundingBox.deltaLongitude / 2;
+
 const boundingBoxFilter = (boundingBox: BoundingBox): string =>
-  ` AND latitude BETWEEN ${boundingBox.coordinates.latitude -
-    boundingBox.deltaLatitude / 2} AND ${boundingBox.coordinates.latitude +
-    boundingBox.deltaLatitude / 2}
-      AND longitude BETWEEN ${boundingBox.coordinates.longitude -
-        boundingBox.deltaLongitude / 2} AND ${boundingBox.coordinates
-    .longitude +
-    boundingBox.deltaLongitude / 2} `;
+  ` AND latitude BETWEEN ${getBoundingBoxMinLatitude(boundingBox)} 
+        AND ${getBoundingBoxMaxLatitude(boundingBox)}
+    AND longitude BETWEEN ${getBoundingBoxMinLongitude(boundingBox)} 
+        AND ${getBoundingBoxMaxLongitude(boundingBox)} `;
+
 const distanceParameter = (userCoordinates: Coordinates): string =>
   `ST_MakePoint(longitude, latitude)::geography <-> ST_MakePoint(${userCoordinates.longitude}, ${userCoordinates.latitude})::geography`;
 
