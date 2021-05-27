@@ -2,7 +2,7 @@ export const SelectMerchantProfileQuery = `
 SELECT
     p.agreement_fk,
     p.profile_k,
-    p.name,
+    COALESCE( NULLIF(p.name, ''), p.full_name) AS name,
     p.description,
     p.website_url,
     a.image_url
