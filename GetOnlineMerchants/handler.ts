@@ -2,7 +2,7 @@ import * as express from "express";
 
 import { Context } from "@azure/functions";
 import { toError } from "fp-ts/lib/Either";
-import { tryCatch } from "fp-ts/lib/TaskEither";
+import { fromEither, tryCatch } from "fp-ts/lib/TaskEither";
 import { ContextMiddleware } from "io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import { RequiredBodyPayloadMiddleware } from "io-functions-commons/dist/src/utils/middlewares/required_body_payload";
 import {
@@ -25,6 +25,7 @@ import { ProductCategoryFromModel } from "../models/ProductCategories";
 import OnlineMerchantModel from "../models/OnlineMerchantModel";
 import { OnlineMerchantSearchRequest } from "../generated/definitions/OnlineMerchantSearchRequest";
 import { selectOnlineMerchantsQuery } from "../utils/postgres_queries";
+import { errorsToError } from "../utils/conversions";
 
 type ResponseTypes =
   | IResponseSuccessJson<OnlineMerchants>
@@ -55,7 +56,7 @@ export const GetOnlineMerchantsHandler = (
           raw: true,
           replacements: {
             name_filter: `%${fromNullable(searchRequest.merchantName)
-              .getOrElse("")
+              .foldL(() => "", identity)
               .toLowerCase()}%`
           },
           type: QueryTypes.SELECT
@@ -65,16 +66,20 @@ export const GetOnlineMerchantsHandler = (
   )
     .map(merchants =>
       merchants.map(m => ({
-        id: m.id,
-        name: m.name,
+        ...m,
         productCategories: m.product_categories.map(pc =>
           ProductCategoryFromModel(pc)
         ),
         websiteUrl: m.website_url
       }))
     )
-    .mapLeft(e => ResponseErrorInternal(e.message))
-    .fold<ResponseTypes>(identity, items => ResponseSuccessJson({ items }))
+    .chain(__ =>
+      fromEither(OnlineMerchants.decode({ items: __ })).mapLeft(errorsToError)
+    )
+    .fold<ResponseTypes>(
+      e => ResponseErrorInternal(e.message),
+      ResponseSuccessJson
+    )
     .run();
 
 export const GetOnlineMerchants = (
