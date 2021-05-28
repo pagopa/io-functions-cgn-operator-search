@@ -64,6 +64,7 @@ export const GetOfflineMerchantsHandler = (
           latitude: m.latitude,
           longitude: m.longitude
         },
+        distance: Math.round(m.distance),
         productCategories: m.product_categories.map(pc =>
           ProductCategoryFromModel(pc)
         )
