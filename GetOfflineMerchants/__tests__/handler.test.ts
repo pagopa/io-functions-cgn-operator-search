@@ -201,7 +201,7 @@ describe("GetOfflineMerchantsHandler", () => {
 
   it("should add to the db query the order by name", async () => {
     queryMock.mockImplementationOnce((query, _) => {
-      expect(query).toMatch(/ORDER BY name ASC/);
+      expect(query).toMatch(/ORDER BY searchable_name ASC/);
 
       return anEmptyArrayPromise;
     });

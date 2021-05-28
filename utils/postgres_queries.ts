@@ -52,7 +52,7 @@ const orderingParameter = (
   userCoordinates: Coordinates
 ): string =>
   ordering === OrderingEnum.alphabetic
-    ? "name"
+    ? "searchable_name"
     : distanceParameter(userCoordinates);
 
 export const selectOnlineMerchantsQuery = (
@@ -70,7 +70,7 @@ FROM online_merchant
 WHERE 1 = 1
   ${nameFilterQueryPart(nameFilter)}
   ${categoryFilter(productCategoriesFilter)}
-ORDER BY name ASC
+ORDER BY searchable_name ASC
 LIMIT ${pageSize(maybePageSize)}
 OFFSET ${offset(page, maybePageSize)}`;
 
