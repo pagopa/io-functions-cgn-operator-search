@@ -2,9 +2,8 @@
 
 Azure Functions dedicated to CGN's Operator Search project (Carta Giovani Nazionale). These functions implements business logic for:
 
- * Operator Search
- * Discount Search
-
+* Operator Search
+* Discount Search
 
 ## Local development
 
@@ -25,12 +24,14 @@ open http://localhost/some/path/test
 ## Deploy
 
 Deploy appens with this [pipeline](./.devops/deploy-pipelines.yml)
-(workflow) configured on [Azure DevOps - io-functions-cgn](https://dev.azure.com/pagopa-io/io-functions-cgn-operator-search).
+(workflow) configured on [Azure DevOps - io-functions-cgn](https://dev.azure.com/pagopaspa/cgn-onboarding-portal-projects/_build?definitionId=34).
 
-## TODO rimanenti da IO Functions template
+## Stress Test
 
-- modificare l' endpoint di healthcheck all' interno del file `deploy-pipelines.yml` in base al `basePath` configurato.
+* Edit jmx file
+* Add some valid merchant id to csv file taken from `select agreement_k from agreement;`
+* Launch jmeter Test
 
-- fare una PR sul progetto [gitops](https://github.com/pagopa/gitops) per deployare le pipelines. (un esempio [qui](https://github.com/pagopa/gitops/pull/11) )
-
-- fare una PR sul progetto [io-infrastructure-live-new](https://github.com/pagopa/io-infrastructure-live-new) per fare il stetup degli ambienti di prod e staging della nuova function. (un esempio [qui](https://github.com/pagopa/io-infrastructure-live-new/pull/465) )
+```shell
+jmeter -n -t Jmeter_function_test.jmx -l run-$(date ‘+%Y%m%d%H%M’).log -e  -o report-output-$(date ‘+%Y%m%d%H%M’) -JCODE=key -JHOST=function-os.azurewebsites.net -JPORT=443 -JPROTOCOL=https
+```
