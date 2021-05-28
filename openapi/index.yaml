@@ -264,13 +264,11 @@ definitions:
           $ref: "#/definitions/ProductCategory"
       page:
         type: integer
-        format: int32
         description: page of result
         default: 0
         minimum: 0
       pageSize:
         type: integer
-        format: int32
         description: elements per page
         default: 100
         minimum: 1
