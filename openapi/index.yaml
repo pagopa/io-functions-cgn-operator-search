@@ -31,6 +31,10 @@ paths:
           description: List of online merchants for the given query parameters
           schema:
             $ref: "#/definitions/OnlineMerchants"
+        "500":
+          description: Service unavailable.
+          schema:
+            $ref: "#/definitions/ProblemJson" 
 
   /offline-merchants:
     post:
@@ -49,6 +53,10 @@ paths:
           description: List of physical merchants for the given query parameters
           schema:
             $ref: "#/definitions/OfflineMerchants"
+        "500":
+          description: Service unavailable.
+          schema:
+            $ref: "#/definitions/ProblemJson"
 
   /merchants/{merchantId}:
     parameters:
@@ -70,7 +78,15 @@ paths:
             $ref: "#/definitions/Merchant"
         "404":
           $ref: "#/responses/NotFound"
+        "500":
+          description: Service unavailable.
+          schema:
+            $ref: "#/definitions/ProblemJson"
 definitions:
+
+  ProblemJson:
+    $ref: "https://raw.githubusercontent.com/pagopa/io-functions-commons/v17.3.0/openapi/definitions.yaml#/ProblemJson"
+  
   Merchant:
     type: object
     required:
