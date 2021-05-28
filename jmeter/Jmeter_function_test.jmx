@@ -6,7 +6,7 @@
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
-        <collectionProp name="Arguments.arguments"/>
+        <collectionProp name="Arguments.arguments" />
       </elementProp>
       <stringProp name="TestPlan.user_define_classpath"></stringProp>
     </TestPlan>
@@ -17,7 +17,7 @@
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <intProp name="LoopController.loops">-1</intProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">100</stringProp>
+        <stringProp name="ThreadGroup.num_threads">20</stringProp>
         <stringProp name="ThreadGroup.ramp_time">5</stringProp>
         <longProp name="ThreadGroup.start_time">1373789594000</longProp>
         <longProp name="ThreadGroup.end_time">1373789594000</longProp>
@@ -30,7 +30,7 @@
       <hashTree>
         <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
-            <collectionProp name="Arguments.arguments"/>
+            <collectionProp name="Arguments.arguments" />
           </elementProp>
           <stringProp name="HTTPSampler.domain">${host}</stringProp>
           <stringProp name="HTTPSampler.port">${port}</stringProp>
@@ -44,13 +44,13 @@ Connect to 30s</stringProp>
           <stringProp name="HTTPSampler.connect_timeout">30000</stringProp>
           <stringProp name="HTTPSampler.response_timeout">30000</stringProp>
         </ConfigTestElement>
-        <hashTree/>
+        <hashTree />
         <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
-          <collectionProp name="CookieManager.cookies"/>
+          <collectionProp name="CookieManager.cookies" />
           <boolProp name="CookieManager.clearEachIteration">false</boolProp>
           <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
         </CookieManager>
-        <hashTree/>
+        <hashTree />
         <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
           <collectionProp name="HeaderManager.headers">
             <elementProp name="Accept" elementType="Header">
@@ -59,7 +59,7 @@ Connect to 30s</stringProp>
             </elementProp>
           </collectionProp>
         </HeaderManager>
-        <hashTree/>
+        <hashTree />
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Online Merchants with merchant filter" enabled="true">
           <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
@@ -100,7 +100,7 @@ Connect to 30s</stringProp>
             <intProp name="Assertion.test_type">2</intProp>
             <stringProp name="Assertion.custom_message"></stringProp>
           </ResponseAssertion>
-          <hashTree/>
+          <hashTree />
           <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config" enabled="true">
             <stringProp name="delimiter">,</stringProp>
             <stringProp name="fileEncoding"></stringProp>
@@ -112,7 +112,7 @@ Connect to 30s</stringProp>
             <boolProp name="stopThread">false</boolProp>
             <stringProp name="variableNames">merchantName,productCategories</stringProp>
           </CSVDataSet>
-          <hashTree/>
+          <hashTree />
         </hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Online Merchants" enabled="true">
           <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
@@ -153,7 +153,7 @@ Connect to 30s</stringProp>
             <intProp name="Assertion.test_type">2</intProp>
             <stringProp name="Assertion.custom_message"></stringProp>
           </ResponseAssertion>
-          <hashTree/>
+          <hashTree />
           <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config" enabled="true">
             <stringProp name="delimiter">,</stringProp>
             <stringProp name="fileEncoding"></stringProp>
@@ -165,7 +165,7 @@ Connect to 30s</stringProp>
             <boolProp name="stopThread">false</boolProp>
             <stringProp name="variableNames">merchantName,productCategories</stringProp>
           </CSVDataSet>
-          <hashTree/>
+          <hashTree />
         </hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Offline Merchants" enabled="true">
           <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
@@ -218,7 +218,7 @@ Connect to 30s</stringProp>
             <intProp name="Assertion.test_type">2</intProp>
             <stringProp name="Assertion.custom_message"></stringProp>
           </ResponseAssertion>
-          <hashTree/>
+          <hashTree />
           <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config" enabled="true">
             <stringProp name="delimiter">,</stringProp>
             <stringProp name="fileEncoding"></stringProp>
@@ -230,11 +230,11 @@ Connect to 30s</stringProp>
             <boolProp name="stopThread">false</boolProp>
             <stringProp name="variableNames">userLat,userLong,bbLat,bbLong,deltaLat,deltaLong</stringProp>
           </CSVDataSet>
-          <hashTree/>
+          <hashTree />
         </hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Detail merchant" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
-            <collectionProp name="Arguments.arguments"/>
+            <collectionProp name="Arguments.arguments" />
           </elementProp>
           <stringProp name="HTTPSampler.domain"></stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
@@ -260,7 +260,7 @@ Connect to 30s</stringProp>
             <intProp name="Assertion.test_type">2</intProp>
             <stringProp name="Assertion.custom_message"></stringProp>
           </ResponseAssertion>
-          <hashTree/>
+          <hashTree />
           <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config" enabled="true">
             <stringProp name="delimiter">,</stringProp>
             <stringProp name="fileEncoding"></stringProp>
@@ -272,7 +272,7 @@ Connect to 30s</stringProp>
             <boolProp name="stopThread">false</boolProp>
             <stringProp name="variableNames">merchantId</stringProp>
           </CSVDataSet>
-          <hashTree/>
+          <hashTree />
         </hashTree>
       </hashTree>
       <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
@@ -310,7 +310,7 @@ Connect to 30s</stringProp>
         <stringProp name="TestPlan.comments">For scripting only</stringProp>
         <stringProp name="filename"></stringProp>
       </ResultCollector>
-      <hashTree/>
+      <hashTree />
       <ResultCollector guiclass="StatGraphVisualizer" testclass="ResultCollector" testname="Aggregate Graph" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
@@ -347,9 +347,9 @@ Connect to 30s</stringProp>
         </objProp>
         <stringProp name="filename"></stringProp>
       </ResultCollector>
-      <hashTree/>
-      <Summariser guiclass="SummariserGui" testclass="Summariser" testname="Generate Summary Results" enabled="true"/>
-      <hashTree/>
+      <hashTree />
+      <Summariser guiclass="SummariserGui" testclass="Summariser" testname="Generate Summary Results" enabled="true" />
+      <hashTree />
       <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
         <collectionProp name="Arguments.arguments">
           <elementProp name="code" elementType="Argument">
@@ -374,7 +374,7 @@ Connect to 30s</stringProp>
           </elementProp>
         </collectionProp>
       </Arguments>
-      <hashTree/>
+      <hashTree />
     </hashTree>
   </hashTree>
 </jmeterTestPlan>
