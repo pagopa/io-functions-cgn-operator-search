@@ -2,7 +2,7 @@ import * as express from "express";
 
 import { Context } from "@azure/functions";
 import { toError } from "fp-ts/lib/Either";
-import { tryCatch } from "fp-ts/lib/TaskEither";
+import { fromEither, tryCatch } from "fp-ts/lib/TaskEither";
 import { ContextMiddleware } from "io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import { RequiredBodyPayloadMiddleware } from "io-functions-commons/dist/src/utils/middlewares/required_body_payload";
 import {
@@ -25,6 +25,7 @@ import { ProductCategoryFromModel } from "../models/ProductCategories";
 import OfflineMerchantModel from "../models/OfflineMerchantModel";
 import { OfflineMerchantSearchRequest } from "../generated/definitions/OfflineMerchantSearchRequest";
 import { selectOfflineMerchantsQuery } from "../utils/postgres_queries";
+import { errorsToError } from "../utils/conversions";
 
 type ResponseTypes =
   | IResponseSuccessJson<OfflineMerchants>
@@ -48,7 +49,7 @@ export const GetOfflineMerchantsHandler = (
         raw: true,
         replacements: {
           name_filter: `%${fromNullable(searchRequest.merchantName)
-            .getOrElse("")
+            .foldL(() => "", identity)
             .toLowerCase()}%`
         },
         type: QueryTypes.SELECT
@@ -57,21 +58,24 @@ export const GetOfflineMerchantsHandler = (
   )
     .map(merchants =>
       merchants.map(m => ({
+        ...m,
         address: {
           full_address: m.address,
           latitude: m.latitude,
           longitude: m.longitude
         },
-        distance: m.distance,
-        id: m.id,
-        name: m.name,
         productCategories: m.product_categories.map(pc =>
           ProductCategoryFromModel(pc)
         )
       }))
     )
-    .mapLeft(e => ResponseErrorInternal(e.message))
-    .fold<ResponseTypes>(identity, items => ResponseSuccessJson({ items }))
+    .chain(__ =>
+      fromEither(OfflineMerchants.decode({ items: __ })).mapLeft(errorsToError)
+    )
+    .fold<ResponseTypes>(
+      e => ResponseErrorInternal(e.message),
+      ResponseSuccessJson
+    )
     .run();
 
 export const GetOfflineMerchants = (

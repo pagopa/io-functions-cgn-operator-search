@@ -30,7 +30,7 @@ paths:
         "200":
           description: List of online merchants for the given query parameters
           schema:
-            "$ref": "#/definitions/OnlineMerchants"
+            $ref: "#/definitions/OnlineMerchants"
 
   /offline-merchants:
     post:
@@ -48,13 +48,14 @@ paths:
         "200":
           description: List of physical merchants for the given query parameters
           schema:
-            "$ref": "#/definitions/OfflineMerchants"
+            $ref: "#/definitions/OfflineMerchants"
 
   /merchants/{merchantId}:
     parameters:
       - name: merchantId
         in: path
         type: string
+        minLength: 1
         required: true
         description: Merchant Identifier
     get:
@@ -66,9 +67,9 @@ paths:
         "200":
           description: Found
           schema:
-            "$ref": "#/definitions/Merchant"
+            $ref: "#/definitions/Merchant"
         "404":
-          "$ref": "#/responses/NotFound"
+          $ref: "#/responses/NotFound"
 definitions:
   Merchant:
     type: object
@@ -80,22 +81,27 @@ definitions:
     properties:
       id:
         type: string
+        minLength: 1
       name:
         type: string
+        minLength: 1
       description:
         type: string
+        minLength: 1
       websiteUrl:
         type: string
+        minLength: 1
       imageUrl:
         type: string
+        minLength: 1
       discounts:
         type: array
         items:
-          "$ref": "#/definitions/Discount"
+          $ref: "#/definitions/Discount"
       addresses:
         type: array
         items:
-          "$ref": "#/definitions/Address"
+          $ref: "#/definitions/Address"
 
   Discount:
     type: object
@@ -108,8 +114,10 @@ definitions:
     properties:
       name:
         type: string
+        minLength: 1
       description:
         type: string
+        minLength: 1
       startDate:
         type: string
         format: date
@@ -119,14 +127,17 @@ definitions:
       productCategories:
         type: array
         items:
-          "$ref": "#/definitions/ProductCategory"
+          $ref: "#/definitions/ProductCategory"
       discount:
         type: number
         format: double
+        minimum: 1
       condition:
         type: string
+        minLength: 1
       staticCode:
         type: string
+        minLength: 1
 
   OnlineMerchants:
     type: object
@@ -148,14 +159,17 @@ definitions:
     properties:
       id:
         type: string
+        minLength: 1
       name:
         type: string
+        minLength: 1
       productCategories:
         type: array
         items:
-          "$ref": "#/definitions/ProductCategory"
+          $ref: "#/definitions/ProductCategory"
       websiteUrl:
         type: string
+        minLength: 1
 
   OfflineMerchants:
     type: object
@@ -178,17 +192,20 @@ definitions:
     properties:
       id:
         type: string
+        minLength: 1
       name:
         type: string
+        minLength: 1
       productCategories:
         type: array
         items:
-          "$ref": "#/definitions/ProductCategory"
+          $ref: "#/definitions/ProductCategory"
       address:
         $ref: "#/definitions/Address"
       distance:
         description: Distance in meters
         type: integer
+        minimum: 0
 
   Address:
     type: object
@@ -199,6 +216,7 @@ definitions:
     properties:
       full_address:
         type: string
+        minLength: 1
       latitude:
         type: number
       longitude:
@@ -222,21 +240,24 @@ definitions:
       merchantName:
         type: string
         description: Text used for searching merchants by their name
+        minLength: 1
       productCategories:
         type: array
         description: List of product categories to filter the results
         items:
-          "$ref": "#/definitions/ProductCategory"
+          $ref: "#/definitions/ProductCategory"
       page:
         type: integer
         format: int32
         description: page of result
         default: 0
+        minimum: 0
       pageSize:
         type: integer
         format: int32
         description: elements per page
         default: 100
+        minimum: 1
 
   OfflineMerchantSearchRequest:
     type: object
@@ -247,24 +268,27 @@ definitions:
       merchantName:
         type: string
         description: Text used for searching merchants by their name
+        minLength: 1
       productCategories:
         type: array
         description: List of product categories to filter the results
         items:
-          "$ref": "#/definitions/ProductCategory"
+          $ref: "#/definitions/ProductCategory"
       page:
         type: integer
         description: page of result
         default: 0
+        minimum: 0
       pageSize:
         type: integer
         description: elements per page
         default: 100
+        minimum: 1
       userCoordinates:
-        "$ref": "#/definitions/Coordinates"
+        $ref: "#/definitions/Coordinates"
         description: User coordinates
       boundingBox:
-        "$ref": "#/definitions/BoundingBox"
+        $ref: "#/definitions/BoundingBox"
         description: search area bounding box
       ordering:
         type: string
@@ -282,7 +306,7 @@ definitions:
       - deltaLongitude
     properties:
       coordinates:
-        "$ref": "#/definitions/Coordinates"
+        $ref: "#/definitions/Coordinates"
       deltaLatitude:
         type: number
         description: Bounding box delta latitude

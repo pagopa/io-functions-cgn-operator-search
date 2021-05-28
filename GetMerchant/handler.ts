@@ -7,7 +7,8 @@ import {
   taskEither,
   tryCatch,
   fromPredicate,
-  TaskEither
+  TaskEither,
+  fromEither
 } from "fp-ts/lib/TaskEither";
 import { ContextMiddleware } from "io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import { RequiredParamMiddleware } from "io-functions-commons/dist/src/utils/middlewares/required_param";
@@ -32,6 +33,7 @@ import AddressModel from "../models/AddressModel";
 import MerchantProfileModel from "../models/MerchantProfileModel";
 import DiscountModel from "../models/DiscountModel";
 import { ProductCategoryFromModel } from "../models/ProductCategories";
+import { errorsToError } from "../utils/conversions";
 import {
   SelectDiscountsByMerchantQuery,
   SelectMerchantAddressListQuery,
@@ -137,7 +139,12 @@ export const GetMerchantHandler = (
       name: merchant.name,
       websiteUrl: merchant.website_url
     }))
-    .fold<ResponseTypes>(identity, merchant => ResponseSuccessJson(merchant))
+    .chain(merchant =>
+      fromEither(Merchant.decode(merchant)).mapLeft(errs =>
+        ResponseErrorInternal(errorsToError(errs).message)
+      )
+    )
+    .fold<ResponseTypes>(identity, ResponseSuccessJson)
     .run();
 
 export const GetMerchant = (
