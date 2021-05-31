@@ -5,6 +5,8 @@
  * The configuration is evaluate eagerly at the first access to the module. The module exposes convenient methods to access such value.
  */
 
+import { identity } from "fp-ts/lib/function";
+import { fromNullable } from "fp-ts/lib/Either";
 import * as t from "io-ts";
 import { ValidationError } from "io-ts";
 import { readableReport } from "italia-ts-commons/lib/reporters";
@@ -17,6 +19,7 @@ export const IConfig = t.interface({
   AzureWebJobsStorage: NonEmptyString,
 
   CDN_MERCHANT_IMAGES_BASE_URL: NonEmptyString,
+  CGN_EXTERNAL_SOURCE_HEADER_NAME: NonEmptyString,
 
   CGN_POSTGRES_DB_ADMIN_URI: NonEmptyString,
   CGN_POSTGRES_DB_RO_URI: NonEmptyString,
@@ -25,9 +28,20 @@ export const IConfig = t.interface({
   isProduction: t.boolean
 });
 
+const DEFAULT_CGN_EXTERNAL_SOURCE_HEADER_NAME = "x-from-external";
+
 // No need to re-evaluate this object for each call
 const errorOrConfig: t.Validation<IConfig> = IConfig.decode({
   ...process.env,
+  CGN_EXTERNAL_SOURCE_HEADER_NAME: fromNullable(
+    DEFAULT_CGN_EXTERNAL_SOURCE_HEADER_NAME
+  )(process.env.CGN_EXTERNAL_SOURCE_HEADER_NAME)
+    .chain(_ =>
+      NonEmptyString.decode(_).mapLeft(
+        () => DEFAULT_CGN_EXTERNAL_SOURCE_HEADER_NAME
+      )
+    )
+    .fold(identity, identity),
   isPostgresSslEnabled: process.env.CGN_POSTGRES_DB_SSL_ENABLED === "true",
   isProduction: process.env.NODE_ENV === "production"
 });

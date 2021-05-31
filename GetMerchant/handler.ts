@@ -161,8 +161,8 @@ export const GetMerchantHandler = (
 
 export const GetMerchant = (
   cgnOperatorDb: Sequelize,
-  cdnBaseUrl: string,
-  fromExternalHeaderName: string = "x-from-external"
+  cdnBaseUrl: NonEmptyString,
+  fromExternalHeaderName: NonEmptyString
 ): express.RequestHandler => {
   const handler = GetMerchantHandler(cgnOperatorDb, cdnBaseUrl);
 
