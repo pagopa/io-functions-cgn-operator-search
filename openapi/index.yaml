@@ -13,6 +13,10 @@ host: search.cgn.italia.it
 basePath: "/api/v1"
 schemes:
   - https
+
+security:
+  - ApiKey: []
+
 paths:
   /online-merchants:
     post:
@@ -82,8 +86,15 @@ paths:
           description: Service unavailable.
           schema:
             $ref: "#/definitions/ProblemJson"
-definitions:
 
+securityDefinitions:
+  ApiKey:
+    type: apiKey
+    name: X-Functions-Key
+    in: header
+    description: The API key to access this function app.
+
+definitions:
   ProblemJson:
     $ref: "https://raw.githubusercontent.com/pagopa/io-functions-commons/v17.3.0/openapi/definitions.yaml#/ProblemJson"
   
