@@ -1,10 +1,14 @@
 /* tslint:disable: no-any */
 
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
+import { none, some } from "fp-ts/lib/Option";
 import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory";
 import { ProductCategoryEnumModelType } from "../../models/ProductCategories";
 import { GetMerchantHandler } from "../handler";
 
 const anAgreementId = "abc-123-def";
+const anExternalHeader = some("EXT_PORTAL" as NonEmptyString);
 const aMerchantProfileModel = {
   agreement_fk: anAgreementId,
   description: "description something",
@@ -37,7 +41,7 @@ const aDiscountModel = {
 };
 const aDiscountModelList = [aDiscountModel];
 
-const anExpectedResponse = {
+const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
   description: aMerchantProfileModel.description,
   name: aMerchantProfileModel.name,
   id: anAgreementId,
@@ -48,17 +52,17 @@ const anExpectedResponse = {
     latitude: address.latitude,
     longitude: address.longitude
   })),
-  discounts: aDiscountModelList.map(discount => ({
+  discounts: aDiscountModelList.map(discount => withoutUndefinedValues({
     condition: discount.condition,
     description: discount.description,
     name: discount.name,
     endDate: discount.end_date,
     discount: discount.discount_value,
     startDate: discount.start_date,
-    staticCode: discount.static_code,
+    staticCode: withoutStaticCode ? undefined : discount.static_code,
     productCategories: [ProductCategoryEnum.arts, ProductCategoryEnum.books]
   }))
-};
+});
 
 const queryMock = jest.fn().mockImplementation((query: string, params) => {
   if (query.includes("FROM profile")) {
@@ -94,12 +98,26 @@ describe("GetMerchantHandler", () => {
   it("should return a merchant given its ID, together with the address list and the published discount list", async () => {
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
-      anAgreementId
+      anAgreementId,
+      anExternalHeader
     );
     expect(response.kind).toBe("IResponseSuccessJson");
     expect(queryMock).toBeCalledTimes(3);
     if (response.kind === "IResponseSuccessJson") {
-      expect(response.value).toEqual(anExpectedResponse);
+      expect(response.value).toEqual(anExpectedResponse());
+    }
+  });
+
+  it("should return a merchant given its ID, without static code in discounts if external header is none", async () => {
+    const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
+      {} as any,
+      anAgreementId,
+      none
+    );
+    expect(response.kind).toBe("IResponseSuccessJson");
+    expect(queryMock).toBeCalledTimes(3);
+    if (response.kind === "IResponseSuccessJson") {
+      expect(response.value).toEqual(anExpectedResponse(true));
     }
   });
 
@@ -129,12 +147,13 @@ describe("GetMerchantHandler", () => {
 
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
-      anAgreementId
+      anAgreementId,
+      anExternalHeader
     );
     expect(queryMock).toBeCalledTimes(3);
     expect(response.kind).toBe("IResponseSuccessJson");
     if (response.kind === "IResponseSuccessJson") {
-      expect(response.value).toEqual({ ...anExpectedResponse, addresses: [] });
+      expect(response.value).toEqual({ ...anExpectedResponse(), addresses: [] });
     }
   });
 
@@ -149,7 +168,8 @@ describe("GetMerchantHandler", () => {
 
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
-      anAgreementId
+      anAgreementId,
+      anExternalHeader
     );
     expect(response.kind).toBe("IResponseErrorNotFound");
     expect(queryMock).toBeCalledTimes(1);
@@ -166,7 +186,8 @@ describe("GetMerchantHandler", () => {
 
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
-      anAgreementId
+      anAgreementId,
+      anExternalHeader
     );
     expect(response.kind).toBe("IResponseErrorInternal");
     expect(queryMock).toBeCalledTimes(1);

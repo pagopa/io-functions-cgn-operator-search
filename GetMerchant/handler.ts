@@ -27,6 +27,8 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { identity } from "fp-ts/lib/function";
+import { Option } from "fp-ts/lib/Option";
+import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
 import { Merchant } from "../generated/definitions/Merchant";
 
 import AddressModel from "../models/AddressModel";
@@ -34,6 +36,7 @@ import MerchantProfileModel from "../models/MerchantProfileModel";
 import DiscountModel from "../models/DiscountModel";
 import { ProductCategoryFromModel } from "../models/ProductCategories";
 import { errorsToError } from "../utils/conversions";
+import { OptionalHeaderParamMiddleware } from "../middlewares/optional_header_param";
 import {
   SelectDiscountsByMerchantQuery,
   SelectMerchantAddressListQuery,
@@ -47,7 +50,8 @@ type ResponseTypes =
 
 type IGetMerchantHandler = (
   context: Context,
-  merchantId: string
+  merchantId: string,
+  maybeFromExternalHeader: Option<NonEmptyString>
 ) => Promise<ResponseTypes>;
 
 const addressesTask = (
@@ -83,7 +87,11 @@ const discountsTask = (
 export const GetMerchantHandler = (
   cgnOperatorDb: Sequelize,
   cdnBaseUrl: string
-): IGetMerchantHandler => async (_, merchantId): Promise<ResponseTypes> =>
+): IGetMerchantHandler => async (
+  _,
+  merchantId,
+  maybeFromExternalHeader
+): Promise<ResponseTypes> =>
   tryCatch(
     () =>
       cgnOperatorDb.query(SelectMerchantProfileQuery, {
@@ -117,18 +125,22 @@ export const GetMerchantHandler = (
         latitude: a.latitude,
         longitude: a.longitude
       })),
-      discounts: __.discounts.map(d => ({
-        condition: d.condition,
-        description: d.description,
-        discount: d.discount_value,
-        endDate: d.end_date,
-        name: d.name,
-        productCategories: d.product_categories.map(p =>
-          ProductCategoryFromModel(p)
-        ),
-        startDate: d.start_date,
-        staticCode: d.static_code // TODO if called by App IO use value otherwise NULL
-      }))
+      discounts: __.discounts.map(d =>
+        withoutUndefinedValues({
+          condition: d.condition,
+          description: d.description,
+          discount: d.discount_value,
+          endDate: d.end_date,
+          name: d.name,
+          productCategories: d.product_categories.map(p =>
+            ProductCategoryFromModel(p)
+          ),
+          startDate: d.start_date,
+          staticCode: maybeFromExternalHeader
+            .map(() => d.static_code)
+            .toUndefined()
+        })
+      )
     }))
     .map(({ addresses, discounts, merchant }) => ({
       addresses,
@@ -149,13 +161,15 @@ export const GetMerchantHandler = (
 
 export const GetMerchant = (
   cgnOperatorDb: Sequelize,
-  cdnBaseUrl: string
+  cdnBaseUrl: NonEmptyString,
+  fromExternalHeaderName: NonEmptyString
 ): express.RequestHandler => {
   const handler = GetMerchantHandler(cgnOperatorDb, cdnBaseUrl);
 
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),
-    RequiredParamMiddleware("merchantId", NonEmptyString)
+    RequiredParamMiddleware("merchantId", NonEmptyString),
+    OptionalHeaderParamMiddleware(fromExternalHeaderName, NonEmptyString)
   );
 
   return wrapRequestHandler(middlewaresWrap(handler));

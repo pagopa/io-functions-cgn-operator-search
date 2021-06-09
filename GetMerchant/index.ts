@@ -34,7 +34,11 @@ secureExpressApp(app);
 // Add express route
 app.get(
   "/merchants/:merchantId",
-  GetMerchant(cgnOperatorDb, config.CDN_MERCHANT_IMAGES_BASE_URL)
+  GetMerchant(
+    cgnOperatorDb,
+    config.CDN_MERCHANT_IMAGES_BASE_URL,
+    config.CGN_EXTERNAL_SOURCE_HEADER_NAME
+  )
 );
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
