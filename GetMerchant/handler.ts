@@ -147,7 +147,7 @@ export const GetMerchantHandler = (
       description: merchant.description,
       discounts,
       id: merchant.agreement_fk,
-      imageUrl: `${cdnBaseUrl}${merchant.image_url}`,
+      imageUrl: `${cdnBaseUrl}/${merchant.image_url}`,
       name: merchant.name,
       websiteUrl: merchant.website_url
     }))
