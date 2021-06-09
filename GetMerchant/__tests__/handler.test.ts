@@ -45,7 +45,7 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
   description: aMerchantProfileModel.description,
   name: aMerchantProfileModel.name,
   id: anAgreementId,
-  imageUrl: aMerchantProfileModel.image_url,
+  imageUrl: `/${aMerchantProfileModel.image_url}`,
   websiteUrl: aMerchantProfileModel.website_url,
   addresses: anAddressModelList.map(address => ({
     full_address: address.full_address,
