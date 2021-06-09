@@ -2,7 +2,7 @@
 
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
-import { none, some } from "fp-ts/lib/Option";
+import { fromNullable, none, some } from "fp-ts/lib/Option";
 import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory";
 import { ProductCategoryEnumModelType } from "../../models/ProductCategories";
 import { GetMerchantHandler } from "../handler";
@@ -27,7 +27,7 @@ const anAddress = {
 const anAddressModelList = [anAddress, { ...anAddress, city: "milano" }];
 
 const aDiscountModel = {
-  condition: "mah",
+  condition: null,
   description: "something something",
   discount_value: 20,
   end_date: new Date("2021-01-01"),
@@ -53,8 +53,8 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
     longitude: address.longitude
   })),
   discounts: aDiscountModelList.map(discount => withoutUndefinedValues({
-    condition: discount.condition,
-    description: discount.description,
+    condition: fromNullable(discount.condition).toUndefined(),
+    description: fromNullable(discount.description).toUndefined(),
     name: discount.name,
     endDate: discount.end_date,
     discount: discount.discount_value,

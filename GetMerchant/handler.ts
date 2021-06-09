@@ -27,7 +27,7 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { identity } from "fp-ts/lib/function";
-import { Option } from "fp-ts/lib/Option";
+import { fromNullable, Option } from "fp-ts/lib/Option";
 import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
 import { Merchant } from "../generated/definitions/Merchant";
 
@@ -127,8 +127,8 @@ export const GetMerchantHandler = (
       })),
       discounts: __.discounts.map(d =>
         withoutUndefinedValues({
-          condition: d.condition,
-          description: d.description,
+          condition: fromNullable(d.condition).toUndefined(),
+          description: fromNullable(d.description).toUndefined(),
           discount: d.discount_value,
           endDate: d.end_date,
           name: d.name,
