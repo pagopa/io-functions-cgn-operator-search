@@ -26,12 +26,12 @@ WITH operator_discounts AS (
   SELECT
       d.discount_k,
       d.name,
-      d.description,
+      NULLIF(d.description, '') AS description,
       d.start_date,
       d.end_date,
       d.discount_value,
-      d.condition,
-      d.static_code
+      NULLIF(d.condition, '') AS condition,
+      NULLIF(d.static_code, '') AS static_code
   FROM discount d
   WHERE d.agreement_fk = :agreement_key
     AND d.state = 'PUBLISHED'
