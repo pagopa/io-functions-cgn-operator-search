@@ -129,7 +129,7 @@ export const GetMerchantHandler = (
         withoutUndefinedValues({
           condition: fromNullable(d.condition).toUndefined(),
           description: fromNullable(d.description).toUndefined(),
-          discount: d.discount_value,
+          discount: fromNullable(d.discount_value).toUndefined(),
           endDate: d.end_date,
           name: d.name,
           productCategories: d.product_categories.map(p =>

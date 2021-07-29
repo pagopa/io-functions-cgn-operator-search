@@ -57,7 +57,7 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
     description: fromNullable(discount.description).toUndefined(),
     name: discount.name,
     endDate: discount.end_date,
-    discount: discount.discount_value,
+    discount: fromNullable(discount.discount_value).toUndefined(),
     startDate: discount.start_date,
     staticCode: withoutStaticCode ? undefined : discount.static_code,
     productCategories: [ProductCategoryEnum.arts, ProductCategoryEnum.books]
