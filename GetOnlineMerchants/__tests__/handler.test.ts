@@ -16,7 +16,7 @@ const anOnlineMerchant = {
   name: "PagoPa",
   website_url: "https://pagopa.it",
   product_categories: [
-    ProductCategoryEnumModelType.arts,
+    ProductCategoryEnumModelType.entertainment,
     ProductCategoryEnumModelType.sports
   ]
 };
@@ -26,16 +26,16 @@ const anOnlineMerchantList = [
   {
     ...anOnlineMerchant,
     product_categories: [
-      ProductCategoryEnumModelType.transportation,
-      ProductCategoryEnumModelType.travels
+      ProductCategoryEnumModelType.shopping,
+      ProductCategoryEnumModelType.travelling
     ]
   },
   {
     ...anOnlineMerchant,
     product_categories: [
-      ProductCategoryEnumModelType.entertainments,
-      ProductCategoryEnumModelType.connectivity,
-      ProductCategoryEnumModelType.books,
+      ProductCategoryEnumModelType.entertainment,
+      ProductCategoryEnumModelType.services,
+      ProductCategoryEnumModelType.learning,
       ProductCategoryEnumModelType.health
     ]
   }
@@ -45,7 +45,7 @@ const anOnlineMerchantResponse = {
   id: anOnlineMerchant.id,
   name: anOnlineMerchant.name,
   websiteUrl: anOnlineMerchant.website_url,
-  productCategories: [ProductCategoryEnum.arts, ProductCategoryEnum.sports]
+  productCategories: [ProductCategoryEnum.entertainment, ProductCategoryEnum.sports]
 };
 
 const anExpectedResponse = {
@@ -54,16 +54,16 @@ const anExpectedResponse = {
     {
       ...anOnlineMerchantResponse,
       productCategories: [
-        ProductCategoryEnum.transportation,
-        ProductCategoryEnum.travels
+        ProductCategoryEnum.shopping,
+        ProductCategoryEnum.travelling
       ]
     },
     {
       ...anOnlineMerchantResponse,
       productCategories: [
-        ProductCategoryEnum.entertainments,
-        ProductCategoryEnum.connectivity,
-        ProductCategoryEnum.books,
+        ProductCategoryEnum.entertainment,
+        ProductCategoryEnum.services,
+        ProductCategoryEnum.learning,
         ProductCategoryEnum.health
       ]
     }
@@ -115,14 +115,14 @@ describe("GetOnlineMerchantsHandler", () => {
 
   it("should add to the db query the product category filters", async () => {
     queryMock.mockImplementationOnce((query, _) => {
-      expect(query).toMatch(/AND \(arts OR entertainments\)/);
+      expect(query).toMatch(/AND \(foodDrink OR entertainment\)/);
 
       return anEmptyArrayPromise;
     });
 
     const response = await GetOnlineMerchantsHandler(cgnOperatorDbMock as any)(
       {} as any,
-       {productCategories: [ProductCategoryEnum.arts, ProductCategoryEnum.entertainments]} as OnlineMerchantSearchRequest 
+       {productCategories: [ProductCategoryEnum.foodDrink, ProductCategoryEnum.entertainment]} as OnlineMerchantSearchRequest 
     );
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
@@ -131,7 +131,7 @@ describe("GetOnlineMerchantsHandler", () => {
   it("should add to the db query all the product category filters", async () => {
     queryMock.mockImplementationOnce((query, _) => {
       expect(query).toMatch(
-        /AND \(travels OR transportation OR connectivity OR books OR sports OR health\)/
+        /AND \(travelling OR shopping OR services OR learning OR sports OR health\)/
       );
 
       return anEmptyArrayPromise;
@@ -139,10 +139,10 @@ describe("GetOnlineMerchantsHandler", () => {
 
     const response = await GetOnlineMerchantsHandler(cgnOperatorDbMock as any)(
       {} as any,
-      {productCategories: [ProductCategoryEnum.travels,
-        ProductCategoryEnum.transportation,
-        ProductCategoryEnum.connectivity,
-        ProductCategoryEnum.books,
+      {productCategories: [ProductCategoryEnum.travelling,
+        ProductCategoryEnum.shopping,
+        ProductCategoryEnum.services,
+        ProductCategoryEnum.learning,
         ProductCategoryEnum.sports,
         ProductCategoryEnum.health]} as OnlineMerchantSearchRequest 
 

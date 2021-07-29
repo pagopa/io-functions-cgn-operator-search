@@ -33,8 +33,8 @@ const aDiscountModel = {
   end_date: new Date("2021-01-01"),
   name: "name 1",
   product_categories: [
-    ProductCategoryEnumModelType.arts,
-    ProductCategoryEnumModelType.books
+    ProductCategoryEnumModelType.entertainment,
+    ProductCategoryEnumModelType.learning
   ],
   start_date: new Date("2020-01-01"),
   static_code: "xxx"
@@ -60,7 +60,7 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
     discount: discount.discount_value,
     startDate: discount.start_date,
     staticCode: withoutStaticCode ? undefined : discount.static_code,
-    productCategories: [ProductCategoryEnum.arts, ProductCategoryEnum.books]
+    productCategories: [ProductCategoryEnum.entertainment, ProductCategoryEnum.learning]
   }))
 });
 

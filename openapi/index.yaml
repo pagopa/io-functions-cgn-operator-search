@@ -247,18 +247,19 @@ definitions:
         type: number
       longitude:
         type: number
-
+        
   ProductCategory:
     type: string
     enum:
-      - entertainments
-      - travels
-      - transportation
-      - connectivity
-      - books
-      - arts
+      - entertainment
+      - travelling
+      - foodDrink
+      - services
+      - learning
+      - hotels
       - sports
       - health
+      - shopping
 
   OnlineMerchantSearchRequest:
     type: object
