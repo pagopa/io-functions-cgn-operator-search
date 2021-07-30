@@ -136,7 +136,6 @@ definitions:
       - startDate
       - endDate
       - productCategories
-      - discount
     properties:
       name:
         type: string
