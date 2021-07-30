@@ -1,36 +1,39 @@
 import { ProductCategoryEnum } from "../generated/definitions/ProductCategory";
 
 export enum ProductCategoryEnumModelType {
-  entertainments = "ENTERTAINMENTS",
-  travels = "TRAVELS",
-  transportation = "TRANSPORTATION",
-  connectivity = "CONNECTIVITY",
-  books = "BOOKS",
-  arts = "ARTS",
+  entertainment = "ENTERTAINMENT",
+  travelling = "TRAVELLING",
+  foodDrink = "FOOD_DRINK",
+  services = "SERVICES",
+  learning = "LEARNING",
+  hotels = "HOTEL",
   sports = "SPORTS",
-  health = "HEALTH"
+  health = "HEALTH",
+  shopping = "SHOPPING"
 }
 
 export const ProductCategoryFromModel = (
   productCategory: ProductCategoryEnumModelType
 ): ProductCategoryEnum => {
   switch (productCategory) {
-    case ProductCategoryEnumModelType.arts:
-      return ProductCategoryEnum.arts;
-    case ProductCategoryEnumModelType.books:
-      return ProductCategoryEnum.books;
-    case ProductCategoryEnumModelType.connectivity:
-      return ProductCategoryEnum.connectivity;
-    case ProductCategoryEnumModelType.entertainments:
-      return ProductCategoryEnum.entertainments;
+    case ProductCategoryEnumModelType.hotels:
+      return ProductCategoryEnum.hotels;
+    case ProductCategoryEnumModelType.learning:
+      return ProductCategoryEnum.learning;
+    case ProductCategoryEnumModelType.services:
+      return ProductCategoryEnum.services;
+    case ProductCategoryEnumModelType.entertainment:
+      return ProductCategoryEnum.entertainment;
     case ProductCategoryEnumModelType.health:
       return ProductCategoryEnum.health;
     case ProductCategoryEnumModelType.sports:
       return ProductCategoryEnum.sports;
-    case ProductCategoryEnumModelType.transportation:
-      return ProductCategoryEnum.transportation;
-    case ProductCategoryEnumModelType.travels:
-      return ProductCategoryEnum.travels;
+    case ProductCategoryEnumModelType.shopping:
+      return ProductCategoryEnum.shopping;
+    case ProductCategoryEnumModelType.travelling:
+      return ProductCategoryEnum.travelling;
+    case ProductCategoryEnumModelType.foodDrink:
+      return ProductCategoryEnum.foodDrink;
     default:
       throw new Error(`Invalid product category value: ${productCategory}`);
   }
@@ -40,22 +43,24 @@ export const ProductCategoryToQueryColumn = (
   productCategory: ProductCategoryEnum
 ): string => {
   switch (productCategory) {
-    case ProductCategoryEnum.arts:
-      return "arts";
-    case ProductCategoryEnum.books:
-      return "books";
-    case ProductCategoryEnum.connectivity:
-      return "connectivity";
-    case ProductCategoryEnum.entertainments:
-      return "entertainments";
+    case ProductCategoryEnum.shopping:
+      return "shopping";
+    case ProductCategoryEnum.learning:
+      return "learning";
+    case ProductCategoryEnum.services:
+      return "services";
+    case ProductCategoryEnum.entertainment:
+      return "entertainment";
     case ProductCategoryEnum.health:
       return "health";
     case ProductCategoryEnum.sports:
       return "sports";
-    case ProductCategoryEnum.transportation:
-      return "transportation";
-    case ProductCategoryEnum.travels:
-      return "travels";
+    case ProductCategoryEnum.hotels:
+      return "hotels";
+    case ProductCategoryEnum.travelling:
+      return "travelling";
+    case ProductCategoryEnum.foodDrink:
+      return "foodDrink";
     default:
       throw Error(`Invalid product category value: ${productCategory}`);
   }
