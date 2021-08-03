@@ -19,6 +19,7 @@ import {
   ResponseErrorInternal,
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
+import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
 import { OfflineMerchants } from "../generated/definitions/OfflineMerchants";
 
 import { ProductCategoryFromModel } from "../models/ProductCategories";
@@ -57,18 +58,22 @@ export const GetOfflineMerchantsHandler = (
     toError
   )
     .map(merchants =>
-      merchants.map(m => ({
-        ...m,
-        address: {
-          full_address: m.address,
-          latitude: m.latitude,
-          longitude: m.longitude
-        },
-        distance: Math.round(m.distance),
-        productCategories: m.product_categories.map(pc =>
-          ProductCategoryFromModel(pc)
-        )
-      }))
+      merchants.map(m =>
+        withoutUndefinedValues({
+          ...m,
+          address: withoutUndefinedValues({
+            full_address: m.address,
+            latitude: fromNullable(m.latitude).toUndefined(),
+            longitude: fromNullable(m.longitude).toUndefined()
+          }),
+          distance: fromNullable(m.distance)
+            .map(Math.round)
+            .toUndefined(),
+          productCategories: m.product_categories.map(pc =>
+            ProductCategoryFromModel(pc)
+          )
+        })
+      )
     )
     .chain(__ =>
       fromEither(OfflineMerchants.decode({ items: __ })).mapLeft(errorsToError)

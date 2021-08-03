@@ -9,7 +9,7 @@ export default class OfflineMerchantModel extends Model {
     ProductCategoryEnumModelType
   >;
   public readonly address!: string;
-  public readonly latitude!: number;
-  public readonly longitude!: number;
-  public readonly distance!: number;
+  public readonly latitude!: number | undefined;
+  public readonly longitude!: number | undefined;
+  public readonly distance!: number | undefined;
 }
