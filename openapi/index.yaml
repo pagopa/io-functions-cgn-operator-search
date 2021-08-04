@@ -213,7 +213,6 @@ definitions:
       - name
       - productCategories
       - address
-      - distance
     properties:
       id:
         type: string
@@ -236,8 +235,6 @@ definitions:
     type: object
     required:
       - full_address
-      - latitude
-      - longitude
     properties:
       full_address:
         type: string
@@ -285,9 +282,6 @@ definitions:
 
   OfflineMerchantSearchRequest:
     type: object
-    required:
-      - userCoordinates
-      - boundingBox
     properties:
       merchantName:
         type: string

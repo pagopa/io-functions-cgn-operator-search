@@ -45,15 +45,15 @@ const boundingBoxFilter = (boundingBox: BoundingBox): string =>
         AND ${getBoundingBoxMaxLongitude(boundingBox)} `;
 
 const distanceParameter = (userCoordinates: Coordinates): string =>
-  `ST_MakePoint(longitude, latitude)::geography <-> ST_MakePoint(${userCoordinates.longitude}, ${userCoordinates.latitude})::geography`;
+  `ST_MakePoint(longitude, latitude)::geography <-> ST_MakePoint(${userCoordinates.longitude}, ${userCoordinates.latitude})::geography AS distance`;
 
 const orderingParameter = (
   ordering: OrderingEnum,
-  userCoordinates: Coordinates
+  maybeUserCoordinates: Option<Coordinates>
 ): string =>
   ordering === OrderingEnum.alphabetic
     ? "searchable_name"
-    : distanceParameter(userCoordinates);
+    : maybeUserCoordinates.map(distanceParameter).getOrElse("searchable_name");
 
 export const selectOnlineMerchantsQuery = (
   nameFilter: Option<string>,
@@ -83,16 +83,20 @@ SELECT
   product_categories,
   full_address AS address,
   latitude,
-  longitude,
-  ${distanceParameter(searchRequest.userCoordinates)} AS distance
+  longitude${fromNullable(searchRequest.userCoordinates)
+    .map(distanceParameter)
+    .map(distanceParam => `,${distanceParam}`)
+    .getOrElse("")}
 FROM offline_merchant
 WHERE 1 = 1
-  ${boundingBoxFilter(searchRequest.boundingBox)}
+  ${fromNullable(searchRequest.boundingBox)
+    .map(boundingBoxFilter)
+    .getOrElse("")}
   ${nameFilterQueryPart(fromNullable(searchRequest.merchantName))}
   ${categoryFilter(fromNullable(searchRequest.productCategories))}
 ORDER BY ${orderingParameter(
   fromNullable(searchRequest.ordering).getOrElse(OrderingEnum.distance),
-  searchRequest.userCoordinates
+  fromNullable(searchRequest.userCoordinates)
 )} ASC
 LIMIT ${pageSize(fromNullable(searchRequest.pageSize))}
 OFFSET ${offset(

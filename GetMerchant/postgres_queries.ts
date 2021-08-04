@@ -5,6 +5,7 @@ SELECT
     COALESCE( NULLIF(p.name, ''), p.full_name) AS name,
     p.description,
     p.website_url,
+    p.all_national_addresses,
     a.image_url
 FROM profile p
 JOIN agreement a ON (p.agreement_fk = a.agreement_k)
@@ -63,4 +64,4 @@ SELECT
     d.static_code,
     array_agg(d.product_category) AS product_categories
 FROM discounts_with_categories d
-GROUP BY 1,2,3,4,5,6,7,8,9`;
+GROUP BY 1,2,3,4,5,6,7,8`;

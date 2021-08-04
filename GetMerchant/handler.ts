@@ -84,6 +84,12 @@ const discountsTask = (
     toError
   ).mapLeft<IResponseErrorInternal>(e => ResponseErrorInternal(e.message));
 
+const allNationalAddressesArray = [
+  {
+    full_address: "Tutti i punti vendita sul territorio nazionale"
+  }
+];
+
 export const GetMerchantHandler = (
   cgnOperatorDb: Sequelize,
   cdnBaseUrl: string
@@ -120,11 +126,16 @@ export const GetMerchantHandler = (
     )
     .map(__ => ({
       ...__,
-      addresses: __.addresses.map(a => ({
-        full_address: a.full_address,
-        latitude: a.latitude,
-        longitude: a.longitude
-      })),
+      addresses:
+        __.addresses.length === 0 && __.merchant.all_national_addresses
+          ? allNationalAddressesArray
+          : __.addresses.map(a =>
+              withoutUndefinedValues({
+                full_address: a.full_address,
+                latitude: fromNullable(a.latitude).toUndefined(),
+                longitude: fromNullable(a.longitude).toUndefined()
+              })
+            ),
       discounts: __.discounts.map(d =>
         withoutUndefinedValues({
           condition: fromNullable(d.condition).toUndefined(),
@@ -142,15 +153,17 @@ export const GetMerchantHandler = (
         })
       )
     }))
-    .map(({ addresses, discounts, merchant }) => ({
-      addresses,
-      description: merchant.description,
-      discounts,
-      id: merchant.agreement_fk,
-      imageUrl: `${cdnBaseUrl}/${merchant.image_url}`,
-      name: merchant.name,
-      websiteUrl: merchant.website_url
-    }))
+    .map(({ addresses, discounts, merchant }) =>
+      withoutUndefinedValues({
+        addresses,
+        description: merchant.description,
+        discounts,
+        id: merchant.agreement_fk,
+        imageUrl: `${cdnBaseUrl}/${merchant.image_url}`,
+        name: merchant.name,
+        websiteUrl: fromNullable(merchant.website_url).toUndefined()
+      })
+    )
     .chain(merchant =>
       fromEither(Merchant.decode(merchant)).mapLeft(errs =>
         ResponseErrorInternal(errorsToError(errs).message)
