@@ -148,7 +148,7 @@ export const GetMerchantHandler = (
           ),
           startDate: d.start_date,
           staticCode: maybeFromExternalHeader
-            .map(() => d.static_code)
+            .chain(() => fromNullable(d.static_code))
             .toUndefined()
         })
       )
