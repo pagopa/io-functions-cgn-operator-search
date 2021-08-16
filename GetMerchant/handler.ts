@@ -142,6 +142,12 @@ export const GetMerchantHandler = (
           description: fromNullable(d.description).toUndefined(),
           discount: fromNullable(d.discount_value).toUndefined(),
           endDate: d.end_date,
+          landingPageReferrer: maybeFromExternalHeader
+            .chain(() => fromNullable(d.landing_page_referrer))
+            .toUndefined(),
+          landingPageUrl: maybeFromExternalHeader
+            .chain(() => fromNullable(d.landing_page_url))
+            .toUndefined(),
           name: d.name,
           productCategories: d.product_categories.map(p =>
             ProductCategoryFromModel(p)
@@ -149,12 +155,6 @@ export const GetMerchantHandler = (
           startDate: d.start_date,
           staticCode: maybeFromExternalHeader
             .chain(() => fromNullable(d.static_code))
-            .toUndefined(),
-          landingPageUrl: maybeFromExternalHeader
-            .chain(() => fromNullable(d.landing_page_url))
-            .toUndefined(),
-          landingPageReferrer: maybeFromExternalHeader
-            .chain(() => fromNullable(d.landing_page_referrer))
             .toUndefined()
         })
       )
