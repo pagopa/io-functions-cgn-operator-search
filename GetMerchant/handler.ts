@@ -149,7 +149,11 @@ export const GetMerchantHandler = (
           startDate: d.start_date,
           staticCode: maybeFromExternalHeader
             .chain(() => fromNullable(d.static_code))
-            .toUndefined()
+            .toUndefined(),
+          landingPageUrl: fromNullable(d.landing_page_url).toUndefined(),
+          landingPageReferrer: fromNullable(
+            d.landing_page_referrer
+          ).toUndefined()
         })
       )
     }))

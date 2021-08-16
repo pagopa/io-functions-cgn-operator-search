@@ -163,6 +163,12 @@ definitions:
       staticCode:
         type: string
         minLength: 1
+      landingPageUrl:
+        type: string
+        minLength: 1
+      landingPageReferrer:
+        type: string
+        minLength: 1
 
   OnlineMerchants:
     type: object

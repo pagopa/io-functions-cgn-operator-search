@@ -12,4 +12,6 @@ export default class DiscountModel extends Model {
   >;
   public readonly start_date!: Date;
   public readonly static_code!: string | undefined;
+  public readonly landing_page_url!: string | undefined;
+  public readonly landing_page_referrer!: string | undefined;
 }
