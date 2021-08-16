@@ -7,9 +7,10 @@ import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory
 import { ProductCategoryEnumModelType } from "../../models/ProductCategories";
 import { GetMerchantHandler } from "../handler";
 
-const anAgreementId = "abc-123-def";
 const anExternalHeader = some("EXT_PORTAL" as NonEmptyString);
-const aMerchantProfileModel = {
+
+const anAgreementId = "abc-123-def";
+const aMerchantProfileWithStaticDiscountTypeModel = {
   agreement_fk: anAgreementId,
   description: "description something",
   image_url: "/images/1.png",
@@ -17,7 +18,7 @@ const aMerchantProfileModel = {
   profile_k: 123,
   website_url: "https://pagopa.it"
 };
-const aMerchantProfileModelList = [aMerchantProfileModel];
+const aMerchantProfileModelList = [aMerchantProfileWithStaticDiscountTypeModel];
 
 const anAddress = {
   full_address: "la rue 17, 1231, roma (rm)",
@@ -26,7 +27,7 @@ const anAddress = {
 };
 const anAddressModelList = [anAddress, { ...anAddress, city: "milano" }];
 
-const aDiscountModel = {
+const aDiscountModelWithStaticCode = {
   condition: null,
   description: "something something",
   discount_value: 20,
@@ -37,31 +38,60 @@ const aDiscountModel = {
     ProductCategoryEnumModelType.learning
   ],
   start_date: new Date("2020-01-01"),
-  static_code: "xxx"
+  static_code: "xxx",
+  landing_page_url: undefined,
+  landing_page_referrer: undefined
 };
-const aDiscountModelList = [aDiscountModel];
+
+const aDiscountModelWithLandingPage = {
+  condition: null,
+  description: "something something",
+  discount_value: 20,
+  end_date: new Date("2021-01-01"),
+  name: "name 1",
+  product_categories: [
+    ProductCategoryEnumModelType.entertainment,
+    ProductCategoryEnumModelType.learning
+  ],
+  start_date: new Date("2020-01-01"),
+  static_code: undefined,
+  landing_page_url: "xxx",
+  landing_page_referrer: "xxx"
+};
+
+const aDiscountModelList = [
+  aDiscountModelWithStaticCode,
+  aDiscountModelWithLandingPage
+];
 
 const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
-  description: aMerchantProfileModel.description,
-  name: aMerchantProfileModel.name,
+  description: aMerchantProfileWithStaticDiscountTypeModel.description,
+  name: aMerchantProfileWithStaticDiscountTypeModel.name,
   id: anAgreementId,
-  imageUrl: `/${aMerchantProfileModel.image_url}`,
-  websiteUrl: aMerchantProfileModel.website_url,
+  imageUrl: `/${aMerchantProfileWithStaticDiscountTypeModel.image_url}`,
+  websiteUrl: aMerchantProfileWithStaticDiscountTypeModel.website_url,
   addresses: anAddressModelList.map(address => ({
     full_address: address.full_address,
     latitude: address.latitude,
     longitude: address.longitude
   })),
-  discounts: aDiscountModelList.map(discount => withoutUndefinedValues({
-    condition: fromNullable(discount.condition).toUndefined(),
-    description: fromNullable(discount.description).toUndefined(),
-    name: discount.name,
-    endDate: discount.end_date,
-    discount: fromNullable(discount.discount_value).toUndefined(),
-    startDate: discount.start_date,
-    staticCode: withoutStaticCode ? undefined : discount.static_code,
-    productCategories: [ProductCategoryEnum.entertainment, ProductCategoryEnum.learning]
-  }))
+  discounts: aDiscountModelList.map(discount =>
+    withoutUndefinedValues({
+      condition: fromNullable(discount.condition).toUndefined(),
+      description: fromNullable(discount.description).toUndefined(),
+      name: discount.name,
+      endDate: discount.end_date,
+      discount: fromNullable(discount.discount_value).toUndefined(),
+      startDate: discount.start_date,
+      staticCode: withoutStaticCode ? undefined : discount.static_code,
+      landingPageUrl: withoutStaticCode ? undefined : discount.landing_page_url,
+      landingPageReferrer: withoutStaticCode ? undefined : discount.landing_page_referrer,
+      productCategories: [
+        ProductCategoryEnum.entertainment,
+        ProductCategoryEnum.learning
+      ]
+    })
+  )
 });
 
 const queryMock = jest.fn().mockImplementation((query: string, params) => {
@@ -153,7 +183,10 @@ describe("GetMerchantHandler", () => {
     expect(queryMock).toBeCalledTimes(3);
     expect(response.kind).toBe("IResponseSuccessJson");
     if (response.kind === "IResponseSuccessJson") {
-      expect(response.value).toEqual({ ...anExpectedResponse(), addresses: [] });
+      expect(response.value).toEqual({
+        ...anExpectedResponse(),
+        addresses: []
+      });
     }
   });
 

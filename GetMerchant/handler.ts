@@ -150,10 +150,12 @@ export const GetMerchantHandler = (
           staticCode: maybeFromExternalHeader
             .chain(() => fromNullable(d.static_code))
             .toUndefined(),
-          landingPageUrl: fromNullable(d.landing_page_url).toUndefined(),
-          landingPageReferrer: fromNullable(
-            d.landing_page_referrer
-          ).toUndefined()
+          landingPageUrl: maybeFromExternalHeader
+            .chain(() => fromNullable(d.landing_page_url))
+            .toUndefined(),
+          landingPageReferrer: maybeFromExternalHeader
+            .chain(() => fromNullable(d.landing_page_referrer))
+            .toUndefined()
         })
       )
     }))
