@@ -10,12 +10,12 @@ import {
   TaskEither,
   fromEither
 } from "fp-ts/lib/TaskEither";
-import { ContextMiddleware } from "io-functions-commons/dist/src/utils/middlewares/context_middleware";
-import { RequiredParamMiddleware } from "io-functions-commons/dist/src/utils/middlewares/required_param";
+import { ContextMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
+import { RequiredParamMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/required_param";
 import {
   withRequestMiddlewares,
   wrapRequestHandler
-} from "io-functions-commons/dist/src/utils/request_middleware";
+} from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import { Sequelize, QueryTypes } from "sequelize";
 import {
   IResponseErrorInternal,

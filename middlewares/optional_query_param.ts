@@ -1,13 +1,14 @@
 import * as t from "io-ts";
 
 import {
-  IResponse,
+  IResponseErrorValidation,
   ResponseErrorFromValidationErrors
 } from "@pagopa/ts-commons/lib/responses";
-import { fromNullable, none, Option, some } from "fp-ts/lib/Option";
-import { Either } from "fp-ts/lib/Either";
-import { IRequestMiddleware } from "io-functions-commons/dist/src/utils/request_middleware";
-import { fromEither, taskEither } from "fp-ts/lib/TaskEither";
+import * as TE from "fp-ts/lib/TaskEither";
+import * as O from "fp-ts/lib/Option";
+import * as E from "fp-ts/lib/Either";
+import { flow, pipe } from "fp-ts/lib/function";
+import { Request } from "express";
 
 // TODO move to https://github.com/pagopa/io-functions-commons project
 /**
@@ -20,21 +21,23 @@ import { fromEither, taskEither } from "fp-ts/lib/TaskEither";
 export const OptionalQueryParamMiddleware = <S, A>(
   name: string,
   type: t.Type<A, S>
-): IRequestMiddleware<"IResponseErrorValidation", Option<A>> => async (
-  request
-): Promise<Either<IResponse<"IResponseErrorValidation">, Option<A>>> =>
-  taskEither
-    .of<IResponse<"IResponseErrorValidation">, Option<unknown>>(
-      fromNullable(request.query[name])
-    )
-    .chain(maybeQuery =>
-      maybeQuery.foldL(
-        () => taskEither.of(none),
-        query =>
-          fromEither(type.decode(query)).bimap(
-            ResponseErrorFromValidationErrors(type),
-            some
+) => (
+  request: Request
+): Promise<E.Either<IResponseErrorValidation, O.Option<A>>> =>
+  pipe(
+    TE.of<IResponseErrorValidation, O.Option<unknown>>(
+      O.fromNullable(request.query[name])
+    ),
+    TE.chain(
+      flow(
+        O.fold(
+          () => TE.of(O.none),
+          flow(
+            type.decode,
+            TE.fromEither,
+            TE.bimap(ResponseErrorFromValidationErrors(type), O.some)
           )
+        )
       )
     )
-    .run();
+  )();

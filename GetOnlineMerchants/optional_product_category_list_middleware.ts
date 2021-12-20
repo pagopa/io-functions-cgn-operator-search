@@ -4,7 +4,7 @@ import {
 } from "@pagopa/ts-commons/lib/responses";
 import { Either } from "fp-ts/lib/Either";
 import { fromNullable, none, Option, some } from "fp-ts/lib/Option";
-import { IRequestMiddleware } from "io-functions-commons/dist/src/utils/request_middleware";
+import { IRequestMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import * as t from "io-ts";
 import { fromEither, taskEither } from "fp-ts/lib/TaskEither";
 import {
