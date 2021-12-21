@@ -25,19 +25,13 @@ export const OptionalHeaderParamMiddleware = <S, A>(
   request: Request
 ): Promise<E.Either<IResponseErrorValidation, O.Option<A>>> =>
   pipe(
-    TE.of<IResponseErrorValidation, O.Option<unknown>>(
-      O.fromNullable(request.header(name))
-    ),
-    TE.chain(
+    O.fromNullable(request.header(name)),
+    O.fold(
+      () => TE.of(O.none),
       flow(
-        O.fold(
-          () => TE.of(O.none),
-          flow(
-            type.decode,
-            TE.fromEither,
-            TE.bimap(ResponseErrorFromValidationErrors(type), O.some)
-          )
-        )
+        type.decode,
+        TE.fromEither,
+        TE.bimap(ResponseErrorFromValidationErrors(type), O.some)
       )
     )
   )();

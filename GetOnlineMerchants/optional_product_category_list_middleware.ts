@@ -67,19 +67,13 @@ export const OptionalProductCategoryListMiddleware = (name: string) => async (
   >
 > =>
   pipe(
-    TE.of<IResponseErrorValidation, O.Option<unknown>>(
-      O.fromNullable(request.query[name])
-    ),
-    TE.chain(
+    O.fromNullable(request.query[name]),
+    O.fold(
+      () => TE.of(O.none),
       flow(
-        O.fold(
-          () => TE.of(O.none),
-          flow(
-            CommaSeparatedListOf(productCategoryCodec).decode,
-            TE.fromEither,
-            TE.bimap(ResponseErrorFromValidationErrors(ProductCategory), O.some)
-          )
-        )
+        CommaSeparatedListOf(productCategoryCodec).decode,
+        TE.fromEither,
+        TE.bimap(ResponseErrorFromValidationErrors(ProductCategory), O.some)
       )
     )
   )();
