@@ -19,6 +19,7 @@ import {
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
 import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
+import { toLowerCase } from "fp-ts/lib/string";
 import { OfflineMerchants } from "../generated/definitions/OfflineMerchants";
 
 import { ProductCategoryFromModel } from "../models/ProductCategories";
@@ -26,7 +27,6 @@ import OfflineMerchantModel from "../models/OfflineMerchantModel";
 import { OfflineMerchantSearchRequest } from "../generated/definitions/OfflineMerchantSearchRequest";
 import { selectOfflineMerchantsQuery } from "../utils/postgres_queries";
 import { errorsToError } from "../utils/conversions";
-import { toLowerCase } from "fp-ts/lib/string";
 
 type ResponseTypes =
   | IResponseSuccessJson<OfflineMerchants>

@@ -20,6 +20,7 @@ import {
   ResponseErrorInternal,
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
+import { toLowerCase } from "fp-ts/lib/string";
 import { OnlineMerchants } from "../generated/definitions/OnlineMerchants";
 
 import { ProductCategoryFromModel } from "../models/ProductCategories";
@@ -27,7 +28,6 @@ import OnlineMerchantModel from "../models/OnlineMerchantModel";
 import { OnlineMerchantSearchRequest } from "../generated/definitions/OnlineMerchantSearchRequest";
 import { selectOnlineMerchantsQuery } from "../utils/postgres_queries";
 import { errorsToError } from "../utils/conversions";
-import { toLowerCase } from "fp-ts/lib/string";
 
 type ResponseTypes =
   | IResponseSuccessJson<OnlineMerchants>

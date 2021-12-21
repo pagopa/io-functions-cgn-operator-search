@@ -98,8 +98,8 @@ export const GetMerchantHandler = (
   _,
   merchantId,
   maybeFromExternalHeader
-): Promise<ResponseTypes> => {
-  return pipe(
+): Promise<ResponseTypes> =>
+  pipe(
     TE.tryCatch(
       () =>
         cgnOperatorDb.query(SelectMerchantProfileQuery, {
@@ -124,7 +124,6 @@ export const GetMerchantHandler = (
         },
         AP.sequenceS(TE.ApplicativePar),
         TE.map(({ addresses, discounts }) => ({
-          merchant,
           addresses:
             addresses.length === 0 && merchant.all_national_addresses
               ? allNationalAddressesArray
@@ -152,7 +151,8 @@ export const GetMerchantHandler = (
                 O.toUndefined
               )
             })
-          )
+          ),
+          merchant
         }))
       )
     ),
@@ -179,7 +179,6 @@ export const GetMerchantHandler = (
     ),
     TE.toUnion
   )();
-};
 
 export const GetMerchant = (
   cgnOperatorDb: Sequelize,

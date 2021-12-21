@@ -6,14 +6,13 @@ import {
 import * as E from "fp-ts/lib/Either";
 import * as TE from "fp-ts/lib/TaskEither";
 import * as O from "fp-ts/lib/Option";
-import { IRequestMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import * as t from "io-ts";
+import { flow, pipe } from "fp-ts/lib/function";
+import { Request } from "express";
 import {
   ProductCategory,
   ProductCategoryEnum
 } from "../generated/definitions/ProductCategory";
-import { flow, pipe } from "fp-ts/lib/function";
-import { Request } from "express";
 
 // this utility function can be used to turn a TypeScript enum into a io-ts codec.
 const fromEnum = <EnumType>(

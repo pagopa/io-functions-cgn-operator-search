@@ -17,8 +17,8 @@ import * as TE from "fp-ts/lib/TaskEither";
 
 import { sequenceT } from "fp-ts/lib/Apply";
 import fetch from "node-fetch";
+import { QueryTypes, Sequelize } from "sequelize";
 import { getConfig, IConfig } from "./config";
-import { QueryTypes, Sequelize } from "sequelize/types";
 import { sequelizePostgresOptions } from "./sequelize-options";
 
 type ProblemSource =

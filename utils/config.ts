@@ -6,10 +6,8 @@
  */
 
 import { flow, identity, pipe } from "fp-ts/lib/function";
-import { fromNullable } from "fp-ts/lib/Either";
 import * as E from "fp-ts/lib/Either";
 import * as t from "io-ts";
-import { ValidationError } from "io-ts";
 import { readableReport } from "@pagopa/ts-commons/lib/reporters";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 

@@ -1,11 +1,11 @@
 import * as O from "fp-ts/lib/Option";
+import { pipe } from "fp-ts/lib/function";
 import { BoundingBox } from "../generated/definitions/BoundingBox";
 import { Coordinates } from "../generated/definitions/Coordinates";
 import { ProductCategory } from "../generated/definitions/ProductCategory";
 import { ProductCategoryToQueryColumn } from "../models/ProductCategories";
 import { OrderingEnum } from "../generated/definitions/OfflineMerchantSearchRequest";
 import { OfflineMerchantSearchRequest } from "../generated/definitions/OfflineMerchantSearchRequest";
-import { pipe } from "fp-ts/lib/function";
 
 const categoryFilter = (
   productCategoriesFilter: O.Option<ReadonlyArray<ProductCategory>>
