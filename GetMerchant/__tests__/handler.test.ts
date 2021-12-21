@@ -2,13 +2,14 @@
 
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
-import { fromNullable, none, some } from "fp-ts/lib/Option";
+import { pipe } from "fp-ts/lib/function";
+import * as O from "fp-ts/lib/Option";
 import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory";
 import { ProductCategoryEnumModelType } from "../../models/ProductCategories";
 import { GetMerchantHandler } from "../handler";
 
 const anAgreementId = "abc-123-def";
-const anExternalHeader = some("EXT_PORTAL" as NonEmptyString);
+const anExternalHeader = O.some("EXT_PORTAL" as NonEmptyString);
 const aMerchantProfileModel = {
   agreement_fk: anAgreementId,
   description: "description something",
@@ -52,16 +53,21 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
     latitude: address.latitude,
     longitude: address.longitude
   })),
-  discounts: aDiscountModelList.map(discount => withoutUndefinedValues({
-    condition: fromNullable(discount.condition).toUndefined(),
-    description: fromNullable(discount.description).toUndefined(),
-    name: discount.name,
-    endDate: discount.end_date,
-    discount: fromNullable(discount.discount_value).toUndefined(),
-    startDate: discount.start_date,
-    staticCode: withoutStaticCode ? undefined : discount.static_code,
-    productCategories: [ProductCategoryEnum.entertainment, ProductCategoryEnum.learning]
-  }))
+  discounts: aDiscountModelList.map(discount =>
+    withoutUndefinedValues({
+      condition: pipe(O.fromNullable(discount.condition), O.toUndefined),
+      description: pipe(O.fromNullable(discount.description), O.toUndefined),
+      name: discount.name,
+      endDate: discount.end_date,
+      discount: pipe(O.fromNullable(discount.discount_value), O.toUndefined),
+      startDate: discount.start_date,
+      staticCode: withoutStaticCode ? undefined : discount.static_code,
+      productCategories: [
+        ProductCategoryEnum.entertainment,
+        ProductCategoryEnum.learning
+      ]
+    })
+  )
 });
 
 const queryMock = jest.fn().mockImplementation((query: string, params) => {
@@ -112,7 +118,7 @@ describe("GetMerchantHandler", () => {
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
       anAgreementId,
-      none
+      O.none
     );
     expect(response.kind).toBe("IResponseSuccessJson");
     expect(queryMock).toBeCalledTimes(3);
@@ -153,7 +159,10 @@ describe("GetMerchantHandler", () => {
     expect(queryMock).toBeCalledTimes(3);
     expect(response.kind).toBe("IResponseSuccessJson");
     if (response.kind === "IResponseSuccessJson") {
-      expect(response.value).toEqual({ ...anExpectedResponse(), addresses: [] });
+      expect(response.value).toEqual({
+        ...anExpectedResponse(),
+        addresses: []
+      });
     }
   });
 
