@@ -86,7 +86,8 @@ SELECT
   id,
   name,
   product_categories,
-  website_url
+  website_url,
+  discount_code_type
 FROM online_merchant
 WHERE 1 = 1
   ${nameFilterQueryPart(nameFilter)}

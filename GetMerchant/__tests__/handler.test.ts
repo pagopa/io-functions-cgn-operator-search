@@ -4,7 +4,9 @@ import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
 import { pipe } from "fp-ts/lib/function";
 import * as O from "fp-ts/lib/Option";
+import { DiscountCodeTypeEnum } from "../../generated/definitions/DiscountCodeType";
 import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory";
+import { DiscountCodeTypeEnumModel } from "../../models/DiscountCodeTypes";
 import { ProductCategoryEnumModelType } from "../../models/ProductCategories";
 import { GetMerchantHandler } from "../handler";
 
@@ -16,7 +18,8 @@ const aMerchantProfileModel = {
   image_url: "/images/1.png",
   name: "PagoPa",
   profile_k: 123,
-  website_url: "https://pagopa.it"
+  website_url: "https://pagopa.it",
+  discount_code_type: DiscountCodeTypeEnumModel.static
 };
 const aMerchantProfileModelList = [aMerchantProfileModel];
 
@@ -48,6 +51,7 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
   id: anAgreementId,
   imageUrl: `/${aMerchantProfileModel.image_url}`,
   websiteUrl: aMerchantProfileModel.website_url,
+  discountCodeType: DiscountCodeTypeEnum.static,
   addresses: anAddressModelList.map(address => ({
     full_address: address.full_address,
     latitude: address.latitude,

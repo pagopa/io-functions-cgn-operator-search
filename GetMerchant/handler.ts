@@ -32,6 +32,7 @@ import DiscountModel from "../models/DiscountModel";
 import { ProductCategoryFromModel } from "../models/ProductCategories";
 import { errorsToError } from "../utils/conversions";
 import { OptionalHeaderParamMiddleware } from "../middlewares/optional_header_param";
+import { DiscountCodeTypeFromModel } from "../models/DiscountCodeTypes";
 import {
   SelectDiscountsByMerchantQuery,
   SelectMerchantAddressListQuery,
@@ -160,6 +161,11 @@ export const GetMerchantHandler = (
       withoutUndefinedValues({
         addresses,
         description: merchant.description,
+        discountCodeType: pipe(
+          O.fromNullable(merchant.discount_code_type),
+          O.map(DiscountCodeTypeFromModel),
+          O.toUndefined
+        ),
         discounts,
         id: merchant.agreement_fk,
         imageUrl: `${cdnBaseUrl}/${merchant.image_url}`,
