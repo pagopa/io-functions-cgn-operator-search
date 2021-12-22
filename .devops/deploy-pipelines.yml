@@ -86,7 +86,10 @@ stages:
               gitHubConnection: '$(GITHUB_CONNECTION)'
 
       - job: skip_release
-        condition: ne(variables['Build.SourceBranch'], format('refs/heads/{0}', variables.DEFAULT_BRANCH))
+        condition: or(
+          ne(variables['Build.SourceBranch'], format('refs/heads/{0}', variables.DEFAULT_BRANCH)),
+          eq(parameters['environment'], 'uat')
+        )
         steps:
           - script: |
               echo "We assume this reference to be a valid release: $(Build.SourceBranch). Therefore, there is no need to bundle a new release."
