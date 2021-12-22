@@ -1,7 +1,4 @@
 /* tslint:disable: no-any */
-
-import { NonNegativeInteger } from "@pagopa/ts-commons/lib/numbers";
-import { none, some } from "fp-ts/lib/Option";
 import { OnlineMerchantSearchRequest } from "../../generated/definitions/OnlineMerchantSearchRequest";
 import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory";
 import { ProductCategoryEnumModelType } from "../../models/ProductCategories";

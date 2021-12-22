@@ -5,12 +5,11 @@
  * The configuration is evaluate eagerly at the first access to the module. The module exposes convenient methods to access such value.
  */
 
-import { identity } from "fp-ts/lib/function";
-import { fromNullable } from "fp-ts/lib/Either";
+import { flow, identity, pipe } from "fp-ts/lib/function";
+import * as E from "fp-ts/lib/Either";
 import * as t from "io-ts";
-import { ValidationError } from "io-ts";
-import { readableReport } from "italia-ts-commons/lib/reporters";
-import { NonEmptyString } from "italia-ts-commons/lib/strings";
+import { readableReport } from "@pagopa/ts-commons/lib/reporters";
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 
 // global app configuration
 export type IConfig = t.TypeOf<typeof IConfig>;
@@ -33,15 +32,17 @@ const DEFAULT_CGN_EXTERNAL_SOURCE_HEADER_NAME = "x-from-external";
 // No need to re-evaluate this object for each call
 const errorOrConfig: t.Validation<IConfig> = IConfig.decode({
   ...process.env,
-  CGN_EXTERNAL_SOURCE_HEADER_NAME: fromNullable(
-    DEFAULT_CGN_EXTERNAL_SOURCE_HEADER_NAME
-  )(process.env.CGN_EXTERNAL_SOURCE_HEADER_NAME)
-    .chain(_ =>
-      NonEmptyString.decode(_).mapLeft(
-        () => DEFAULT_CGN_EXTERNAL_SOURCE_HEADER_NAME
+  CGN_EXTERNAL_SOURCE_HEADER_NAME: pipe(
+    process.env.CGN_EXTERNAL_SOURCE_HEADER_NAME,
+    E.fromNullable(DEFAULT_CGN_EXTERNAL_SOURCE_HEADER_NAME),
+    E.chain(
+      flow(
+        NonEmptyString.decode,
+        E.mapLeft(() => DEFAULT_CGN_EXTERNAL_SOURCE_HEADER_NAME)
       )
-    )
-    .fold(identity, identity),
+    ),
+    E.fold(identity, identity)
+  ),
   isPostgresSslEnabled: process.env.CGN_POSTGRES_DB_SSL_ENABLED === "true",
   isProduction: process.env.NODE_ENV === "production"
 });
@@ -62,6 +63,9 @@ export const getConfig = (): t.Validation<IConfig> => errorOrConfig;
  * @throws validation errors found while parsing the application configuration
  */
 export const getConfigOrThrow = (): IConfig =>
-  errorOrConfig.getOrElseL((errors: ReadonlyArray<ValidationError>) => {
-    throw new Error(`Invalid configuration: ${readableReport(errors)}`);
-  });
+  pipe(
+    errorOrConfig,
+    E.getOrElse<t.Errors, IConfig>(errors => {
+      throw new Error(`Invalid configuration: ${readableReport(errors)}`);
+    })
+  );
