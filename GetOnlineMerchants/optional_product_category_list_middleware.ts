@@ -1,6 +1,5 @@
 import {
   IResponse,
-  IResponseErrorValidation,
   ResponseErrorFromValidationErrors
 } from "@pagopa/ts-commons/lib/responses";
 import * as E from "fp-ts/lib/Either";
