@@ -62,9 +62,7 @@ stages:
   # - is on branch $(DEFAULT_BRANCH)
   # - is a tag in the form v{version}-RELEASE
   - stage: Release
-    condition:
-      and(
-        eq(variables.MAKE_RELEASE, true),
+    condition: 
         or(
           eq(variables['Build.SourceBranch'], format('refs/heads/{0}', variables.DEFAULT_BRANCH)),
             and(
@@ -72,7 +70,6 @@ stages:
               endsWith(variables['Build.SourceBranch'], '-RELEASE')
             )
         )
-      )
     pool:
       vmImage: 'ubuntu-latest'
     jobs:
@@ -91,7 +88,11 @@ stages:
               gitHubConnection: '$(GITHUB_CONNECTION)'
 
       - job: skip_release
-        condition: ne(variables['Build.SourceBranch'], format('refs/heads/{0}', variables.DEFAULT_BRANCH))
+        condition: 
+          or(
+            ne(variables['Build.SourceBranch'], format('refs/heads/{0}', variables.DEFAULT_BRANCH)),
+            eq(variables.MAKE_RELEASE, false)
+          )
         steps:
           - script: |
               echo "We assume this reference to be a valid release: $(Build.SourceBranch). Therefore, there is no need to bundle a new release."
