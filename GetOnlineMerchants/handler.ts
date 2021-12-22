@@ -28,6 +28,7 @@ import OnlineMerchantModel from "../models/OnlineMerchantModel";
 import { OnlineMerchantSearchRequest } from "../generated/definitions/OnlineMerchantSearchRequest";
 import { selectOnlineMerchantsQuery } from "../utils/postgres_queries";
 import { errorsToError } from "../utils/conversions";
+import { DiscountCodeTypeFromModel } from "../models/DiscountCodeTypes";
 
 type ResponseTypes =
   | IResponseSuccessJson<OnlineMerchants>
@@ -73,6 +74,9 @@ export const GetOnlineMerchantsHandler = (
       flow(
         AR.map(onlineMerchant => ({
           ...onlineMerchant,
+          discountCodeType: DiscountCodeTypeFromModel(
+            onlineMerchant.discount_code_type
+          ),
           productCategories: pipe(
             [...onlineMerchant.product_categories],
             AR.map(ProductCategoryFromModel)
