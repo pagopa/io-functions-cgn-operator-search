@@ -58,3 +58,5 @@ generated
 .eslintcache
 
 azure-functions-core-tools
+*.log
+*report-output-*
