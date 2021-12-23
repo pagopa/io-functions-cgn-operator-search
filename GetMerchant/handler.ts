@@ -1,21 +1,18 @@
 import * as express from "express";
 
 import { Context } from "@azure/functions";
-import { sequenceT } from "fp-ts/lib/Apply";
-import { toError } from "fp-ts/lib/Either";
-import {
-  taskEither,
-  tryCatch,
-  fromPredicate,
-  TaskEither,
-  fromEither
-} from "fp-ts/lib/TaskEither";
-import { ContextMiddleware } from "io-functions-commons/dist/src/utils/middlewares/context_middleware";
-import { RequiredParamMiddleware } from "io-functions-commons/dist/src/utils/middlewares/required_param";
+import * as AP from "fp-ts/lib/Apply";
+import * as AR from "fp-ts/lib/Array";
+import * as E from "fp-ts/lib/Either";
+import * as TE from "fp-ts/lib/TaskEither";
+import * as O from "fp-ts/lib/Option";
+import { pipe, flow } from "fp-ts/lib/function";
+import { ContextMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
+import { RequiredParamMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/required_param";
 import {
   withRequestMiddlewares,
   wrapRequestHandler
-} from "io-functions-commons/dist/src/utils/request_middleware";
+} from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import { Sequelize, QueryTypes } from "sequelize";
 import {
   IResponseErrorInternal,
@@ -26,8 +23,6 @@ import {
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
-import { identity } from "fp-ts/lib/function";
-import { fromNullable, Option } from "fp-ts/lib/Option";
 import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
 import { Merchant } from "../generated/definitions/Merchant";
 
@@ -37,6 +32,7 @@ import DiscountModel from "../models/DiscountModel";
 import { ProductCategoryFromModel } from "../models/ProductCategories";
 import { errorsToError } from "../utils/conversions";
 import { OptionalHeaderParamMiddleware } from "../middlewares/optional_header_param";
+import { DiscountCodeTypeFromModel } from "../models/DiscountCodeTypes";
 import {
   SelectDiscountsByMerchantQuery,
   SelectMerchantAddressListQuery,
@@ -51,38 +47,44 @@ type ResponseTypes =
 type IGetMerchantHandler = (
   context: Context,
   merchantId: string,
-  maybeFromExternalHeader: Option<NonEmptyString>
+  maybeFromExternalHeader: O.Option<NonEmptyString>
 ) => Promise<ResponseTypes>;
 
 const addressesTask = (
   cgnOperatorDb: Sequelize,
   profileId: number
-): TaskEither<IResponseErrorInternal, ReadonlyArray<AddressModel>> =>
-  tryCatch(
-    () =>
-      cgnOperatorDb.query(SelectMerchantAddressListQuery, {
-        model: AddressModel,
-        raw: true,
-        replacements: { profile_key: profileId },
-        type: QueryTypes.SELECT
-      }),
-    toError
-  ).mapLeft<IResponseErrorInternal>(e => ResponseErrorInternal(e.message));
+): TE.TaskEither<IResponseErrorInternal, ReadonlyArray<AddressModel>> =>
+  pipe(
+    TE.tryCatch(
+      () =>
+        cgnOperatorDb.query(SelectMerchantAddressListQuery, {
+          model: AddressModel,
+          raw: true,
+          replacements: { profile_key: profileId },
+          type: QueryTypes.SELECT
+        }),
+      E.toError
+    ),
+    TE.mapLeft(e => ResponseErrorInternal(e.message))
+  );
 
 const discountsTask = (
   cgnOperatorDb: Sequelize,
   merchantId: string
-): TaskEither<IResponseErrorInternal, ReadonlyArray<DiscountModel>> =>
-  tryCatch(
-    () =>
-      cgnOperatorDb.query(SelectDiscountsByMerchantQuery, {
-        model: DiscountModel,
-        raw: true,
-        replacements: { agreement_key: merchantId },
-        type: QueryTypes.SELECT
-      }),
-    toError
-  ).mapLeft<IResponseErrorInternal>(e => ResponseErrorInternal(e.message));
+): TE.TaskEither<IResponseErrorInternal, ReadonlyArray<DiscountModel>> =>
+  pipe(
+    TE.tryCatch(
+      () =>
+        cgnOperatorDb.query(SelectDiscountsByMerchantQuery, {
+          model: DiscountModel,
+          raw: true,
+          replacements: { agreement_key: merchantId },
+          type: QueryTypes.SELECT
+        }),
+      E.toError
+    ),
+    TE.mapLeft(e => ResponseErrorInternal(e.message))
+  );
 
 const allNationalAddressesArray = [
   {
@@ -98,85 +100,101 @@ export const GetMerchantHandler = (
   merchantId,
   maybeFromExternalHeader
 ): Promise<ResponseTypes> =>
-  tryCatch(
-    () =>
-      cgnOperatorDb.query(SelectMerchantProfileQuery, {
-        model: MerchantProfileModel,
-        raw: true,
-        replacements: { merchant_id: merchantId },
-        type: QueryTypes.SELECT
-      }),
-    toError
-  )
-    .mapLeft<IResponseErrorInternal | IResponseErrorNotFound>(e =>
-      ResponseErrorInternal(e.message)
-    )
-    .chain(
-      fromPredicate(
-        merchants => merchants.length > 0,
-        () => ResponseErrorNotFound("Not Found", "Merchant profile not found")
+  pipe(
+    TE.tryCatch(
+      () =>
+        cgnOperatorDb.query(SelectMerchantProfileQuery, {
+          model: MerchantProfileModel,
+          raw: true,
+          replacements: { merchant_id: merchantId },
+          type: QueryTypes.SELECT
+        }),
+      E.toError
+    ),
+    TE.bimap(e => ResponseErrorInternal(e.message), AR.head),
+    TE.chainW(
+      TE.fromOption(() =>
+        ResponseErrorNotFound("Not Found", "Merchant profile not found")
       )
-    )
-    .map(merchants => merchants[0])
-    .chain(merchant =>
-      sequenceT(taskEither)(
-        addressesTask(cgnOperatorDb, merchant.profile_k),
-        discountsTask(cgnOperatorDb, merchantId)
-      ).map(([addresses, discounts]) => ({ addresses, discounts, merchant }))
-    )
-    .map(__ => ({
-      ...__,
-      addresses:
-        __.addresses.length === 0 && __.merchant.all_national_addresses
-          ? allNationalAddressesArray
-          : __.addresses.map(a =>
-              withoutUndefinedValues({
-                full_address: a.full_address,
-                latitude: fromNullable(a.latitude).toUndefined(),
-                longitude: fromNullable(a.longitude).toUndefined()
-              })
-            ),
-      discounts: __.discounts.map(d =>
-        withoutUndefinedValues({
-          condition: fromNullable(d.condition).toUndefined(),
-          description: fromNullable(d.description).toUndefined(),
-          discount: fromNullable(d.discount_value).toUndefined(),
-          endDate: d.end_date,
-          landingPageReferrer: maybeFromExternalHeader
-            .chain(() => fromNullable(d.landing_page_referrer))
-            .toUndefined(),
-          landingPageUrl: maybeFromExternalHeader
-            .chain(() => fromNullable(d.landing_page_url))
-            .toUndefined(),
-          name: d.name,
-          productCategories: d.product_categories.map(p =>
-            ProductCategoryFromModel(p)
+    ),
+    TE.chainW(merchant =>
+      pipe(
+        {
+          addresses: addressesTask(cgnOperatorDb, merchant.profile_k),
+          discounts: discountsTask(cgnOperatorDb, merchantId)
+        },
+        AP.sequenceS(TE.ApplicativePar),
+        TE.map(({ addresses, discounts }) => ({
+          addresses:
+            addresses.length === 0 && merchant.all_national_addresses
+              ? allNationalAddressesArray
+              : addresses.map(a =>
+                  withoutUndefinedValues({
+                    full_address: a.full_address,
+                    latitude: pipe(O.fromNullable(a.latitude), O.toUndefined),
+                    longitude: pipe(O.fromNullable(a.longitude), O.toUndefined)
+                  })
+                ),
+          discounts: discounts.map(d =>
+            withoutUndefinedValues({
+              condition: pipe(O.fromNullable(d.condition), O.toUndefined),
+              description: pipe(O.fromNullable(d.description), O.toUndefined),
+              discount: pipe(O.fromNullable(d.discount_value), O.toUndefined),
+              endDate: d.end_date,
+              landingPageReferrer: pipe(
+                maybeFromExternalHeader,
+                O.chain(() => O.fromNullable(d.landing_page_referrer)),
+                O.toUndefined
+              ),
+              landingPageUrl: pipe(
+                maybeFromExternalHeader,
+                O.chain(() => O.fromNullable(d.landing_page_url)),
+                O.toUndefined
+              ),
+              name: d.name,
+              productCategories: d.product_categories.map(p =>
+                ProductCategoryFromModel(p)
+              ),
+              startDate: d.start_date,
+              staticCode: pipe(
+                maybeFromExternalHeader,
+                O.chain(() => O.fromNullable(d.static_code)),
+                O.toUndefined
+              )
+            })
           ),
-          startDate: d.start_date,
-          staticCode: maybeFromExternalHeader
-            .chain(() => fromNullable(d.static_code))
-            .toUndefined()
-        })
+          merchant
+        }))
       )
-    }))
-    .map(({ addresses, discounts, merchant }) =>
+    ),
+    TE.map(({ addresses, discounts, merchant }) =>
       withoutUndefinedValues({
         addresses,
         description: merchant.description,
+        discountCodeType: pipe(
+          O.fromNullable(merchant.discount_code_type),
+          O.map(DiscountCodeTypeFromModel),
+          O.toUndefined
+        ),
         discounts,
         id: merchant.agreement_fk,
         imageUrl: `${cdnBaseUrl}/${merchant.image_url}`,
         name: merchant.name,
-        websiteUrl: fromNullable(merchant.website_url).toUndefined()
+        websiteUrl: pipe(O.fromNullable(merchant.website_url), O.toUndefined)
       })
-    )
-    .chain(merchant =>
-      fromEither(Merchant.decode(merchant)).mapLeft(errs =>
-        ResponseErrorInternal(errorsToError(errs).message)
+    ),
+    TE.chainW(
+      flow(
+        Merchant.decode,
+        TE.fromEither,
+        TE.bimap(
+          e => ResponseErrorInternal(errorsToError(e).message),
+          ResponseSuccessJson
+        )
       )
-    )
-    .fold<ResponseTypes>(identity, ResponseSuccessJson)
-    .run();
+    ),
+    TE.toUnion
+  )();
 
 export const GetMerchant = (
   cgnOperatorDb: Sequelize,

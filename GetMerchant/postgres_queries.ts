@@ -5,6 +5,7 @@ SELECT
     COALESCE( NULLIF(p.name, ''), p.full_name) AS name,
     p.description,
     p.website_url,
+    p.discount_code_type,
     p.all_national_addresses,
     a.image_url
 FROM profile p

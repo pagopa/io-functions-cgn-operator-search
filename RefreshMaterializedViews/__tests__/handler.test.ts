@@ -1,7 +1,10 @@
 import { getMaterializedViewRefreshHandler } from "../handler";
+import * as E from "fp-ts/lib/Either";
 
 const queryMock = jest.fn().mockImplementation((query, __) => {
-  expect(query).toBe("REFRESH MATERIALIZED VIEW CONCURRENTLY online_merchant; REFRESH MATERIALIZED VIEW CONCURRENTLY offline_merchant");
+  expect(query).toBe(
+    "REFRESH MATERIALIZED VIEW CONCURRENTLY online_merchant; REFRESH MATERIALIZED VIEW CONCURRENTLY offline_merchant"
+  );
 
   return new Promise(resolve => {
     resolve([]);
@@ -21,9 +24,10 @@ describe("getMaterializedViewRefreshHandler", () => {
     )({} as any);
 
     expect(queryMock).toBeCalledTimes(1);
-
-    expect(response._tag).toBe("Right");
-    expect(response.value).toEqual("Materialized view refreshed!");
+    expect(E.isRight(response)).toBe(true);
+    if (E.isRight(response)) {
+      expect(response.right).toEqual("Materialized view refreshed!");
+    }
   });
 
   it("should report an error if there is an issue with the db", async () => {
@@ -38,7 +42,9 @@ describe("getMaterializedViewRefreshHandler", () => {
     )({} as any);
 
     expect(queryMock).toBeCalledTimes(1);
-    expect(response._tag).toBe("Left");
-    expect(response.value).toStrictEqual(Error("Query error!"));
+    expect(E.isLeft(response)).toBe(true);
+    if (E.isLeft(response)) {
+      expect(response.left).toStrictEqual(Error("Query error!"));
+    }
   });
 });

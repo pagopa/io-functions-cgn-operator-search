@@ -2,21 +2,25 @@
 
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
-import { fromNullable, none, some } from "fp-ts/lib/Option";
+import { pipe } from "fp-ts/lib/function";
+import * as O from "fp-ts/lib/Option";
+import { DiscountCodeTypeEnum } from "../../generated/definitions/DiscountCodeType";
 import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory";
+import { DiscountCodeTypeEnumModel } from "../../models/DiscountCodeTypes";
 import { ProductCategoryEnumModelType } from "../../models/ProductCategories";
 import { GetMerchantHandler } from "../handler";
 
-const anExternalHeader = some("EXT_PORTAL" as NonEmptyString);
 
 const anAgreementId = "abc-123-def";
+const anExternalHeader = O.some("EXT_PORTAL" as NonEmptyString);
 const aMerchantProfileWithStaticDiscountTypeModel = {
   agreement_fk: anAgreementId,
   description: "description something",
   image_url: "/images/1.png",
   name: "PagoPa",
   profile_k: 123,
-  website_url: "https://pagopa.it"
+  website_url: "https://pagopa.it",
+  discount_code_type: DiscountCodeTypeEnumModel.static
 };
 const aMerchantProfileModelList = [aMerchantProfileWithStaticDiscountTypeModel];
 
@@ -70,6 +74,7 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
   id: anAgreementId,
   imageUrl: `/${aMerchantProfileWithStaticDiscountTypeModel.image_url}`,
   websiteUrl: aMerchantProfileWithStaticDiscountTypeModel.website_url,
+  discountCodeType: DiscountCodeTypeEnum.static,
   addresses: anAddressModelList.map(address => ({
     full_address: address.full_address,
     latitude: address.latitude,
@@ -77,11 +82,11 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
   })),
   discounts: aDiscountModelList.map(discount =>
     withoutUndefinedValues({
-      condition: fromNullable(discount.condition).toUndefined(),
-      description: fromNullable(discount.description).toUndefined(),
+      condition: pipe(O.fromNullable(discount.condition), O.toUndefined),
+      description: pipe(O.fromNullable(discount.description), O.toUndefined),
       name: discount.name,
       endDate: discount.end_date,
-      discount: fromNullable(discount.discount_value).toUndefined(),
+      discount: pipe(O.fromNullable(discount.discount_value), O.toUndefined),
       startDate: discount.start_date,
       staticCode: withoutStaticCode ? undefined : discount.static_code,
       landingPageUrl: withoutStaticCode ? undefined : discount.landing_page_url,
@@ -142,7 +147,7 @@ describe("GetMerchantHandler", () => {
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
       anAgreementId,
-      none
+      O.none
     );
     expect(response.kind).toBe("IResponseSuccessJson");
     expect(queryMock).toBeCalledTimes(3);

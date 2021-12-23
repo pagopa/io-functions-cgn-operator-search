@@ -1,9 +1,8 @@
 /* tslint:disable: no-any */
-
-import { NonNegativeInteger } from "@pagopa/ts-commons/lib/numbers";
-import { none, some } from "fp-ts/lib/Option";
+import { DiscountCodeType, DiscountCodeTypeEnum } from "../../generated/definitions/DiscountCodeType";
 import { OnlineMerchantSearchRequest } from "../../generated/definitions/OnlineMerchantSearchRequest";
 import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory";
+import { DiscountCodeTypeEnumModel } from "../../models/DiscountCodeTypes";
 import { ProductCategoryEnumModelType } from "../../models/ProductCategories";
 import { GetOnlineMerchantsHandler } from "../handler";
 
@@ -15,6 +14,7 @@ const anOnlineMerchant = {
   id: "agreement_1",
   name: "PagoPa",
   website_url: "https://pagopa.it",
+  discount_code_type: DiscountCodeTypeEnumModel.static,
   product_categories: [
     ProductCategoryEnumModelType.entertainment,
     ProductCategoryEnumModelType.sports
@@ -45,6 +45,7 @@ const anOnlineMerchantResponse = {
   id: anOnlineMerchant.id,
   name: anOnlineMerchant.name,
   websiteUrl: anOnlineMerchant.website_url,
+  discountCodeType: DiscountCodeTypeEnum.static,
   productCategories: [ProductCategoryEnum.entertainment, ProductCategoryEnum.sports]
 };
 
