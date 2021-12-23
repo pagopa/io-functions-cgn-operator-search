@@ -10,9 +10,10 @@ import { DiscountCodeTypeEnumModel } from "../../models/DiscountCodeTypes";
 import { ProductCategoryEnumModelType } from "../../models/ProductCategories";
 import { GetMerchantHandler } from "../handler";
 
+
 const anAgreementId = "abc-123-def";
 const anExternalHeader = O.some("EXT_PORTAL" as NonEmptyString);
-const aMerchantProfileModel = {
+const aMerchantProfileWithStaticDiscountTypeModel = {
   agreement_fk: anAgreementId,
   description: "description something",
   image_url: "/images/1.png",
@@ -21,7 +22,7 @@ const aMerchantProfileModel = {
   website_url: "https://pagopa.it",
   discount_code_type: DiscountCodeTypeEnumModel.static
 };
-const aMerchantProfileModelList = [aMerchantProfileModel];
+const aMerchantProfileModelList = [aMerchantProfileWithStaticDiscountTypeModel];
 
 const anAddress = {
   full_address: "la rue 17, 1231, roma (rm)",
@@ -30,7 +31,7 @@ const anAddress = {
 };
 const anAddressModelList = [anAddress, { ...anAddress, city: "milano" }];
 
-const aDiscountModel = {
+const aDiscountModelWithStaticCode = {
   condition: null,
   description: "something something",
   discount_value: 20,
@@ -41,16 +42,38 @@ const aDiscountModel = {
     ProductCategoryEnumModelType.learning
   ],
   start_date: new Date("2020-01-01"),
-  static_code: "xxx"
+  static_code: "xxx",
+  landing_page_url: undefined,
+  landing_page_referrer: undefined
 };
-const aDiscountModelList = [aDiscountModel];
+
+const aDiscountModelWithLandingPage = {
+  condition: null,
+  description: "something something",
+  discount_value: 20,
+  end_date: new Date("2021-01-01"),
+  name: "name 1",
+  product_categories: [
+    ProductCategoryEnumModelType.entertainment,
+    ProductCategoryEnumModelType.learning
+  ],
+  start_date: new Date("2020-01-01"),
+  static_code: undefined,
+  landing_page_url: "xxx",
+  landing_page_referrer: "xxx"
+};
+
+const aDiscountModelList = [
+  aDiscountModelWithStaticCode,
+  aDiscountModelWithLandingPage
+];
 
 const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
-  description: aMerchantProfileModel.description,
-  name: aMerchantProfileModel.name,
+  description: aMerchantProfileWithStaticDiscountTypeModel.description,
+  name: aMerchantProfileWithStaticDiscountTypeModel.name,
   id: anAgreementId,
-  imageUrl: `/${aMerchantProfileModel.image_url}`,
-  websiteUrl: aMerchantProfileModel.website_url,
+  imageUrl: `/${aMerchantProfileWithStaticDiscountTypeModel.image_url}`,
+  websiteUrl: aMerchantProfileWithStaticDiscountTypeModel.website_url,
   discountCodeType: DiscountCodeTypeEnum.static,
   addresses: anAddressModelList.map(address => ({
     full_address: address.full_address,
@@ -66,6 +89,8 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
       discount: pipe(O.fromNullable(discount.discount_value), O.toUndefined),
       startDate: discount.start_date,
       staticCode: withoutStaticCode ? undefined : discount.static_code,
+      landingPageUrl: withoutStaticCode ? undefined : discount.landing_page_url,
+      landingPageReferrer: withoutStaticCode ? undefined : discount.landing_page_referrer,
       productCategories: [
         ProductCategoryEnum.entertainment,
         ProductCategoryEnum.learning
