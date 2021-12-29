@@ -89,7 +89,7 @@ describe("GetDiscountBucketCodeHandler", () => {
 
   it("should return a IResponseErrorInternal if any error is thrown during select", async () => {
     selectMockResult.mockImplementationOnce(() => {
-      throw "Any error on select";
+      throw Error("Any error on select");
     });
 
     const response = await GetDiscountBucketCodeHandler(
@@ -109,7 +109,7 @@ describe("GetDiscountBucketCodeHandler", () => {
 
   it("should return a IResponseErrorInternal if any error is thrown during update", async () => {
     updateMockResult.mockImplementationOnce(() => {
-      throw "Any error on update";
+      throw Error("Any error on update");
     });
 
     const response = await GetDiscountBucketCodeHandler(
