@@ -32,7 +32,7 @@ const app = express();
 secureExpressApp(app);
 
 // Add express route
-app.post("/offline-merchants", GetOfflineMerchants(cgnOperatorDb));
+app.post("api/v1/cgn/operator-search/offline-merchants", GetOfflineMerchants(cgnOperatorDb));
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
 
