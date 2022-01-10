@@ -107,7 +107,7 @@ stages:
 
 
   # Prepare Artifact
-  - stage: Deploy_staging
+  - stage: Prepare_artifact
     dependsOn:
       - Release
     jobs:
