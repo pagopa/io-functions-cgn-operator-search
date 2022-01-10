@@ -33,7 +33,7 @@ secureExpressApp(app);
 
 // Add express route
 app.get(
-  "/discount-bucket-code/:discountId",
+  "/api/v1/cgn/operator-search/discount-bucket-code/:discountId",
   GetDiscountBucketCode(cgnOperatorDb)
 );
 

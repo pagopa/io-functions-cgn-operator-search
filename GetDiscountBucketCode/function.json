@@ -5,7 +5,7 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "route": "merchants/{merchantId}",
+      "route": "api/v1/cgn/operator-search/discount-bucket-code/{discountId}",
       "methods": [
         "get"
       ]
@@ -16,5 +16,5 @@
       "name": "res"
     }
   ],
-  "scriptFile": "../dist/GetMerchant/index.js"
+  "scriptFile": "../dist/GetDiscountBucketCode/index.js"
 }
