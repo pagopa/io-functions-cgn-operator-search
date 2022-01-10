@@ -33,7 +33,7 @@ secureExpressApp(app);
 
 // Add express route
 app.get(
-  "api/v1/cgn/operator-search/merchants/:merchantId",
+  "/api/v1/cgn/operator-search/merchants/:merchantId",
   GetMerchant(
     cgnOperatorDb,
     config.CDN_MERCHANT_IMAGES_BASE_URL,
