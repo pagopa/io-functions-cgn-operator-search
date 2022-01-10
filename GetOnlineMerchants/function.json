@@ -5,7 +5,7 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "route": "online-merchants",
+      "route": "api/v1/cgn/operator-search/online-merchants",
       "methods": [
         "post"
       ]

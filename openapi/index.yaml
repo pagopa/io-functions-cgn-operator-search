@@ -10,7 +10,7 @@ info:
   description: >
     Documentation of the IO operator search API here.
 host: search.cgn.italia.it
-basePath: "/api/v1"
+basePath: "/api/v1/cgn/operator-search"
 schemes:
   - https
 
