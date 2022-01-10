@@ -5,7 +5,7 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "route": "merchants/{merchantId}",
+      "route": "api/v1/cgn/operator-search/merchants/{merchantId}",
       "methods": [
         "get"
       ]
