@@ -64,7 +64,7 @@ export const GetDiscountBucketCodeHandler = (
               O.Option<DiscountBucketCodeModel>
             > => {
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const [__, meta] = await cgnOperatorDb.query(
+              const [__, numberOfUpdatedRecords] = await cgnOperatorDb.query(
                 UpdateDiscountBucketCodeSetUsed,
                 {
                   raw: true,
@@ -74,7 +74,7 @@ export const GetDiscountBucketCodeHandler = (
                 }
               );
 
-              if (meta !== 1) {
+              if (numberOfUpdatedRecords !== 1) {
                 // we expect just one code to be updated, or else we should rollback
                 throw Error("Cannot update the bucket code");
               }
