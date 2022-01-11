@@ -4,6 +4,7 @@ import * as AR from "fp-ts/lib/Array";
 import * as E from "fp-ts/lib/Either";
 import * as TE from "fp-ts/lib/TaskEither";
 import * as O from "fp-ts/lib/Option";
+import * as TO from "fp-ts/lib/TaskOption";
 import { flow, pipe } from "fp-ts/lib/function";
 import { ContextMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import { RequiredParamMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/required_param";
@@ -48,8 +49,8 @@ export const GetDiscountBucketCodeHandler = (
   pipe(
     TE.tryCatch(
       () =>
-        cgnOperatorDb.transaction(async t => {
-          const code = pipe(
+        cgnOperatorDb.transaction(async t =>
+          pipe(
             await cgnOperatorDb.query(SelectDiscountBucketCodeByDiscount, {
               model: DiscountBucketCodeModel,
               raw: true,
@@ -57,29 +58,29 @@ export const GetDiscountBucketCodeHandler = (
               transaction: t,
               type: QueryTypes.SELECT
             }),
-            AR.head
-          );
+            AR.head,
+            TO.fromOption,
+            TO.chain(code => async () => {
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const [__, meta] = await cgnOperatorDb.query(
+                UpdateDiscountBucketCodeSetUsed,
+                {
+                  raw: true,
+                  replacements: { bucket_code_k: code.bucket_code_k },
+                  transaction: t,
+                  type: QueryTypes.UPDATE
+                }
+              );
 
-          if (O.isSome(code)) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const [__, meta] = await cgnOperatorDb.query(
-              UpdateDiscountBucketCodeSetUsed,
-              {
-                raw: true,
-                replacements: { bucket_code_k: code.value.bucket_code_k },
-                transaction: t,
-                type: QueryTypes.UPDATE
+              if (meta !== 1) {
+                // we expect just one code to be updated, or else we should rollback
+                throw Error("Cannot update the bucket code");
               }
-            );
 
-            if (meta !== 1) {
-              // we expect just one code to be updated, or else we should rollback
-              throw Error("Cannot update the bucket code");
-            }
-          }
-
-          return code;
-        }),
+              return O.some(code);
+            })
+          )()
+        ),
       E.toError
     ),
     TE.mapLeft(e => ResponseErrorInternal(e.message)),
