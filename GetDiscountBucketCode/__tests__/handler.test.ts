@@ -1,4 +1,5 @@
 /* tslint:disable: no-any */
+import { Transaction } from "sequelize/types";
 import { DiscountBucketCode } from "../../generated/definitions/DiscountBucketCode";
 import { GetDiscountBucketCodeHandler } from "../handler";
 
@@ -14,19 +15,13 @@ const aDiscountBucketCode = {
   used: false
 };
 
-const selectMockResult = jest.fn().mockImplementation(
-  () =>
-    new Promise(resolve => {
-      resolve([aDiscountBucketCode]);
-    })
-);
+const selectMockResult = jest
+  .fn()
+  .mockImplementation(() => Promise.resolve([aDiscountBucketCode]));
 
-const updateMockResult = jest.fn().mockImplementation(
-  () =>
-    new Promise(resolve => {
-      resolve([undefined, 1]);
-    })
-);
+const updateMockResult = jest
+  .fn()
+  .mockImplementation(() => Promise.resolve([undefined, 1]));
 
 const queryMock = jest.fn().mockImplementation((query: string, params) => {
   if (query.includes("FROM discount_bucket_code")) {
@@ -40,13 +35,17 @@ const queryMock = jest.fn().mockImplementation((query: string, params) => {
   }
 });
 
-const transactionMock = jest.fn().mockImplementation(
-  async <A>(a: () => A): Promise<A> => {
-    return a();
-  }
-);
+const transactionMock = ({
+  commit: jest.fn().mockImplementation(() => Promise.resolve(void 0)),
+  rollback: jest.fn().mockImplementation(() => Promise.resolve(void 0))
+} as unknown) as Transaction;
 
-const cgnOperatorDbMock = { query: queryMock, transaction: transactionMock };
+const cgnOperatorDbMock = {
+  query: queryMock,
+  transaction: jest
+    .fn()
+    .mockImplementation(() => Promise.resolve(transactionMock))
+};
 
 const anExpectedResponse: DiscountBucketCode = { code: aBucketCode };
 
@@ -59,44 +58,41 @@ describe("GetDiscountBucketCodeHandler", () => {
     const response = await GetDiscountBucketCodeHandler(
       cgnOperatorDbMock as any
     )({} as any, aDiscountFk);
-    expect(response.kind).toBe("IResponseSuccessJson");
-    expect(transactionMock).toBeCalledTimes(1);
     expect(queryMock).toBeCalledTimes(2);
     expect(selectMockResult).toBeCalledTimes(1);
     expect(updateMockResult).toBeCalledTimes(1);
+    console.log(response.detail);
+    expect(transactionMock.commit).toBeCalledTimes(1);
+
+    expect(response.kind).toBe("IResponseSuccessJson");
     if (response.kind === "IResponseSuccessJson") {
       expect(response.value).toEqual(anExpectedResponse);
     }
   });
 
   it("should return a IResponseErrorNotFound if no code is found", async () => {
-    selectMockResult.mockImplementationOnce(
-      () =>
-        new Promise(resolve => {
-          resolve([]);
-        })
-    );
+    selectMockResult.mockImplementationOnce(() => Promise.resolve([]));
 
     const response = await GetDiscountBucketCodeHandler(
       cgnOperatorDbMock as any
     )({} as any, aDiscountFk);
     expect(response.kind).toBe("IResponseErrorNotFound");
-    expect(transactionMock).toBeCalledTimes(1);
+    expect(transactionMock.rollback).toBeCalledTimes(1);
     expect(queryMock).toBeCalledTimes(1);
     expect(selectMockResult).toBeCalledTimes(1);
     expect(updateMockResult).not.toHaveBeenCalled();
   });
 
   it("should return a IResponseErrorInternal if any error is thrown during select", async () => {
-    selectMockResult.mockImplementationOnce(() => {
-      throw Error("Any error on select");
-    });
+    selectMockResult.mockImplementationOnce(() =>
+      Promise.reject("Any error on select")
+    );
 
     const response = await GetDiscountBucketCodeHandler(
       cgnOperatorDbMock as any
     )({} as any, aDiscountFk);
     expect(response.kind).toBe("IResponseErrorInternal");
-    expect(transactionMock).toBeCalledTimes(1);
+    expect(transactionMock.rollback).toBeCalledTimes(1);
     expect(queryMock).toBeCalledTimes(1);
     expect(selectMockResult).toBeCalledTimes(1);
     expect(updateMockResult).not.toHaveBeenCalled();
@@ -108,15 +104,15 @@ describe("GetDiscountBucketCodeHandler", () => {
   });
 
   it("should return a IResponseErrorInternal if any error is thrown during update", async () => {
-    updateMockResult.mockImplementationOnce(() => {
-      throw Error("Any error on update");
-    });
+    updateMockResult.mockImplementationOnce(() =>
+      Promise.reject("Any error on update")
+    );
 
     const response = await GetDiscountBucketCodeHandler(
       cgnOperatorDbMock as any
     )({} as any, aDiscountFk);
     expect(response.kind).toBe("IResponseErrorInternal");
-    expect(transactionMock).toBeCalledTimes(1);
+    expect(transactionMock.rollback).toBeCalledTimes(1);
     expect(queryMock).toBeCalledTimes(2);
     expect(selectMockResult).toBeCalledTimes(1);
     expect(updateMockResult).toBeCalledTimes(1);
@@ -128,18 +124,15 @@ describe("GetDiscountBucketCodeHandler", () => {
   });
 
   it("should return a IResponseErrorInternal if no update is executed", async () => {
-    updateMockResult.mockImplementationOnce(
-      () =>
-        new Promise(resolve => {
-          resolve([undefined, 0]);
-        })
+    updateMockResult.mockImplementationOnce(() =>
+      Promise.resolve([undefined, 0])
     );
 
     const response = await GetDiscountBucketCodeHandler(
       cgnOperatorDbMock as any
     )({} as any, aDiscountFk);
     expect(response.kind).toBe("IResponseErrorInternal");
-    expect(transactionMock).toBeCalledTimes(1);
+    expect(transactionMock.rollback).toBeCalledTimes(1);
     expect(queryMock).toBeCalledTimes(2);
     expect(selectMockResult).toBeCalledTimes(1);
     expect(updateMockResult).toBeCalledTimes(1);
