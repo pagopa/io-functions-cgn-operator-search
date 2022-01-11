@@ -60,7 +60,9 @@ export const GetDiscountBucketCodeHandler = (
             }),
             AR.head,
             TO.fromOption,
-            TO.chain(code => async () => {
+            TO.chain(code => async (): Promise<
+              O.Option<DiscountBucketCodeModel>
+            > => {
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const [__, meta] = await cgnOperatorDb.query(
                 UpdateDiscountBucketCodeSetUsed,
