@@ -87,6 +87,31 @@ paths:
           schema:
             $ref: "#/definitions/ProblemJson"
 
+  /discount-bucket-code/{discountId}:
+    parameters:
+      - name: discountId
+        in: path
+        type: string
+        minLength: 1
+        required: true
+        description: Discount Identifier
+    get:
+      operationId: getDiscountBucketCode
+      summary: Retrieve a discount bucket code
+      description: |
+        Retrieve a discount bucket code
+      responses:
+        "200":
+          description: Found
+          schema:
+            $ref: "#/definitions/DiscountBucketCode"
+        "404":
+          $ref: "#/responses/NotFound"
+        "500":
+          description: Service unavailable.
+          schema:
+            $ref: "#/definitions/ProblemJson"
+
 securityDefinitions:
   ApiKey:
     type: apiKey
@@ -361,6 +386,14 @@ definitions:
         type: number
       longitude:
         type: number
+
+  DiscountBucketCode:
+    type: object
+    required:
+      - code
+    properties:
+      code:
+        type: string
   
 responses:
   InvalidRequest:
