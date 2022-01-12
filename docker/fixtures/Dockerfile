@@ -4,7 +4,7 @@ RUN apk update \
     && apk add --no-cache postgresql \
     && apk add bash
 
-COPY postgres-database.backup /postgres-database.backup
+COPY test-backup /test-backup
 COPY init.sh /init.sh
 
 RUN chmod +x /init.sh
