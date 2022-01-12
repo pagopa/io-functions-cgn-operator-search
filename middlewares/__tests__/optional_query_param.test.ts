@@ -2,8 +2,8 @@
 
 import * as t from "io-ts";
 
-import { isLeft, isRight } from "fp-ts/lib/Either";
-import { isNone, isSome } from "fp-ts/lib/Option";
+import * as E from "fp-ts/lib/Either";
+import * as O from "fp-ts/lib/Option";
 
 import { OptionalQueryParamMiddleware } from "../optional_query_param";
 
@@ -15,11 +15,11 @@ describe("OptionalParamMiddleware", () => {
       query: {}
     } as any);
 
-    expect(isRight(result)).toBeTruthy();
-    expect(isRight(result)).toBeTruthy();
-    if (isRight(result)) {
-      const maybeValue = result.value;
-      expect(isNone(maybeValue)).toBeTruthy();
+    expect(E.isRight(result)).toBeTruthy();
+    expect(E.isRight(result)).toBeTruthy();
+    if (E.isRight(result)) {
+      const maybeValue = result.right;
+      expect(O.isNone(maybeValue)).toBeTruthy();
     }
   });
 
@@ -30,9 +30,9 @@ describe("OptionalParamMiddleware", () => {
       }
     } as any);
 
-    expect(isLeft(result)).toBeTruthy();
-    if (isLeft(result)) {
-      expect(result.value.kind).toBe("IResponseErrorValidation");
+    expect(E.isLeft(result)).toBeTruthy();
+    if (E.isLeft(result)) {
+      expect(result.left.kind).toBe("IResponseErrorValidation");
     }
   });
 
@@ -43,11 +43,11 @@ describe("OptionalParamMiddleware", () => {
       }
     } as any);
 
-    expect(isRight(result)).toBeTruthy();
-    if (isRight(result)) {
-      const maybeValue = result.value;
-      expect(isSome(maybeValue)).toBeTruthy();
-      if (isSome(maybeValue)) {
+    expect(E.isRight(result)).toBeTruthy();
+    if (E.isRight(result)) {
+      const maybeValue = result.right;
+      expect(O.isSome(maybeValue)).toBeTruthy();
+      if (O.isSome(maybeValue)) {
         const value = maybeValue.value;
         expect(value).toBe("hello");
       }

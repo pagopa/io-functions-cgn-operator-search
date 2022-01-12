@@ -1,8 +1,9 @@
 /* tslint:disable: no-any */
 
-import { NonNegativeInteger } from "@pagopa/ts-commons/lib/numbers";
-import { none, some } from "fp-ts/lib/Option";
-import { OfflineMerchantSearchRequest, OrderingEnum } from "../../generated/definitions/OfflineMerchantSearchRequest";
+import {
+  OfflineMerchantSearchRequest,
+  OrderingEnum
+} from "../../generated/definitions/OfflineMerchantSearchRequest";
 import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory";
 import { ProductCategoryEnumModelType } from "../../models/ProductCategories";
 import { GetOfflineMerchantsHandler } from "../handler";
@@ -14,12 +15,12 @@ const anEmptyArrayPromise = new Promise(resolve => {
 const anOfflineMerchant = {
   id: "agreement_1",
   name: "PagoPa",
-  address:  "via Roma 1 Milano",
+  address: "via Roma 1 Milano",
   latitude: 42.1234,
   longitude: 9.2456,
   distance: 10,
   product_categories: [
-    ProductCategoryEnumModelType.arts,
+    ProductCategoryEnumModelType.entertainment,
     ProductCategoryEnumModelType.sports
   ]
 };
@@ -29,16 +30,16 @@ const anOfflineMerchantList = [
   {
     ...anOfflineMerchant,
     product_categories: [
-      ProductCategoryEnumModelType.transportation,
-      ProductCategoryEnumModelType.travels
+      ProductCategoryEnumModelType.shopping,
+      ProductCategoryEnumModelType.travelling
     ]
   },
   {
     ...anOfflineMerchant,
     product_categories: [
-      ProductCategoryEnumModelType.entertainments,
-      ProductCategoryEnumModelType.connectivity,
-      ProductCategoryEnumModelType.books,
+      ProductCategoryEnumModelType.entertainment,
+      ProductCategoryEnumModelType.services,
+      ProductCategoryEnumModelType.learning,
       ProductCategoryEnumModelType.health
     ]
   }
@@ -53,7 +54,10 @@ const anOfflineMerchantResponse = {
     longitude: anOfflineMerchant.longitude
   },
   distance: anOfflineMerchant.distance,
-  productCategories: [ProductCategoryEnum.arts, ProductCategoryEnum.sports]
+  productCategories: [
+    ProductCategoryEnum.entertainment,
+    ProductCategoryEnum.sports
+  ]
 };
 
 const anExpectedResponse = {
@@ -62,16 +66,16 @@ const anExpectedResponse = {
     {
       ...anOfflineMerchantResponse,
       productCategories: [
-        ProductCategoryEnum.transportation,
-        ProductCategoryEnum.travels
+        ProductCategoryEnum.shopping,
+        ProductCategoryEnum.travelling
       ]
     },
     {
       ...anOfflineMerchantResponse,
       productCategories: [
-        ProductCategoryEnum.entertainments,
-        ProductCategoryEnum.connectivity,
-        ProductCategoryEnum.books,
+        ProductCategoryEnum.entertainment,
+        ProductCategoryEnum.services,
+        ProductCategoryEnum.learning,
         ProductCategoryEnum.health
       ]
     }
@@ -92,12 +96,12 @@ const aSearchRequestBody = {
     longitude: 9.235292727136773
   },
   boundingBox: {
-      coordinates: {
-          latitude: 45.4673873,
-          longitude:  9.18695985
-      },
-      deltaLatitude:  0.0489982,
-      deltaLongitude: 0.0569915
+    coordinates: {
+      latitude: 45.4673873,
+      longitude: 9.18695985
+    },
+    deltaLatitude: 0.0489982,
+    deltaLongitude: 0.0569915
   }
 };
 
@@ -139,17 +143,20 @@ describe("GetOfflineMerchantsHandler", () => {
 
   it("should add to the db query the product category filters", async () => {
     queryMock.mockImplementationOnce((query, _) => {
-      expect(query).toMatch(/AND \(arts OR entertainments\)/);
+      expect(query).toMatch(/AND \(learning OR entertainment\)/);
 
       return anEmptyArrayPromise;
     });
 
     const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
       {} as any,
-       {
-        ...aSearchRequestBody, 
-        productCategories: [ProductCategoryEnum.arts, ProductCategoryEnum.entertainments]
-      } as OfflineMerchantSearchRequest 
+      {
+        ...aSearchRequestBody,
+        productCategories: [
+          ProductCategoryEnum.learning,
+          ProductCategoryEnum.entertainment
+        ]
+      } as OfflineMerchantSearchRequest
     );
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
@@ -158,7 +165,7 @@ describe("GetOfflineMerchantsHandler", () => {
   it("should add to the db query all the product category filters", async () => {
     queryMock.mockImplementationOnce((query, _) => {
       expect(query).toMatch(
-        /AND \(travels OR transportation OR connectivity OR books OR sports OR health\)/
+        /AND \(travelling OR shopping OR services OR learning OR sports OR health\)/
       );
 
       return anEmptyArrayPromise;
@@ -167,15 +174,16 @@ describe("GetOfflineMerchantsHandler", () => {
     const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
       {} as any,
       {
-        ...aSearchRequestBody, 
-        productCategories: [ProductCategoryEnum.travels,
-        ProductCategoryEnum.transportation,
-        ProductCategoryEnum.connectivity,
-        ProductCategoryEnum.books,
-        ProductCategoryEnum.sports,
-        ProductCategoryEnum.health]
-      } as OfflineMerchantSearchRequest 
-
+        ...aSearchRequestBody,
+        productCategories: [
+          ProductCategoryEnum.travelling,
+          ProductCategoryEnum.shopping,
+          ProductCategoryEnum.services,
+          ProductCategoryEnum.learning,
+          ProductCategoryEnum.sports,
+          ProductCategoryEnum.health
+        ]
+      } as OfflineMerchantSearchRequest
     );
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
@@ -191,9 +199,10 @@ describe("GetOfflineMerchantsHandler", () => {
     const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
       {} as any,
       {
-        ...aSearchRequestBody, 
-        page: 2, pageSize: 10
-      } as OfflineMerchantSearchRequest 
+        ...aSearchRequestBody,
+        page: 2,
+        pageSize: 10
+      } as OfflineMerchantSearchRequest
     );
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
@@ -208,13 +217,12 @@ describe("GetOfflineMerchantsHandler", () => {
     const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
       {} as any,
       {
-        ...aSearchRequestBody, 
+        ...aSearchRequestBody,
         ordering: OrderingEnum.alphabetic
       } as OfflineMerchantSearchRequest
     );
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
-  
   });
 
   it("should add to the db query the order by distance", async () => {
@@ -226,15 +234,14 @@ describe("GetOfflineMerchantsHandler", () => {
     const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
       {} as any,
       {
-        ...aSearchRequestBody, 
+        ...aSearchRequestBody,
         ordering: OrderingEnum.distance
       } as OfflineMerchantSearchRequest
     );
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
-  
   });
-   
+
   it("should return an InternalServerError when there is an issue quering the db", async () => {
     queryMock.mockImplementationOnce(
       (_, __) =>
@@ -246,9 +253,10 @@ describe("GetOfflineMerchantsHandler", () => {
     const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
       {} as any,
       {
-        ...aSearchRequestBody, 
-        page: 0, pageSize: 20
-      } as OfflineMerchantSearchRequest 
+        ...aSearchRequestBody,
+        page: 0,
+        pageSize: 20
+      } as OfflineMerchantSearchRequest
     );
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseErrorInternal");

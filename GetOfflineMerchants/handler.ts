@@ -1,24 +1,25 @@
 import * as express from "express";
-
 import { Context } from "@azure/functions";
-import { toError } from "fp-ts/lib/Either";
-import { fromEither, tryCatch } from "fp-ts/lib/TaskEither";
-import { ContextMiddleware } from "io-functions-commons/dist/src/utils/middlewares/context_middleware";
-import { RequiredBodyPayloadMiddleware } from "io-functions-commons/dist/src/utils/middlewares/required_body_payload";
+import { identity, pipe, flow } from "fp-ts/lib/function";
+import * as AR from "fp-ts/lib/Array";
+import * as E from "fp-ts/lib/Either";
+import * as TE from "fp-ts/lib/TaskEither";
+import * as O from "fp-ts/lib/Option";
+import { ContextMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
+import { RequiredBodyPayloadMiddleware } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/required_body_payload";
 import {
   withRequestMiddlewares,
   wrapRequestHandler
-} from "io-functions-commons/dist/src/utils/request_middleware";
+} from "@pagopa/io-functions-commons/dist/src/utils/request_middleware";
 import { Sequelize, QueryTypes } from "sequelize";
-
-import { identity } from "fp-ts/lib/function";
-import { fromNullable } from "fp-ts/lib/Option";
 import {
   IResponseErrorInternal,
   IResponseSuccessJson,
   ResponseErrorInternal,
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
+import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
+import { toLowerCase } from "fp-ts/lib/string";
 import { OfflineMerchants } from "../generated/definitions/OfflineMerchants";
 
 import { ProductCategoryFromModel } from "../models/ProductCategories";
@@ -42,42 +43,58 @@ export const GetOfflineMerchantsHandler = (
   _,
   searchRequest
 ): Promise<ResponseTypes> =>
-  tryCatch(
-    () =>
-      cgnOperatorDb.query(selectOfflineMerchantsQuery(searchRequest), {
-        model: OfflineMerchantModel,
-        raw: true,
-        replacements: {
-          name_filter: `%${fromNullable(searchRequest.merchantName)
-            .foldL(() => "", identity)
-            .toLowerCase()}%`
-        },
-        type: QueryTypes.SELECT
-      }),
-    toError
-  )
-    .map(merchants =>
-      merchants.map(m => ({
-        ...m,
-        address: {
-          full_address: m.address,
-          latitude: m.latitude,
-          longitude: m.longitude
-        },
-        distance: Math.round(m.distance),
-        productCategories: m.product_categories.map(pc =>
-          ProductCategoryFromModel(pc)
-        )
-      }))
-    )
-    .chain(__ =>
-      fromEither(OfflineMerchants.decode({ items: __ })).mapLeft(errorsToError)
-    )
-    .fold<ResponseTypes>(
-      e => ResponseErrorInternal(e.message),
-      ResponseSuccessJson
-    )
-    .run();
+  pipe(
+    TE.tryCatch(
+      () =>
+        cgnOperatorDb.query(selectOfflineMerchantsQuery(searchRequest), {
+          model: OfflineMerchantModel,
+          raw: true,
+          replacements: {
+            name_filter: `%${pipe(
+              O.fromNullable(searchRequest.merchantName),
+              O.fold(() => "", identity),
+              toLowerCase
+            )}%`
+          },
+          type: QueryTypes.SELECT
+        }),
+      E.toError
+    ),
+    TE.map(
+      flow(
+        AR.map(offlineMerchant =>
+          withoutUndefinedValues({
+            ...offlineMerchant,
+            address: withoutUndefinedValues({
+              full_address: offlineMerchant.address,
+              latitude: pipe(
+                O.fromNullable(offlineMerchant.latitude),
+                O.toUndefined
+              ),
+              longitude: pipe(
+                O.fromNullable(offlineMerchant.longitude),
+                O.toUndefined
+              )
+            }),
+            distance: pipe(
+              O.fromNullable(offlineMerchant.distance),
+              O.map(Math.round),
+              O.toUndefined
+            ),
+            productCategories: offlineMerchant.product_categories.map(pc =>
+              ProductCategoryFromModel(pc)
+            )
+          })
+        ),
+        offlineMerchants => ({ items: offlineMerchants })
+      )
+    ),
+    TE.chainW(
+      flow(OfflineMerchants.decode, TE.fromEither, TE.mapLeft(errorsToError))
+    ),
+    TE.bimap(e => ResponseErrorInternal(e.message), ResponseSuccessJson),
+    TE.toUnion
+  )();
 
 export const GetOfflineMerchants = (
   cgnOperatorDb: Sequelize

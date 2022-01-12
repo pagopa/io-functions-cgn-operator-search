@@ -10,7 +10,7 @@ info:
   description: >
     Documentation of the IO operator search API here.
 host: search.cgn.italia.it
-basePath: "/api/v1"
+basePath: "/api/v1/cgn/operator-search"
 schemes:
   - https
 
@@ -87,6 +87,31 @@ paths:
           schema:
             $ref: "#/definitions/ProblemJson"
 
+  /discount-bucket-code/{discountId}:
+    parameters:
+      - name: discountId
+        in: path
+        type: string
+        minLength: 1
+        required: true
+        description: Discount Identifier
+    get:
+      operationId: getDiscountBucketCode
+      summary: Retrieve a discount bucket code
+      description: |
+        Retrieve a discount bucket code
+      responses:
+        "200":
+          description: Found
+          schema:
+            $ref: "#/definitions/DiscountBucketCode"
+        "404":
+          $ref: "#/responses/NotFound"
+        "500":
+          description: Service unavailable.
+          schema:
+            $ref: "#/definitions/ProblemJson"
+
 securityDefinitions:
   ApiKey:
     type: apiKey
@@ -103,7 +128,6 @@ definitions:
     required:
       - id
       - name
-      - description
       - discounts
     properties:
       id:
@@ -118,6 +142,8 @@ definitions:
       websiteUrl:
         type: string
         minLength: 1
+      discountCodeType:
+        $ref: "#/definitions/DiscountCodeType"
       imageUrl:
         type: string
         minLength: 1
@@ -137,7 +163,6 @@ definitions:
       - startDate
       - endDate
       - productCategories
-      - discount
     properties:
       name:
         type: string
@@ -165,6 +190,12 @@ definitions:
       staticCode:
         type: string
         minLength: 1
+      landingPageUrl:
+        type: string
+        minLength: 1
+      landingPageReferrer:
+        type: string
+        minLength: 1
 
   OnlineMerchants:
     type: object
@@ -183,6 +214,7 @@ definitions:
       - name
       - productCategories
       - websiteUrl
+      - discountCodeType
     properties:
       id:
         type: string
@@ -197,6 +229,8 @@ definitions:
       websiteUrl:
         type: string
         minLength: 1
+      discountCodeType:
+        $ref: "#/definitions/DiscountCodeType"
 
   OfflineMerchants:
     type: object
@@ -215,7 +249,6 @@ definitions:
       - name
       - productCategories
       - address
-      - distance
     properties:
       id:
         type: string
@@ -238,8 +271,6 @@ definitions:
     type: object
     required:
       - full_address
-      - latitude
-      - longitude
     properties:
       full_address:
         type: string
@@ -248,18 +279,27 @@ definitions:
         type: number
       longitude:
         type: number
-
+        
   ProductCategory:
     type: string
     enum:
-      - entertainments
-      - travels
-      - transportation
-      - connectivity
-      - books
-      - arts
+      - entertainment
+      - travelling
+      - foodDrink
+      - services
+      - learning
+      - hotels
       - sports
       - health
+      - shopping
+
+  DiscountCodeType:
+    type: string
+    enum:
+      - static
+      - api
+      - landingpage
+      - bucket
 
   OnlineMerchantSearchRequest:
     type: object
@@ -286,9 +326,6 @@ definitions:
 
   OfflineMerchantSearchRequest:
     type: object
-    required:
-      - userCoordinates
-      - boundingBox
     properties:
       merchantName:
         type: string
@@ -349,6 +386,14 @@ definitions:
         type: number
       longitude:
         type: number
+
+  DiscountBucketCode:
+    type: object
+    required:
+      - code
+    properties:
+      code:
+        type: string
   
 responses:
   InvalidRequest:

@@ -1,19 +1,28 @@
 /* tslint:disable: no-any */
 
+import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
+import { pipe } from "fp-ts/lib/function";
+import * as O from "fp-ts/lib/Option";
+import { DiscountCodeTypeEnum } from "../../generated/definitions/DiscountCodeType";
 import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory";
+import { DiscountCodeTypeEnumModel } from "../../models/DiscountCodeTypes";
 import { ProductCategoryEnumModelType } from "../../models/ProductCategories";
 import { GetMerchantHandler } from "../handler";
 
+
 const anAgreementId = "abc-123-def";
-const aMerchantProfileModel = {
+const anExternalHeader = O.some("EXT_PORTAL" as NonEmptyString);
+const aMerchantProfileWithStaticDiscountTypeModel = {
   agreement_fk: anAgreementId,
   description: "description something",
   image_url: "/images/1.png",
   name: "PagoPa",
   profile_k: 123,
-  website_url: "https://pagopa.it"
+  website_url: "https://pagopa.it",
+  discount_code_type: DiscountCodeTypeEnumModel.static
 };
-const aMerchantProfileModelList = [aMerchantProfileModel];
+const aMerchantProfileModelList = [aMerchantProfileWithStaticDiscountTypeModel];
 
 const anAddress = {
   full_address: "la rue 17, 1231, roma (rm)",
@@ -22,43 +31,73 @@ const anAddress = {
 };
 const anAddressModelList = [anAddress, { ...anAddress, city: "milano" }];
 
-const aDiscountModel = {
-  condition: "mah",
+const aDiscountModelWithStaticCode = {
+  condition: null,
   description: "something something",
   discount_value: 20,
   end_date: new Date("2021-01-01"),
   name: "name 1",
   product_categories: [
-    ProductCategoryEnumModelType.arts,
-    ProductCategoryEnumModelType.books
+    ProductCategoryEnumModelType.entertainment,
+    ProductCategoryEnumModelType.learning
   ],
   start_date: new Date("2020-01-01"),
-  static_code: "xxx"
+  static_code: "xxx",
+  landing_page_url: undefined,
+  landing_page_referrer: undefined
 };
-const aDiscountModelList = [aDiscountModel];
 
-const anExpectedResponse = {
-  description: aMerchantProfileModel.description,
-  name: aMerchantProfileModel.name,
+const aDiscountModelWithLandingPage = {
+  condition: null,
+  description: "something something",
+  discount_value: 20,
+  end_date: new Date("2021-01-01"),
+  name: "name 1",
+  product_categories: [
+    ProductCategoryEnumModelType.entertainment,
+    ProductCategoryEnumModelType.learning
+  ],
+  start_date: new Date("2020-01-01"),
+  static_code: undefined,
+  landing_page_url: "xxx",
+  landing_page_referrer: "xxx"
+};
+
+const aDiscountModelList = [
+  aDiscountModelWithStaticCode,
+  aDiscountModelWithLandingPage
+];
+
+const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
+  description: aMerchantProfileWithStaticDiscountTypeModel.description,
+  name: aMerchantProfileWithStaticDiscountTypeModel.name,
   id: anAgreementId,
-  imageUrl: aMerchantProfileModel.image_url,
-  websiteUrl: aMerchantProfileModel.website_url,
+  imageUrl: `/${aMerchantProfileWithStaticDiscountTypeModel.image_url}`,
+  websiteUrl: aMerchantProfileWithStaticDiscountTypeModel.website_url,
+  discountCodeType: DiscountCodeTypeEnum.static,
   addresses: anAddressModelList.map(address => ({
     full_address: address.full_address,
     latitude: address.latitude,
     longitude: address.longitude
   })),
-  discounts: aDiscountModelList.map(discount => ({
-    condition: discount.condition,
-    description: discount.description,
-    name: discount.name,
-    endDate: discount.end_date,
-    discount: discount.discount_value,
-    startDate: discount.start_date,
-    staticCode: discount.static_code,
-    productCategories: [ProductCategoryEnum.arts, ProductCategoryEnum.books]
-  }))
-};
+  discounts: aDiscountModelList.map(discount =>
+    withoutUndefinedValues({
+      condition: pipe(O.fromNullable(discount.condition), O.toUndefined),
+      description: pipe(O.fromNullable(discount.description), O.toUndefined),
+      name: discount.name,
+      endDate: discount.end_date,
+      discount: pipe(O.fromNullable(discount.discount_value), O.toUndefined),
+      startDate: discount.start_date,
+      staticCode: withoutStaticCode ? undefined : discount.static_code,
+      landingPageUrl: withoutStaticCode ? undefined : discount.landing_page_url,
+      landingPageReferrer: withoutStaticCode ? undefined : discount.landing_page_referrer,
+      productCategories: [
+        ProductCategoryEnum.entertainment,
+        ProductCategoryEnum.learning
+      ]
+    })
+  )
+});
 
 const queryMock = jest.fn().mockImplementation((query: string, params) => {
   if (query.includes("FROM profile")) {
@@ -94,12 +133,26 @@ describe("GetMerchantHandler", () => {
   it("should return a merchant given its ID, together with the address list and the published discount list", async () => {
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
-      anAgreementId
+      anAgreementId,
+      anExternalHeader
     );
     expect(response.kind).toBe("IResponseSuccessJson");
     expect(queryMock).toBeCalledTimes(3);
     if (response.kind === "IResponseSuccessJson") {
-      expect(response.value).toEqual(anExpectedResponse);
+      expect(response.value).toEqual(anExpectedResponse());
+    }
+  });
+
+  it("should return a merchant given its ID, without static code in discounts if external header is none", async () => {
+    const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
+      {} as any,
+      anAgreementId,
+      O.none
+    );
+    expect(response.kind).toBe("IResponseSuccessJson");
+    expect(queryMock).toBeCalledTimes(3);
+    if (response.kind === "IResponseSuccessJson") {
+      expect(response.value).toEqual(anExpectedResponse(true));
     }
   });
 
@@ -129,12 +182,16 @@ describe("GetMerchantHandler", () => {
 
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
-      anAgreementId
+      anAgreementId,
+      anExternalHeader
     );
     expect(queryMock).toBeCalledTimes(3);
     expect(response.kind).toBe("IResponseSuccessJson");
     if (response.kind === "IResponseSuccessJson") {
-      expect(response.value).toEqual({ ...anExpectedResponse, addresses: [] });
+      expect(response.value).toEqual({
+        ...anExpectedResponse(),
+        addresses: []
+      });
     }
   });
 
@@ -149,7 +206,8 @@ describe("GetMerchantHandler", () => {
 
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
-      anAgreementId
+      anAgreementId,
+      anExternalHeader
     );
     expect(response.kind).toBe("IResponseErrorNotFound");
     expect(queryMock).toBeCalledTimes(1);
@@ -166,7 +224,8 @@ describe("GetMerchantHandler", () => {
 
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
-      anAgreementId
+      anAgreementId,
+      anExternalHeader
     );
     expect(response.kind).toBe("IResponseErrorInternal");
     expect(queryMock).toBeCalledTimes(1);

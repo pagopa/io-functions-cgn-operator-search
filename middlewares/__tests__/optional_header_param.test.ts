@@ -1,18 +1,23 @@
 // eslint-disable @typescript-eslint/no-explicit-any
 
+import * as t from "io-ts";
+
 import * as E from "fp-ts/lib/Either";
 import * as O from "fp-ts/lib/Option";
-import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory";
 
-import { OptionalProductCategoryListMiddleware } from "../optional_product_category_list_middleware";
+import { OptionalHeaderParamMiddleware } from "../optional_header_param";
 
-const middleware = OptionalProductCategoryListMiddleware("param");
+const middleware = OptionalHeaderParamMiddleware("param", t.string);
 
-describe("OptionalProductCategoryListMiddleware", () => {
-  it("should respond with none if the parameter is missing", async () => {
-    const result = await middleware({
-      query: {}
-    } as any);
+const mockHeader = jest.fn().mockReturnValue("param");
+const mockReq = {
+  header: mockHeader
+};
+
+describe("OptionalHeaderMiddleware", () => {
+  it("should respond with none if the header parameter is missing", async () => {
+    mockHeader.mockReturnValueOnce(undefined);
+    const result = await middleware(mockReq as any);
 
     expect(E.isRight(result)).toBeTruthy();
     expect(E.isRight(result)).toBeTruthy();
@@ -23,11 +28,8 @@ describe("OptionalProductCategoryListMiddleware", () => {
   });
 
   it("should respond with a validation error if the parameter is present but NOT valid", async () => {
-    const result = await middleware({
-      query: {
-        param: "something"
-      }
-    } as any);
+    mockHeader.mockReturnValueOnce(2);
+    const result = await middleware(mockReq as any);
 
     expect(E.isLeft(result)).toBeTruthy();
     if (E.isLeft(result)) {
@@ -36,11 +38,7 @@ describe("OptionalProductCategoryListMiddleware", () => {
   });
 
   it("should extract the parameter if it is present and valid", async () => {
-    const result = await middleware({
-      query: {
-        param: "shopping,entertainment"
-      }
-    } as any);
+    const result = await middleware(mockReq as any);
 
     expect(E.isRight(result)).toBeTruthy();
     if (E.isRight(result)) {
@@ -48,10 +46,7 @@ describe("OptionalProductCategoryListMiddleware", () => {
       expect(O.isSome(maybeValue)).toBeTruthy();
       if (O.isSome(maybeValue)) {
         const value = maybeValue.value;
-        expect(value).toStrictEqual([
-          ProductCategoryEnum.shopping,
-          ProductCategoryEnum.entertainment
-        ]);
+        expect(value).toBe("param");
       }
     }
   });

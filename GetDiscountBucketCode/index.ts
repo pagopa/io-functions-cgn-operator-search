@@ -11,7 +11,7 @@ import { Sequelize } from "sequelize";
 
 import { getConfigOrThrow } from "../utils/config";
 import { sequelizePostgresOptions } from "../utils/sequelize-options";
-import { GetMerchant } from "./handler";
+import { GetDiscountBucketCode } from "./handler";
 
 const config = getConfigOrThrow();
 
@@ -33,12 +33,8 @@ secureExpressApp(app);
 
 // Add express route
 app.get(
-  "/api/v1/cgn/operator-search/merchants/:merchantId",
-  GetMerchant(
-    cgnOperatorDb,
-    config.CDN_MERCHANT_IMAGES_BASE_URL,
-    config.CGN_EXTERNAL_SOURCE_HEADER_NAME
-  )
+  "/api/v1/cgn/operator-search/discount-bucket-code/:discountId",
+  GetDiscountBucketCode(cgnOperatorDb)
 );
 
 const azureFunctionHandler = createAzureFunctionHandler(app);

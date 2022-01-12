@@ -1,7 +1,7 @@
 import { AzureFunction, Context } from "@azure/functions";
 import * as express from "express";
-import { secureExpressApp } from "io-functions-commons/dist/src/utils/express";
-import { setAppContext } from "io-functions-commons/dist/src/utils/middlewares/context_middleware";
+import { secureExpressApp } from "@pagopa/io-functions-commons/dist/src/utils/express";
+import { setAppContext } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import createAzureFunctionHandler from "@pagopa/express-azure-functions/dist/src/createAzureFunctionsHandler";
 import { Info } from "./handler";
 
@@ -10,7 +10,7 @@ const app = express();
 secureExpressApp(app);
 
 // Add express route
-app.get("/api/v1/info", Info());
+app.get("/api/v1/cgn/operator-search/info", Info());
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
 

@@ -5,9 +5,9 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "route": "api/v1/cgn/operator-search/offline-merchants",
+      "route": "api/v1/cgn/operator-search/discount-bucket-code/{discountId}",
       "methods": [
-        "post"
+        "get"
       ]
     },
     {
@@ -16,5 +16,5 @@
       "name": "res"
     }
   ],
-  "scriptFile": "../dist/GetOfflineMerchants/index.js"
+  "scriptFile": "../dist/GetDiscountBucketCode/index.js"
 }

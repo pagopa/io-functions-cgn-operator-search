@@ -2,11 +2,12 @@ import {
   IResponse,
   ResponseErrorFromValidationErrors
 } from "@pagopa/ts-commons/lib/responses";
-import { Either } from "fp-ts/lib/Either";
-import { fromNullable, none, Option, some } from "fp-ts/lib/Option";
-import { IRequestMiddleware } from "io-functions-commons/dist/src/utils/request_middleware";
+import * as E from "fp-ts/lib/Either";
+import * as TE from "fp-ts/lib/TaskEither";
+import * as O from "fp-ts/lib/Option";
 import * as t from "io-ts";
-import { fromEither, taskEither } from "fp-ts/lib/TaskEither";
+import { flow, pipe } from "fp-ts/lib/function";
+import { Request } from "express";
 import {
   ProductCategory,
   ProductCategoryEnum
@@ -56,30 +57,22 @@ const CommaSeparatedListOf = (
     String
   );
 
-export const OptionalProductCategoryListMiddleware = (
-  name: string
-): IRequestMiddleware<
-  "IResponseErrorValidation",
-  Option<ReadonlyArray<ProductCategory>>
-> => async (
-  request
+export const OptionalProductCategoryListMiddleware = (name: string) => async (
+  request: Request
 ): Promise<
-  Either<
+  E.Either<
     IResponse<"IResponseErrorValidation">,
-    Option<ReadonlyArray<ProductCategory>>
+    O.Option<ReadonlyArray<ProductCategory>>
   >
 > =>
-  taskEither
-    .of<IResponse<"IResponseErrorValidation">, Option<unknown>>(
-      fromNullable(request.query[name])
-    )
-    .chain(maybeQuery =>
-      maybeQuery.foldL(
-        () => taskEither.of(none),
-        query =>
-          fromEither(
-            CommaSeparatedListOf(productCategoryCodec).decode(query)
-          ).bimap(ResponseErrorFromValidationErrors(ProductCategory), some)
+  pipe(
+    O.fromNullable(request.query[name]),
+    O.fold(
+      () => TE.of(O.none),
+      flow(
+        CommaSeparatedListOf(productCategoryCodec).decode,
+        TE.fromEither,
+        TE.bimap(ResponseErrorFromValidationErrors(ProductCategory), O.some)
       )
     )
-    .run();
+  )();

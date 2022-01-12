@@ -1,5 +1,5 @@
-import { Option } from "fp-ts/lib/Option";
-import { fromNullable } from "fp-ts/lib/Option";
+import * as O from "fp-ts/lib/Option";
+import { pipe } from "fp-ts/lib/function";
 import { BoundingBox } from "../generated/definitions/BoundingBox";
 import { Coordinates } from "../generated/definitions/Coordinates";
 import { ProductCategory } from "../generated/definitions/ProductCategory";
@@ -8,21 +8,38 @@ import { OrderingEnum } from "../generated/definitions/OfflineMerchantSearchRequ
 import { OfflineMerchantSearchRequest } from "../generated/definitions/OfflineMerchantSearchRequest";
 
 const categoryFilter = (
-  productCategoriesFilter: Option<ReadonlyArray<ProductCategory>>
+  productCategoriesFilter: O.Option<ReadonlyArray<ProductCategory>>
 ): string =>
-  productCategoriesFilter
-    .map(s => s.map(c => ProductCategoryToQueryColumn(c)).join(" OR "))
-    .map(s => `AND (${s})`)
-    .getOrElse("");
+  pipe(
+    productCategoriesFilter,
+    O.map(s => s.map(c => ProductCategoryToQueryColumn(c)).join(" OR ")),
+    O.map(s => `AND (${s})`),
+    O.getOrElse(() => "")
+  );
 
-const nameFilterQueryPart = (nameFilter: Option<string>): string =>
-  nameFilter.map(__ => " AND searchable_name LIKE :name_filter ").getOrElse("");
+const nameFilterQueryPart = (nameFilter: O.Option<string>): string =>
+  pipe(
+    nameFilter,
+    O.map(__ => " AND searchable_name LIKE :name_filter "),
+    O.getOrElse(() => "")
+  );
 
-const pageSize = (maybePageSize: Option<number>): number =>
-  maybePageSize.getOrElse(100);
+const pageNumber = (maybePage: O.Option<number>): number =>
+  pipe(
+    maybePage,
+    O.getOrElse(() => 0)
+  );
 
-const offset = (page: Option<number>, maybePageSize: Option<number>): number =>
-  page.getOrElse(0) * pageSize(maybePageSize);
+const pageSize = (maybePageSize: O.Option<number>): number =>
+  pipe(
+    maybePageSize,
+    O.getOrElse(() => 100)
+  );
+
+const offset = (
+  page: O.Option<number>,
+  maybePageSize: O.Option<number>
+): number => pageNumber(page) * pageSize(maybePageSize);
 
 const getBoundingBoxMinLatitude = (boundingBox: BoundingBox): number =>
   boundingBox.coordinates.latitude - boundingBox.deltaLatitude / 2;
@@ -45,27 +62,32 @@ const boundingBoxFilter = (boundingBox: BoundingBox): string =>
         AND ${getBoundingBoxMaxLongitude(boundingBox)} `;
 
 const distanceParameter = (userCoordinates: Coordinates): string =>
-  `ST_MakePoint(longitude, latitude)::geography <-> ST_MakePoint(${userCoordinates.longitude}, ${userCoordinates.latitude})::geography`;
+  `ST_MakePoint(longitude, latitude)::geography <-> ST_MakePoint(${userCoordinates.longitude}, ${userCoordinates.latitude})::geography AS distance`;
 
 const orderingParameter = (
   ordering: OrderingEnum,
-  userCoordinates: Coordinates
+  maybeUserCoordinates: O.Option<Coordinates>
 ): string =>
   ordering === OrderingEnum.alphabetic
     ? "searchable_name"
-    : distanceParameter(userCoordinates);
+    : pipe(
+        maybeUserCoordinates,
+        O.map(distanceParameter),
+        O.getOrElse(() => "searchable_name")
+      );
 
 export const selectOnlineMerchantsQuery = (
-  nameFilter: Option<string>,
-  productCategoriesFilter: Option<ReadonlyArray<ProductCategory>>,
-  page: Option<number>,
-  maybePageSize: Option<number>
+  nameFilter: O.Option<string>,
+  productCategoriesFilter: O.Option<ReadonlyArray<ProductCategory>>,
+  page: O.Option<number>,
+  maybePageSize: O.Option<number>
 ): string => `
 SELECT
   id,
   name,
   product_categories,
-  website_url
+  website_url,
+  discount_code_type
 FROM online_merchant
 WHERE 1 = 1
   ${nameFilterQueryPart(nameFilter)}
@@ -83,19 +105,33 @@ SELECT
   product_categories,
   full_address AS address,
   latitude,
-  longitude,
-  ${distanceParameter(searchRequest.userCoordinates)} AS distance
+  longitude${pipe(
+    searchRequest.userCoordinates,
+    O.fromNullable,
+    O.map(distanceParameter),
+    O.map(distanceParam => `,${distanceParam}`),
+    O.getOrElse(() => "")
+  )}
 FROM offline_merchant
 WHERE 1 = 1
-  ${boundingBoxFilter(searchRequest.boundingBox)}
-  ${nameFilterQueryPart(fromNullable(searchRequest.merchantName))}
-  ${categoryFilter(fromNullable(searchRequest.productCategories))}
+  ${pipe(
+    searchRequest.boundingBox,
+    O.fromNullable,
+    O.map(boundingBoxFilter),
+    O.getOrElse(() => "")
+  )}
+  ${nameFilterQueryPart(O.fromNullable(searchRequest.merchantName))}
+  ${categoryFilter(O.fromNullable(searchRequest.productCategories))}
 ORDER BY ${orderingParameter(
-  fromNullable(searchRequest.ordering).getOrElse(OrderingEnum.distance),
-  searchRequest.userCoordinates
+  pipe(
+    searchRequest.ordering,
+    O.fromNullable,
+    O.getOrElseW(() => OrderingEnum.distance)
+  ),
+  O.fromNullable(searchRequest.userCoordinates)
 )} ASC
-LIMIT ${pageSize(fromNullable(searchRequest.pageSize))}
+LIMIT ${pageSize(O.fromNullable(searchRequest.pageSize))}
 OFFSET ${offset(
-  fromNullable(searchRequest.page),
-  fromNullable(searchRequest.pageSize)
+  O.fromNullable(searchRequest.page),
+  O.fromNullable(searchRequest.pageSize)
 )}`;

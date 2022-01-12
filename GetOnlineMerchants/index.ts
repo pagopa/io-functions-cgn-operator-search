@@ -2,9 +2,9 @@ import * as express from "express";
 import * as winston from "winston";
 
 import { Context } from "@azure/functions";
-import { secureExpressApp } from "io-functions-commons/dist/src/utils/express";
-import { AzureContextTransport } from "io-functions-commons/dist/src/utils/logging";
-import { setAppContext } from "io-functions-commons/dist/src/utils/middlewares/context_middleware";
+import { secureExpressApp } from "@pagopa/io-functions-commons/dist/src/utils/express";
+import { AzureContextTransport } from "@pagopa/io-functions-commons/dist/src/utils/logging";
+import { setAppContext } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import createAzureFunctionHandler from "@pagopa/express-azure-functions/dist/src/createAzureFunctionsHandler";
 
 import { Sequelize } from "sequelize";
@@ -32,7 +32,10 @@ const app = express();
 secureExpressApp(app);
 
 // Add express route
-app.post("/online-merchants", GetOnlineMerchants(cgnOperatorDb));
+app.post(
+  "/api/v1/cgn/operator-search/online-merchants",
+  GetOnlineMerchants(cgnOperatorDb)
+);
 
 const azureFunctionHandler = createAzureFunctionHandler(app);
 
