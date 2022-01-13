@@ -141,6 +141,7 @@ export const GetMerchantHandler = (
               description: pipe(O.fromNullable(d.description), O.toUndefined),
               discount: pipe(O.fromNullable(d.discount_value), O.toUndefined),
               endDate: d.end_date,
+              id: d.discount_k,
               landingPageReferrer: pipe(
                 maybeFromExternalHeader,
                 O.chain(() => O.fromNullable(d.landing_page_referrer)),
