@@ -159,6 +159,7 @@ definitions:
   Discount:
     type: object
     required:
+      - id
       - name
       - startDate
       - endDate
