@@ -151,6 +151,7 @@ export const GetMerchantHandler = (
                 O.chain(() => O.fromNullable(d.landing_page_url)),
                 O.toUndefined
               ),
+              id: d.discount_k,
               name: d.name,
               productCategories: d.product_categories.map(p =>
                 ProductCategoryFromModel(p)

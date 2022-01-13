@@ -164,6 +164,9 @@ definitions:
       - endDate
       - productCategories
     properties:
+      id:
+        type: string
+        minLength: 1
       name:
         type: string
         minLength: 1
