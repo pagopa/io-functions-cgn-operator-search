@@ -6,7 +6,7 @@ export enum ProductCategoryEnumModelType {
   foodDrink = "FOOD_DRINK",
   services = "SERVICES",
   learning = "LEARNING",
-  hotels = "HOTEL",
+  hotels = "HOTELS",
   sports = "SPORTS",
   health = "HEALTH",
   shopping = "SHOPPING"
