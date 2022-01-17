@@ -34,6 +34,7 @@ const anAddressModelList = [anAddress, { ...anAddress, city: "milano" }];
 const aDiscountModelWithStaticCode = {
   condition: null,
   description: "something something",
+  discount_k: "a_discount_id",
   discount_value: 20,
   end_date: new Date("2021-01-01"),
   name: "name 1",
@@ -50,6 +51,7 @@ const aDiscountModelWithStaticCode = {
 const aDiscountModelWithLandingPage = {
   condition: null,
   description: "something something",
+  discount_k: "a_discount_id",
   discount_value: 20,
   end_date: new Date("2021-01-01"),
   name: "name 1",
@@ -84,6 +86,7 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
     withoutUndefinedValues({
       condition: pipe(O.fromNullable(discount.condition), O.toUndefined),
       description: pipe(O.fromNullable(discount.description), O.toUndefined),
+      id: discount.discount_k,
       name: discount.name,
       endDate: discount.end_date,
       discount: pipe(O.fromNullable(discount.discount_value), O.toUndefined),
