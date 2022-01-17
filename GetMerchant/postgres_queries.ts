@@ -71,4 +71,4 @@ SELECT
     d.landing_page_referrer,
     array_agg(d.product_category) AS product_categories
 FROM discounts_with_categories d
-GROUP BY 1,2,3,4,5,6,7,8`;
+GROUP BY 1,2,3,4,5,6,7,8,9,10`;
