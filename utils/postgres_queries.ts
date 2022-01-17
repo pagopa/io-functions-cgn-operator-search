@@ -72,7 +72,7 @@ const orderingParameter = (
     ? "searchable_name"
     : pipe(
         maybeUserCoordinates,
-        O.map(distanceParameter),
+        O.map(_ => "distance"),
         O.getOrElse(() => "searchable_name")
       );
 
