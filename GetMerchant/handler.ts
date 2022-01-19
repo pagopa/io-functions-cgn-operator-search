@@ -144,13 +144,22 @@ export const GetMerchantHandler = (
               id: d.discount_k,
               landingPageReferrer: pipe(
                 maybeFromExternalHeader,
-                O.chain(() => O.fromNullable(d.landing_page_referrer)),
-                O.toUndefined
+                O.fold(
+                  () =>
+                    pipe(
+                      d.landing_page_referrer,
+                      O.fromNullable,
+                      O.toUndefined
+                    ),
+                  () => undefined
+                )
               ),
               landingPageUrl: pipe(
                 maybeFromExternalHeader,
-                O.chain(() => O.fromNullable(d.landing_page_url)),
-                O.toUndefined
+                O.fold(
+                  () => pipe(d.landing_page_url, O.fromNullable, O.toUndefined),
+                  () => undefined
+                )
               ),
               name: d.name,
               productCategories: d.product_categories.map(p =>
@@ -159,8 +168,10 @@ export const GetMerchantHandler = (
               startDate: d.start_date,
               staticCode: pipe(
                 maybeFromExternalHeader,
-                O.chain(() => O.fromNullable(d.static_code)),
-                O.toUndefined
+                O.fold(
+                  () => pipe(d.static_code, O.fromNullable, O.toUndefined),
+                  () => undefined
+                )
               )
             })
           ),

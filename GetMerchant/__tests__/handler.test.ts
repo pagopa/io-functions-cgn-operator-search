@@ -10,7 +10,6 @@ import { DiscountCodeTypeEnumModel } from "../../models/DiscountCodeTypes";
 import { ProductCategoryEnumModelType } from "../../models/ProductCategories";
 import { GetMerchantHandler } from "../handler";
 
-
 const anAgreementId = "abc-123-def";
 const anExternalHeader = O.some("EXT_PORTAL" as NonEmptyString);
 const aMerchantProfileWithStaticDiscountTypeModel = {
@@ -86,14 +85,15 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
     withoutUndefinedValues({
       condition: pipe(O.fromNullable(discount.condition), O.toUndefined),
       description: pipe(O.fromNullable(discount.description), O.toUndefined),
-      id: discount.discount_k,
       name: discount.name,
       endDate: discount.end_date,
       discount: pipe(O.fromNullable(discount.discount_value), O.toUndefined),
       startDate: discount.start_date,
       staticCode: withoutStaticCode ? undefined : discount.static_code,
       landingPageUrl: withoutStaticCode ? undefined : discount.landing_page_url,
-      landingPageReferrer: withoutStaticCode ? undefined : discount.landing_page_referrer,
+      landingPageReferrer: withoutStaticCode
+        ? undefined
+        : discount.landing_page_referrer,
       productCategories: [
         ProductCategoryEnum.entertainment,
         ProductCategoryEnum.learning
@@ -137,7 +137,7 @@ describe("GetMerchantHandler", () => {
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
       anAgreementId,
-      anExternalHeader
+      O.none
     );
     expect(response.kind).toBe("IResponseSuccessJson");
     expect(queryMock).toBeCalledTimes(3);
@@ -146,11 +146,11 @@ describe("GetMerchantHandler", () => {
     }
   });
 
-  it("should return a merchant given its ID, without static code in discounts if external header is none", async () => {
+  it("should return a merchant given its ID, without static code in discounts if external header is present", async () => {
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
       anAgreementId,
-      O.none
+      O.some("header" as NonEmptyString)
     );
     expect(response.kind).toBe("IResponseSuccessJson");
     expect(queryMock).toBeCalledTimes(3);
@@ -192,7 +192,7 @@ describe("GetMerchantHandler", () => {
     expect(response.kind).toBe("IResponseSuccessJson");
     if (response.kind === "IResponseSuccessJson") {
       expect(response.value).toEqual({
-        ...anExpectedResponse(),
+        ...anExpectedResponse(true),
         addresses: []
       });
     }
