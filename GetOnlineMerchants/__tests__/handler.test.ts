@@ -16,7 +16,7 @@ const anOnlineMerchant = {
   website_url: "https://pagopa.it",
   discount_code_type: DiscountCodeTypeEnumModel.static,
   product_categories: [
-    ProductCategoryEnumModelType.entertainment,
+    ProductCategoryEnumModelType.cultureAndEntertainment,
     ProductCategoryEnumModelType.sports
   ]
 };
@@ -26,15 +26,15 @@ const anOnlineMerchantList = [
   {
     ...anOnlineMerchant,
     product_categories: [
-      ProductCategoryEnumModelType.shopping,
+      ProductCategoryEnumModelType.sports,
       ProductCategoryEnumModelType.travelling
     ]
   },
   {
     ...anOnlineMerchant,
     product_categories: [
-      ProductCategoryEnumModelType.entertainment,
-      ProductCategoryEnumModelType.services,
+      ProductCategoryEnumModelType.cultureAndEntertainment,
+      ProductCategoryEnumModelType.home,
       ProductCategoryEnumModelType.learning,
       ProductCategoryEnumModelType.health
     ]
@@ -46,7 +46,7 @@ const anOnlineMerchantResponse = {
   name: anOnlineMerchant.name,
   websiteUrl: anOnlineMerchant.website_url,
   discountCodeType: DiscountCodeTypeEnum.static,
-  productCategories: [ProductCategoryEnum.entertainment, ProductCategoryEnum.sports]
+  productCategories: [ProductCategoryEnum.cultureAndEntertainment, ProductCategoryEnum.sports]
 };
 
 const anExpectedResponse = {
@@ -55,15 +55,15 @@ const anExpectedResponse = {
     {
       ...anOnlineMerchantResponse,
       productCategories: [
-        ProductCategoryEnum.shopping,
+        ProductCategoryEnum.sports,
         ProductCategoryEnum.travelling
       ]
     },
     {
       ...anOnlineMerchantResponse,
       productCategories: [
-        ProductCategoryEnum.entertainment,
-        ProductCategoryEnum.services,
+        ProductCategoryEnum.cultureAndEntertainment,
+        ProductCategoryEnum.home,
         ProductCategoryEnum.learning,
         ProductCategoryEnum.health
       ]
@@ -116,14 +116,14 @@ describe("GetOnlineMerchantsHandler", () => {
 
   it("should add to the db query the product category filters", async () => {
     queryMock.mockImplementationOnce((query, _) => {
-      expect(query).toMatch(/AND \(foodDrink OR entertainment\)/);
+      expect(query).toMatch(/AND \(health OR cultureAndEntertainment\)/);
 
       return anEmptyArrayPromise;
     });
 
     const response = await GetOnlineMerchantsHandler(cgnOperatorDbMock as any)(
       {} as any,
-       {productCategories: [ProductCategoryEnum.foodDrink, ProductCategoryEnum.entertainment]} as OnlineMerchantSearchRequest 
+       {productCategories: [ProductCategoryEnum.health, ProductCategoryEnum.cultureAndEntertainment]} as OnlineMerchantSearchRequest 
     );
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
@@ -132,7 +132,7 @@ describe("GetOnlineMerchantsHandler", () => {
   it("should add to the db query all the product category filters", async () => {
     queryMock.mockImplementationOnce((query, _) => {
       expect(query).toMatch(
-        /AND \(travelling OR shopping OR services OR learning OR sports OR health\)/
+        /AND \(travelling OR sports OR home OR learning OR sports OR health\)/
       );
 
       return anEmptyArrayPromise;
@@ -141,8 +141,8 @@ describe("GetOnlineMerchantsHandler", () => {
     const response = await GetOnlineMerchantsHandler(cgnOperatorDbMock as any)(
       {} as any,
       {productCategories: [ProductCategoryEnum.travelling,
-        ProductCategoryEnum.shopping,
-        ProductCategoryEnum.services,
+        ProductCategoryEnum.sports,
+        ProductCategoryEnum.home,
         ProductCategoryEnum.learning,
         ProductCategoryEnum.sports,
         ProductCategoryEnum.health]} as OnlineMerchantSearchRequest 

@@ -287,15 +287,16 @@ definitions:
   ProductCategory:
     type: string
     enum:
-      - entertainment
-      - travelling
-      - foodDrink
-      - services
-      - learning
-      - hotels
-      - sports
+      - bankingServices
+      - cultureAndEntertainment
       - health
-      - shopping
+      - home
+      - jobOffers
+      - learning
+      - sports
+      - sustainableMobility
+      - telephonyAndInternet
+      - travelling
 
   DiscountCodeType:
     type: string

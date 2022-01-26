@@ -38,7 +38,7 @@ const aDiscountModelWithStaticCode = {
   end_date: new Date("2021-01-01"),
   name: "name 1",
   product_categories: [
-    ProductCategoryEnumModelType.entertainment,
+    ProductCategoryEnumModelType.cultureAndEntertainment,
     ProductCategoryEnumModelType.learning
   ],
   start_date: new Date("2020-01-01"),
@@ -55,7 +55,7 @@ const aDiscountModelWithLandingPage = {
   end_date: new Date("2021-01-01"),
   name: "name 1",
   product_categories: [
-    ProductCategoryEnumModelType.entertainment,
+    ProductCategoryEnumModelType.cultureAndEntertainment,
     ProductCategoryEnumModelType.learning
   ],
   start_date: new Date("2020-01-01"),
@@ -88,6 +88,7 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
       name: discount.name,
       endDate: discount.end_date,
       discount: pipe(O.fromNullable(discount.discount_value), O.toUndefined),
+      id: "a_discount_id",
       startDate: discount.start_date,
       staticCode: withoutStaticCode ? undefined : discount.static_code,
       landingPageUrl: withoutStaticCode ? undefined : discount.landing_page_url,
@@ -95,7 +96,7 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
         ? undefined
         : discount.landing_page_referrer,
       productCategories: [
-        ProductCategoryEnum.entertainment,
+        ProductCategoryEnum.cultureAndEntertainment,
         ProductCategoryEnum.learning
       ]
     })
