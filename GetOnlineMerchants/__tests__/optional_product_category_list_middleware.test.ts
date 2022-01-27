@@ -38,7 +38,7 @@ describe("OptionalProductCategoryListMiddleware", () => {
   it("should extract the parameter if it is present and valid", async () => {
     const result = await middleware({
       query: {
-        param: "shopping,entertainment"
+        param: "sports,home"
       }
     } as any);
 
@@ -49,8 +49,8 @@ describe("OptionalProductCategoryListMiddleware", () => {
       if (O.isSome(maybeValue)) {
         const value = maybeValue.value;
         expect(value).toStrictEqual([
-          ProductCategoryEnum.shopping,
-          ProductCategoryEnum.entertainment
+          ProductCategoryEnum.sports,
+          ProductCategoryEnum.home
         ]);
       }
     }

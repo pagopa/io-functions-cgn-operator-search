@@ -20,7 +20,7 @@ const anOfflineMerchant = {
   longitude: 9.2456,
   distance: 10,
   product_categories: [
-    ProductCategoryEnumModelType.entertainment,
+    ProductCategoryEnumModelType.cultureAndEntertainment,
     ProductCategoryEnumModelType.sports
   ]
 };
@@ -30,15 +30,15 @@ const anOfflineMerchantList = [
   {
     ...anOfflineMerchant,
     product_categories: [
-      ProductCategoryEnumModelType.shopping,
+      ProductCategoryEnumModelType.bankingServices,
       ProductCategoryEnumModelType.travelling
     ]
   },
   {
     ...anOfflineMerchant,
     product_categories: [
-      ProductCategoryEnumModelType.entertainment,
-      ProductCategoryEnumModelType.services,
+      ProductCategoryEnumModelType.cultureAndEntertainment,
+      ProductCategoryEnumModelType.sports,
       ProductCategoryEnumModelType.learning,
       ProductCategoryEnumModelType.health
     ]
@@ -55,7 +55,7 @@ const anOfflineMerchantResponse = {
   },
   distance: anOfflineMerchant.distance,
   productCategories: [
-    ProductCategoryEnum.entertainment,
+    ProductCategoryEnum.cultureAndEntertainment,
     ProductCategoryEnum.sports
   ]
 };
@@ -66,15 +66,15 @@ const anExpectedResponse = {
     {
       ...anOfflineMerchantResponse,
       productCategories: [
-        ProductCategoryEnum.shopping,
+        ProductCategoryEnum.bankingServices,
         ProductCategoryEnum.travelling
       ]
     },
     {
       ...anOfflineMerchantResponse,
       productCategories: [
-        ProductCategoryEnum.entertainment,
-        ProductCategoryEnum.services,
+        ProductCategoryEnum.cultureAndEntertainment,
+        ProductCategoryEnum.sports,
         ProductCategoryEnum.learning,
         ProductCategoryEnum.health
       ]
@@ -143,7 +143,7 @@ describe("GetOfflineMerchantsHandler", () => {
 
   it("should add to the db query the product category filters", async () => {
     queryMock.mockImplementationOnce((query, _) => {
-      expect(query).toMatch(/AND \(learning OR entertainment\)/);
+      expect(query).toMatch(/AND \(learning OR cultureAndEntertainment\)/);
 
       return anEmptyArrayPromise;
     });
@@ -154,7 +154,7 @@ describe("GetOfflineMerchantsHandler", () => {
         ...aSearchRequestBody,
         productCategories: [
           ProductCategoryEnum.learning,
-          ProductCategoryEnum.entertainment
+          ProductCategoryEnum.cultureAndEntertainment
         ]
       } as OfflineMerchantSearchRequest
     );
@@ -165,7 +165,7 @@ describe("GetOfflineMerchantsHandler", () => {
   it("should add to the db query all the product category filters", async () => {
     queryMock.mockImplementationOnce((query, _) => {
       expect(query).toMatch(
-        /AND \(travelling OR shopping OR services OR learning OR sports OR health\)/
+        /AND \(travelling OR bankingServices OR sports OR learning OR sports OR health\)/
       );
 
       return anEmptyArrayPromise;
@@ -177,8 +177,8 @@ describe("GetOfflineMerchantsHandler", () => {
         ...aSearchRequestBody,
         productCategories: [
           ProductCategoryEnum.travelling,
-          ProductCategoryEnum.shopping,
-          ProductCategoryEnum.services,
+          ProductCategoryEnum.bankingServices,
+          ProductCategoryEnum.sports,
           ProductCategoryEnum.learning,
           ProductCategoryEnum.sports,
           ProductCategoryEnum.health
@@ -227,7 +227,7 @@ describe("GetOfflineMerchantsHandler", () => {
 
   it("should add to the db query the order by distance", async () => {
     queryMock.mockImplementationOnce((query, _) => {
-      expect(query).toMatch(/ORDER BY ST_MakePoint/);
+      expect(query).toMatch(/ORDER BY distance/);
 
       return anEmptyArrayPromise;
     });
