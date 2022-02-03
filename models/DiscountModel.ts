@@ -16,4 +16,5 @@ export default class DiscountModel extends Model {
   public readonly bucket_code!: string | undefined;
   public readonly landing_page_url!: string | undefined;
   public readonly landing_page_referrer!: string | undefined;
+  public readonly discount_url!: string | undefined;
 }
