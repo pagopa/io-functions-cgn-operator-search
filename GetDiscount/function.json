@@ -5,9 +5,9 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "route": "api/v1/cgn/operator-search/discounts",
+      "route": "api/v1/cgn/operator-search/discounts/{discountId}",
       "methods": [
-        "post"
+        "get"
       ]
     },
     {
@@ -16,5 +16,5 @@
       "name": "res"
     }
   ],
-  "scriptFile": "../dist/GetDiscounts/index.js"
+  "scriptFile": "../dist/GetDiscount/index.js"
 }
