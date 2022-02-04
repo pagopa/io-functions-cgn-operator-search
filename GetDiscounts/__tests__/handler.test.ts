@@ -6,7 +6,7 @@ import { pipe } from "fp-ts/lib/function";
 import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory";
 
 const aDiscountResultModel = {
-  discount_k: "agreement_1",
+  discount_k: 1,
   name: "PagoPa",
   operator_name: "Operator Name",
   discount_value: 10
