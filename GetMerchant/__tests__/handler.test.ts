@@ -33,7 +33,7 @@ const anAddressModelList = [anAddress, { ...anAddress, city: "milano" }];
 const aDiscountModelWithStaticCode = {
   condition: null,
   description: "something something",
-  discount_k: "a_discount_id",
+  discount_k: 1,
   discount_value: 20,
   end_date: new Date("2021-01-01"),
   name: "name 1",
@@ -50,7 +50,7 @@ const aDiscountModelWithStaticCode = {
 const aDiscountModelWithLandingPage = {
   condition: null,
   description: "something something",
-  discount_k: "a_discount_id",
+  discount_k: 1,
   discount_value: 20,
   end_date: new Date("2021-01-01"),
   name: "name 1",
@@ -88,7 +88,7 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
       name: discount.name,
       endDate: discount.end_date,
       discount: pipe(O.fromNullable(discount.discount_value), O.toUndefined),
-      id: "a_discount_id",
+      id: discount.discount_k,
       startDate: discount.start_date,
       staticCode: withoutStaticCode ? undefined : discount.static_code,
       landingPageUrl: withoutStaticCode ? undefined : discount.landing_page_url,
@@ -190,6 +190,7 @@ describe("GetMerchantHandler", () => {
       anExternalHeader
     );
     expect(queryMock).toBeCalledTimes(3);
+    console.log(JSON.stringify(response));
     expect(response.kind).toBe("IResponseSuccessJson");
     if (response.kind === "IResponseSuccessJson") {
       expect(response.value).toEqual({

@@ -96,6 +96,25 @@ ORDER BY searchable_name ASC
 LIMIT ${pageSize(maybePageSize)}
 OFFSET ${offset(page, maybePageSize)}`;
 
+export const selectDiscountQuery: string = `
+SELECT
+  discount_id,
+  operator_id,
+  condition,
+  discount_code_type,
+  discount_description,
+  discount_name,
+  discount_value,
+  end_date,
+  product_categories,
+  start_date,
+  static_code,
+  bucket_code,
+  landing_page_url,
+  landing_page_referrer
+FROM published_discount
+WHERE discount_id = :discountId`;
+
 export const selectDiscountsQuery = (
   nameFilter: O.Option<string>,
   productCategoriesFilter: O.Option<ReadonlyArray<ProductCategory>>,

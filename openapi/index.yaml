@@ -83,6 +83,31 @@ paths:
           schema:
             $ref: "#/definitions/ProblemJson"
 
+  /discounts/{discountId}:
+    get:
+      operationId: getDiscount
+      summary: Discount detail
+      description: |
+        Get detailed information about a specific published discount
+      parameters:
+        - name: discountId
+          in: path
+          type: string
+          minLength: 1
+          required: true
+          description: Discount Identifier
+      responses:
+        "200":
+          description: Discount Detail
+          schema:
+            $ref: "#/definitions/DiscountDetail"
+        "404":
+          $ref: "#/responses/NotFound"
+        "500":
+          description: Service unavailable.
+          schema:
+            $ref: "#/definitions/ProblemJson"
+
   /merchants/{merchantId}:
     parameters:
       - name: merchantId
@@ -221,8 +246,8 @@ definitions:
       - productCategories
     properties:
       id:
-        type: string
-        minLength: 1
+        type: number
+        minimum: 1
       name:
         type: string
         minLength: 1
@@ -255,6 +280,24 @@ definitions:
       landingPageReferrer:
         type: string
         minLength: 1
+
+  DiscountDetail:
+    allOf:
+      - $ref: "#/definitions/Discount"
+      - type: object
+        properties:
+          merchantId: 
+            type: string
+            minLength: 1
+          discountCodeType:
+            $ref: "#/definitions/DiscountCodeType"
+    required:
+      - id
+      - name
+      - startDate
+      - endDate
+      - productCategories
+      - merchantId
 
   OnlineMerchants:
     type: object
