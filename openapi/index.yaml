@@ -61,6 +61,27 @@ paths:
           description: Service unavailable.
           schema:
             $ref: "#/definitions/ProblemJson"
+  /discounts:
+    post:
+      operationId: getDiscounts
+      summary: List of published discounts
+      description: |
+        List of published discounts ordered by name
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/DiscountsSearchRequest'
+      responses:
+        "200":
+          description: List of discounts for the given query parameters
+          schema:
+            $ref: "#/definitions/DiscountResults"
+        "500":
+          description: Service unavailable.
+          schema:
+            $ref: "#/definitions/ProblemJson"
 
   /merchants/{merchantId}:
     parameters:
@@ -148,13 +169,47 @@ definitions:
         type: string
         minLength: 1
       discounts:
-        type: array
-        items:
-          $ref: "#/definitions/Discount"
+        $ref: "#/definitions/Discounts"
       addresses:
         type: array
         items:
           $ref: "#/definitions/Address"
+
+  Discounts:
+    type: array
+    items:
+      $ref: "#/definitions/Discount"
+  
+  DiscountResults:
+    type: object
+    required:
+      - items
+    properties:
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/DiscountResult"
+
+  DiscountResult:
+    type: object
+    required:
+      - id
+      - name
+      - merchantName
+    properties:
+      id:
+        type: string
+        minLength: 1
+      name:
+        type: string
+        minLength: 1
+      merchantName:
+        type: string
+        minLength: 1
+      discount:
+        type: number
+        format: double
+        minimum: 1
 
   Discount:
     type: object
@@ -312,6 +367,29 @@ definitions:
       merchantName:
         type: string
         description: Text used for searching merchants by their name
+        minLength: 1
+      productCategories:
+        type: array
+        description: List of product categories to filter the results
+        items:
+          $ref: "#/definitions/ProductCategory"
+      page:
+        type: integer
+        description: page of result
+        default: 0
+        minimum: 0
+      pageSize:
+        type: integer
+        description: elements per page
+        default: 100
+        minimum: 1
+
+  DiscountsSearchRequest:
+    type: object
+    properties:
+      discountName:
+        type: string
+        description: Text used for searching discounts by their name
         minLength: 1
       productCategories:
         type: array
