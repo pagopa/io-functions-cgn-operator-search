@@ -203,6 +203,7 @@ definitions:
       discountUrl:
         type: string
         minLength: 1
+        maxLenght: 500
 
   OnlineMerchants:
     type: object
