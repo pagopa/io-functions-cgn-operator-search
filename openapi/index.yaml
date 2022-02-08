@@ -200,6 +200,10 @@ definitions:
       landingPageReferrer:
         type: string
         minLength: 1
+      discountUrl:
+        type: string
+        minLength: 1
+        maxLength: 500
 
   OnlineMerchants:
     type: object

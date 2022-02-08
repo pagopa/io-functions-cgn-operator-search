@@ -35,7 +35,8 @@ WITH operator_discounts AS (
       NULLIF(d.condition, '') AS condition,
       NULLIF(d.static_code, '') AS static_code,
       NULLIF(d.landing_page_url, '') AS landing_page_url,
-      NULLIF(d.landing_page_referrer, '') AS landing_page_referrer
+      NULLIF(d.landing_page_referrer, '') AS landing_page_referrer,
+      NULLIF(d.discount_url, '') AS discount_url
   FROM discount d
   WHERE d.agreement_fk = :agreement_key
     AND d.state = 'PUBLISHED'
@@ -54,6 +55,7 @@ discounts_with_categories AS (
       d.static_code,
       d.landing_page_url,
       d.landing_page_referrer,
+      d.discount_url,
       pc.product_category
   FROM operator_discounts d
   JOIN discount_product_category pc ON (pc.discount_fk = d.discount_k)
@@ -69,6 +71,7 @@ SELECT
     d.static_code,
     d.landing_page_url,
     d.landing_page_referrer,
+    d.discount_url,
     array_agg(d.product_category) AS product_categories
 FROM discounts_with_categories d
-GROUP BY 1,2,3,4,5,6,7,8,9,10`;
+GROUP BY 1,2,3,4,5,6,7,8,9,10,11`;
