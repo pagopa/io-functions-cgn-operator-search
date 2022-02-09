@@ -18,6 +18,22 @@ security:
   - ApiKey: []
 
 paths:
+  /published-product-categories:
+    get:
+      operationId: getPublishedProductCategories
+      summary: List of published product categories
+      description: |
+        List of categories that have at least a published discount
+      responses:
+        "200":
+          description: List of categories that have at least a published discount
+          schema:
+            $ref: "#/definitions/PublishedProductCategories"
+        "500":
+          description: Service unavailable.
+          schema:
+            $ref: "#/definitions/ProblemJson" 
+
   /online-merchants:
     post:
       operationId: getOnlineMerchants
@@ -204,6 +220,16 @@ definitions:
         type: string
         minLength: 1
         maxLength: 500
+
+  PublishedProductCategories:
+    type: object
+    required:
+      - items
+    properties:
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/ProductCategory"
 
   OnlineMerchants:
     type: object
