@@ -215,7 +215,12 @@ FROM discounts_with_categories d
 GROUP BY 1,2,3,4,5,6,7,8,9,10,11`;
 
 export const SelectDiscountBucketCodeByDiscount = `
-SELECT * 
+SELECT 
+  bucket_code_k,
+  discount_fk,
+  code,
+  used,
+  bucket_code_load_id
 FROM discount_bucket_code
 WHERE discount_fk = :discount_fk 
   AND NOT used 
@@ -230,5 +235,6 @@ SET used = true
 WHERE bucket_code_k = :bucket_code_k`;
 
 export const SelectPublishedProductCategories = `
-SELECT * 
+SELECT
+  product_category
 FROM published_product_categories`;
