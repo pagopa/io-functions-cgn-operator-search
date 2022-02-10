@@ -37,7 +37,7 @@ import {
   SelectDiscountsByMerchantQuery,
   SelectMerchantAddressListQuery,
   SelectMerchantProfileQuery
-} from "./postgres_queries";
+} from "../utils/postgres_queries";
 
 type ResponseTypes =
   | IResponseSuccessJson<Merchant>
