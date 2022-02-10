@@ -37,7 +37,7 @@ import {
   SelectDiscountsByMerchantQuery,
   SelectMerchantAddressListQuery,
   SelectMerchantProfileQuery
-} from "./postgres_queries";
+} from "../utils/postgres_queries";
 
 type ResponseTypes =
   | IResponseSuccessJson<Merchant>
@@ -140,17 +140,27 @@ export const GetMerchantHandler = (
               condition: pipe(O.fromNullable(d.condition), O.toUndefined),
               description: pipe(O.fromNullable(d.description), O.toUndefined),
               discount: pipe(O.fromNullable(d.discount_value), O.toUndefined),
+              discountUrl: pipe(O.fromNullable(d.discount_url), O.toUndefined),
               endDate: d.end_date,
               id: d.discount_k,
               landingPageReferrer: pipe(
                 maybeFromExternalHeader,
-                O.chain(() => O.fromNullable(d.landing_page_referrer)),
-                O.toUndefined
+                O.fold(
+                  () =>
+                    pipe(
+                      d.landing_page_referrer,
+                      O.fromNullable,
+                      O.toUndefined
+                    ),
+                  () => undefined
+                )
               ),
               landingPageUrl: pipe(
                 maybeFromExternalHeader,
-                O.chain(() => O.fromNullable(d.landing_page_url)),
-                O.toUndefined
+                O.fold(
+                  () => pipe(d.landing_page_url, O.fromNullable, O.toUndefined),
+                  () => undefined
+                )
               ),
               name: d.name,
               productCategories: d.product_categories.map(p =>
@@ -159,8 +169,10 @@ export const GetMerchantHandler = (
               startDate: d.start_date,
               staticCode: pipe(
                 maybeFromExternalHeader,
-                O.chain(() => O.fromNullable(d.static_code)),
-                O.toUndefined
+                O.fold(
+                  () => pipe(d.static_code, O.fromNullable, O.toUndefined),
+                  () => undefined
+                )
               )
             })
           ),

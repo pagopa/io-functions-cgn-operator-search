@@ -10,7 +10,6 @@ import { DiscountCodeTypeEnumModel } from "../../models/DiscountCodeTypes";
 import { ProductCategoryEnumModelType } from "../../models/ProductCategories";
 import { GetMerchantHandler } from "../handler";
 
-
 const anAgreementId = "abc-123-def";
 const anExternalHeader = O.some("EXT_PORTAL" as NonEmptyString);
 const aMerchantProfileWithStaticDiscountTypeModel = {
@@ -34,11 +33,13 @@ const anAddressModelList = [anAddress, { ...anAddress, city: "milano" }];
 const aDiscountModelWithStaticCode = {
   condition: null,
   description: "something something",
+  discount_k: "a_discount_id",
+  discount_url: "xxx",
   discount_value: 20,
   end_date: new Date("2021-01-01"),
   name: "name 1",
   product_categories: [
-    ProductCategoryEnumModelType.entertainment,
+    ProductCategoryEnumModelType.cultureAndEntertainment,
     ProductCategoryEnumModelType.learning
   ],
   start_date: new Date("2020-01-01"),
@@ -50,11 +51,13 @@ const aDiscountModelWithStaticCode = {
 const aDiscountModelWithLandingPage = {
   condition: null,
   description: "something something",
+  discount_k: "a_discount_id",
+  discount_url: "xxx",
   discount_value: 20,
   end_date: new Date("2021-01-01"),
   name: "name 1",
   product_categories: [
-    ProductCategoryEnumModelType.entertainment,
+    ProductCategoryEnumModelType.cultureAndEntertainment,
     ProductCategoryEnumModelType.learning
   ],
   start_date: new Date("2020-01-01"),
@@ -87,12 +90,16 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
       name: discount.name,
       endDate: discount.end_date,
       discount: pipe(O.fromNullable(discount.discount_value), O.toUndefined),
+      discountUrl: discount.discount_url,
+      id: "a_discount_id",
       startDate: discount.start_date,
       staticCode: withoutStaticCode ? undefined : discount.static_code,
       landingPageUrl: withoutStaticCode ? undefined : discount.landing_page_url,
-      landingPageReferrer: withoutStaticCode ? undefined : discount.landing_page_referrer,
+      landingPageReferrer: withoutStaticCode
+        ? undefined
+        : discount.landing_page_referrer,
       productCategories: [
-        ProductCategoryEnum.entertainment,
+        ProductCategoryEnum.cultureAndEntertainment,
         ProductCategoryEnum.learning
       ]
     })
@@ -134,7 +141,7 @@ describe("GetMerchantHandler", () => {
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
       anAgreementId,
-      anExternalHeader
+      O.none
     );
     expect(response.kind).toBe("IResponseSuccessJson");
     expect(queryMock).toBeCalledTimes(3);
@@ -143,11 +150,11 @@ describe("GetMerchantHandler", () => {
     }
   });
 
-  it("should return a merchant given its ID, without static code in discounts if external header is none", async () => {
+  it("should return a merchant given its ID, without static code in discounts if external header is present", async () => {
     const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
       {} as any,
       anAgreementId,
-      O.none
+      O.some("header" as NonEmptyString)
     );
     expect(response.kind).toBe("IResponseSuccessJson");
     expect(queryMock).toBeCalledTimes(3);
@@ -189,7 +196,7 @@ describe("GetMerchantHandler", () => {
     expect(response.kind).toBe("IResponseSuccessJson");
     if (response.kind === "IResponseSuccessJson") {
       expect(response.value).toEqual({
-        ...anExpectedResponse(),
+        ...anExpectedResponse(true),
         addresses: []
       });
     }
