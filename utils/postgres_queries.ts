@@ -237,4 +237,4 @@ WHERE bucket_code_k = :bucket_code_k`;
 export const SelectPublishedProductCategories = `
 SELECT
   product_category
-FROM published_product_categories`;
+FROM published_product_category`;
