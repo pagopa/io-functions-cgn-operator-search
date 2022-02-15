@@ -32,7 +32,7 @@ const app = express();
 secureExpressApp(app);
 
 // Add express route
-app.post(
+app.get(
   "/api/v1/cgn/operator-search/published-product-categories",
   GetPublishedProductCategories(cgnOperatorDb)
 );
