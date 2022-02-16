@@ -116,7 +116,7 @@ describe("GetOnlineMerchantsHandler", () => {
 
   it("should add to the db query the product category filters", async () => {
     queryMock.mockImplementationOnce((query, _) => {
-      expect(query).toMatch(/AND \(health OR cultureAndEntertainment\)/);
+      expect(query).toMatch(/AND \(health OR culture_and_entertainment\)/);
 
       return anEmptyArrayPromise;
     });
