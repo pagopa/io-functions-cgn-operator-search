@@ -47,23 +47,23 @@ export const ProductCategoryToQueryColumn = (
 ): string => {
   switch (productCategory) {
     case ProductCategoryEnum.bankingServices:
-      return "bankingServices";
+      return "banking_services";
     case ProductCategoryEnum.cultureAndEntertainment:
-      return "cultureAndEntertainment";
+      return "culture_and_entertainment";
     case ProductCategoryEnum.health:
       return "health";
     case ProductCategoryEnum.home:
       return "home";
     case ProductCategoryEnum.jobOffers:
-      return "jobOffers";
+      return "job_offers";
     case ProductCategoryEnum.learning:
       return "learning";
     case ProductCategoryEnum.sports:
       return "sports";
     case ProductCategoryEnum.sustainableMobility:
-      return "sustainableMobility";
+      return "sustainable_mobility";
     case ProductCategoryEnum.telephonyAndInternet:
-      return "telephonyAndInternet";
+      return "telephony_and_internet";
     case ProductCategoryEnum.travelling:
       return "travelling";
     default:

@@ -143,7 +143,7 @@ describe("GetOfflineMerchantsHandler", () => {
 
   it("should add to the db query the product category filters", async () => {
     queryMock.mockImplementationOnce((query, _) => {
-      expect(query).toMatch(/AND \(learning OR cultureAndEntertainment\)/);
+      expect(query).toMatch(/AND \(learning OR culture_and_entertainment\)/);
 
       return anEmptyArrayPromise;
     });
@@ -165,7 +165,7 @@ describe("GetOfflineMerchantsHandler", () => {
   it("should add to the db query all the product category filters", async () => {
     queryMock.mockImplementationOnce((query, _) => {
       expect(query).toMatch(
-        /AND \(travelling OR bankingServices OR sports OR learning OR sports OR health\)/
+        /AND \(travelling OR banking_services OR sports OR learning OR sports OR health\)/
       );
 
       return anEmptyArrayPromise;
