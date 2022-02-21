@@ -96,6 +96,25 @@ ORDER BY searchable_name ASC
 LIMIT ${pageSize(maybePageSize)}
 OFFSET ${offset(page, maybePageSize)}`;
 
+export const selectDiscountsQuery = (
+  nameFilter: O.Option<string>,
+  productCategoriesFilter: O.Option<ReadonlyArray<ProductCategory>>,
+  page: O.Option<number>,
+  maybePageSize: O.Option<number>
+): string => `
+SELECT
+  discount_id,
+  discount_name
+  discount_value,
+  operator_name
+FROM published_discount
+WHERE 1 = 1
+  ${nameFilterQueryPart(nameFilter)}
+  ${categoryFilter(productCategoriesFilter)}
+ORDER BY searchable_name ASC
+LIMIT ${pageSize(maybePageSize)}
+OFFSET ${offset(page, maybePageSize)}`;
+
 export const selectOfflineMerchantsQuery = (
   searchRequest: OfflineMerchantSearchRequest
 ): string => `
