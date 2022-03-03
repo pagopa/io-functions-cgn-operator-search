@@ -1,5 +1,6 @@
 import * as O from "fp-ts/lib/Option";
 import { pipe } from "fp-ts/lib/function";
+import { NonNegativeInteger } from "@pagopa/ts-commons/lib/numbers";
 import { BoundingBox } from "../generated/definitions/BoundingBox";
 import { Coordinates } from "../generated/definitions/Coordinates";
 import { ProductCategory } from "../generated/definitions/ProductCategory";
@@ -214,7 +215,9 @@ SELECT
 FROM discounts_with_categories d
 GROUP BY 1,2,3,4,5,6,7,8,9,10,11`;
 
-export const SelectDiscountBucketCodeByDiscount = `
+export const SelectDiscountBucketCodeByDiscount = (
+  limit: NonNegativeInteger
+): string => `
 SELECT 
   bucket_code_k,
   discount_fk,
@@ -225,14 +228,14 @@ FROM discount_bucket_code
 WHERE discount_fk = :discount_fk 
   AND NOT used 
 ORDER BY bucket_code_k ASC 
-LIMIT 1 
+LIMIT ${limit} 
 FOR UPDATE 
 SKIP LOCKED`;
 
 export const UpdateDiscountBucketCodeSetUsed = `
 UPDATE discount_bucket_code
 SET used = true 
-WHERE bucket_code_k = :bucket_code_k`;
+WHERE bucket_code_k in (:bucket_code_k_list)`;
 
 export const SelectPublishedProductCategories = `
 SELECT
