@@ -1,6 +1,5 @@
 import * as O from "fp-ts/lib/Option";
 import { pipe } from "fp-ts/lib/function";
-import { NonNegativeInteger } from "@pagopa/ts-commons/lib/numbers";
 import { BoundingBox } from "../generated/definitions/BoundingBox";
 import { Coordinates } from "../generated/definitions/Coordinates";
 import { ProductCategory } from "../generated/definitions/ProductCategory";
