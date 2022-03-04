@@ -144,7 +144,7 @@ export const GetDiscountBucketCodeHandler = (
   pipe(
     popFromList(redisClient, discountId),
     // if popFromList fails it means Redis is currently unavailable so
-    // we fallback to default behaviour  byfetching a single code with Sequelize
+    // we fallback to default behaviour by fetching codes with Sequelize
     TE.orElse(() =>
       pipe(
         getAndUpdateCodes(cgnOperatorDb, discountId, 1 as NonNegativeInteger),
