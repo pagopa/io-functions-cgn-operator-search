@@ -31,7 +31,7 @@ const selectMockResult = jest
 
 const updateMockResult = jest
   .fn()
-  .mockImplementation(() => Promise.resolve([undefined, 1]));
+  .mockImplementation(() => Promise.resolve([undefined, 3]));
 
 const queryMock = jest.fn().mockImplementation((query: string, params) => {
   if (query.includes("FROM discount_bucket_code")) {
@@ -75,7 +75,7 @@ jest.spyOn(redisStorage, "popFromList").mockImplementation(popFromListMock);
 jest.spyOn(redisStorage, "pushInList").mockImplementation(pushInListMock);
 
 describe("GetDiscountBucketCodeHandler", () => {
-  it("should return a IResponseSuccessJson with a discount bucket code by discount id if Redis does not contain given discount codes", async () => {
+  it("should return a IResponseSuccessJson with a discount bucket code by discount id if Redis does not contain any discount codes", async () => {
     popFromListMock.mockImplementationOnce(() => TE.of(O.none));
     const response = await GetDiscountBucketCodeHandler(
       cgnOperatorDbMock as any,
@@ -100,7 +100,7 @@ describe("GetDiscountBucketCodeHandler", () => {
     }
   });
 
-  it("should return a IResponseSuccessJson with a discount bucket code by discount id if Redis contains given discount codes", async () => {
+  it("should return a IResponseSuccessJson with a discount bucket code by discount id if Redis contains some discount codes", async () => {
     const response = await GetDiscountBucketCodeHandler(
       cgnOperatorDbMock as any,
       {} as any,
@@ -219,7 +219,7 @@ describe("GetDiscountBucketCodeHandler", () => {
     expect(updateMockResult).toBeCalledTimes(1);
     if (response.kind === "IResponseErrorInternal") {
       expect(response.detail).toEqual(
-        "Internal server error: Cannot update the bucket code"
+        "Internal server error: Cannot update retrieved bucket codes"
       );
     }
   });

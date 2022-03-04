@@ -215,9 +215,7 @@ SELECT
 FROM discounts_with_categories d
 GROUP BY 1,2,3,4,5,6,7,8,9,10,11`;
 
-export const SelectDiscountBucketCodeByDiscount = (
-  limit: NonNegativeInteger
-): string => `
+export const SelectDiscountBucketCodeByDiscount = `
 SELECT 
   bucket_code_k,
   discount_fk,
@@ -228,7 +226,7 @@ FROM discount_bucket_code
 WHERE discount_fk = :discount_fk 
   AND NOT used 
 ORDER BY bucket_code_k ASC 
-LIMIT ${limit} 
+LIMIT :limit 
 FOR UPDATE 
 SKIP LOCKED`;
 

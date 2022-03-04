@@ -53,7 +53,7 @@ describe("popFromList", () => {
   });
 });
 
-describe("deleteTask", () => {
+describe("pushInList", () => {
   it("should return true if list element has been pushed from redis", async () => {
     await pipe(
       pushInList(redisClientMock as any, aRedisKey, [aRedisValue]),

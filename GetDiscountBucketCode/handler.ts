@@ -67,16 +67,16 @@ const getAndUpdateCodes = (
       pipe(
         TE.tryCatch(
           () =>
-            cgnOperatorDb.query(
-              SelectDiscountBucketCodeByDiscount(bucketCodeLockLimit),
-              {
-                model: DiscountBucketCodeModel,
-                raw: true,
-                replacements: { discount_fk: discountId },
-                transaction: t,
-                type: QueryTypes.SELECT
-              }
-            ),
+            cgnOperatorDb.query(SelectDiscountBucketCodeByDiscount, {
+              model: DiscountBucketCodeModel,
+              raw: true,
+              replacements: {
+                discount_fk: discountId,
+                limit: bucketCodeLockLimit
+              },
+              transaction: t,
+              type: QueryTypes.SELECT
+            }),
           E.toError
         ),
         TE.mapLeft(err => ResponseErrorInternal(err.message)),
@@ -105,8 +105,9 @@ const getAndUpdateCodes = (
             ),
             TE.chain(([__, numberOfUpdatedRecords]) =>
               TE.fromPredicate(
-                (updatedRecordNumber: number) => updatedRecordNumber > 0,
-                () => new Error("Cannot update the bucket code")
+                (updatedRecordNumber: number) =>
+                  updatedRecordNumber === codes.length,
+                () => new Error("Cannot update retrieved bucket codes")
               )(numberOfUpdatedRecords)
             ),
             TE.mapLeft(err => ResponseErrorInternal(err.message)),
@@ -172,6 +173,7 @@ export const GetDiscountBucketCodeHandler = (
                   pipe(
                     pushInList(redisClient, discountId, codesToSave),
                     TE.map(() => firstCode),
+                    // if Push fails we accept to burn a bunch of codes and just give back one without storing them on Redis.
                     TE.orElse(() => TE.of(firstCode))
                   )
               )
