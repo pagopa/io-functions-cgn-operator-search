@@ -26,7 +26,7 @@ pr: none
 # $(HEALTHCHECK_CONTAINER_SUBNET)
 variables:
   ${{ if eq(parameters['environment'], 'uat') }}:
-    DEPLOY_TYPE: $[variables['UAT_DEPLOY_TYPE']]
+    DEPLOY_TYPE: $[variables['PROD_DEPLOY_TYPE']]
     MAKE_RELEASE: true
     FORCE_BUILD: true
     AZURE_SUBSCRIPTION: $(UAT_AZURE_SUBSCRIPTION)
