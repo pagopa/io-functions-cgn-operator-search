@@ -110,18 +110,23 @@ stages:
 
   # Prepare Artifact
   - stage: Prepare_artifact
+    dependsOn: "Release"
     condition:
-      and(
-        succeeded(),
         or(
-          eq(variables['Build.SourceBranch'], 'refs/heads/master'),
           and(
-            startsWith(variables['Build.SourceBranch'], 'refs/tags'),
-            endsWith(variables['Build.SourceBranch'], '-RELEASE')
+            succeeded(),
+            eq(variables['Build.SourceBranch'], 'refs/heads/master'),
+            and(
+              startsWith(variables['Build.SourceBranch'], 'refs/tags'),
+              endsWith(variables['Build.SourceBranch'], '-RELEASE')
+            )
           ),
-          eq(variables.FORCE_BUILD, true)
+          and(
+            eq(variables.FORCE_BUILD, true),
+            in(dependencies.Release.result, 'Succeeded', 'Skipped')
+          )
         )
-      )
+      
     jobs:
       - job: 'prepare_artifact_and_deploy'
         steps:
