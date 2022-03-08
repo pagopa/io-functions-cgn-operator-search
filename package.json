@@ -34,6 +34,7 @@
     "@types/jest": "^24.0.15",
     "@types/node-fetch": "^2.5.7",
     "@types/pg": "^7.14.11",
+    "@types/redis": "^2.8.28",
     "@types/sequelize": "^4.28.10",
     "@types/vfile-message": "^2.0.0",
     "auto-changelog": "2.2.1",
@@ -64,6 +65,8 @@
     "node-fetch": "^2.6.0",
     "pg": "^8.6.0",
     "pg-hstore": "^2.3.3",
+    "redis": "^3.0.2",
+    "redis-clustr": "^1.7.0",
     "sequelize": "^6.6.2",
     "winston": "^3.2.1"
   },

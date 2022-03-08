@@ -11,6 +11,7 @@ import { Sequelize } from "sequelize";
 
 import { getConfigOrThrow } from "../utils/config";
 import { sequelizePostgresOptions } from "../utils/sequelize-options";
+import { REDIS_CLIENT } from "../utils/redis";
 import { GetDiscountBucketCode } from "./handler";
 
 const config = getConfigOrThrow();
@@ -34,7 +35,11 @@ secureExpressApp(app);
 // Add express route
 app.get(
   "/api/v1/cgn/operator-search/discount-bucket-code/:discountId",
-  GetDiscountBucketCode(cgnOperatorDb)
+  GetDiscountBucketCode(
+    cgnOperatorDb,
+    REDIS_CLIENT,
+    config.CGN_BUCKET_CODE_LOCK_LIMIT
+  )
 );
 
 const azureFunctionHandler = createAzureFunctionHandler(app);

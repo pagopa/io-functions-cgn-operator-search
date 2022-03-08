@@ -28,7 +28,6 @@ variables:
   ${{ if eq(parameters['environment'], 'uat') }}:
     DEPLOY_TYPE: $[variables['UAT_DEPLOY_TYPE']]
     MAKE_RELEASE: true
-    FORCE_BUILD: true
     AZURE_SUBSCRIPTION: $(UAT_AZURE_SUBSCRIPTION)
     WEB_APP_NAME: $(UAT_WEB_APP_NAME)
     WEB_APP_RESOURCE_GROUP_NAME: $(UAT_WEB_APP_RESOURCE_GROUP_NAME)
@@ -38,7 +37,6 @@ variables:
   ${{ if eq(parameters['environment'], 'prod') }}:
     DEPLOY_TYPE: $[variables['PROD_DEPLOY_TYPE']]
     MAKE_RELEASE: false
-    FORCE_BUILD: false
     AZURE_SUBSCRIPTION: $(PROD_AZURE_SUBSCRIPTION)
     WEB_APP_NAME: $(PROD_WEB_APP_NAME)
     WEB_APP_RESOURCE_GROUP_NAME: $(PROD_WEB_APP_RESOURCE_GROUP_NAME)
@@ -119,7 +117,6 @@ stages:
             startsWith(variables['Build.SourceBranch'], 'refs/tags'),
             endsWith(variables['Build.SourceBranch'], '-RELEASE')
           )
-          eq(variables.FORCE_BUILD, true)
         )
       )
     jobs:
