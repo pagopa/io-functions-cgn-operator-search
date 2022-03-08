@@ -118,7 +118,7 @@ stages:
           and(
             startsWith(variables['Build.SourceBranch'], 'refs/tags'),
             endsWith(variables['Build.SourceBranch'], '-RELEASE')
-          )
+          ),
           eq(variables.FORCE_BUILD, true)
         )
       )
