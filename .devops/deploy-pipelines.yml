@@ -176,6 +176,8 @@ stages:
   - stage: 'Deploy_to_${{ parameters.environment }}'
     dependsOn:
       - Prepare_artifact
+    condition: 
+      succeeded()
     jobs:
     
       - job: 'do_deploy_production_slot'
