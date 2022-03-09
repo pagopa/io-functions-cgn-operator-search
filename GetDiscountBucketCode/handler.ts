@@ -94,9 +94,7 @@ const getAndUpdateCodes = (
                 cgnOperatorDb.query(UpdateDiscountBucketCodeSetUsed, {
                   raw: true,
                   replacements: {
-                    bucket_code_k_list: codes
-                      .map(el => el.bucket_code_k)
-                      .join(",")
+                    bucket_code_k_list: codes.map(el => el.bucket_code_k)
                   },
                   transaction: t,
                   type: QueryTypes.UPDATE

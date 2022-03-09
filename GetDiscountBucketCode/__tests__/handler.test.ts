@@ -8,7 +8,7 @@ import * as redisStorage from "../../utils/redis_storage";
 import { NonNegativeInteger } from "@pagopa/ts-commons/lib/numbers";
 
 const aDiscountFk = "1";
-const aBucketCodeK = "1";
+const aBucketCodeK = 1;
 const aBucketCode = "acode";
 
 const aDiscountBucketCode = {
@@ -38,9 +38,11 @@ const queryMock = jest.fn().mockImplementation((query: string, params) => {
     expect(params.replacements.discount_fk).toBe(aDiscountFk);
     return selectMockResult();
   } else if (query.includes("UPDATE discount_bucket_code")) {
-    expect(params.replacements.bucket_code_k_list).toBe(
-      [aBucketCodeK, aBucketCodeK, aBucketCodeK].join(",")
-    );
+    expect(params.replacements.bucket_code_k_list).toEqual([
+      aBucketCodeK,
+      aBucketCodeK,
+      aBucketCodeK
+    ]);
     return updateMockResult();
   } else {
     fail("Unexpected SQL query");
