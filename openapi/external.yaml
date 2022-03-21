@@ -11,7 +11,7 @@ info:
 
     '
 host: "api.io.pagopa.it"
-basePath: "/api/v1/cgn/operator-search"
+basePath: "/api/v1/operator-search/cgn"
 schemes:
 - https
 security:
