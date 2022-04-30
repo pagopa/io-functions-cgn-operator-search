@@ -38,9 +38,10 @@ type IGetOfflineMerchantsHandler = (
 ) => Promise<ResponseTypes>;
 
 export const GetOfflineMerchantsHandler = (
-  cgnOperatorDb: Sequelize
+  cgnOperatorDb: Sequelize,
+  logPrefix: string = "GetOfflineMerchantsHandler"
 ): IGetOfflineMerchantsHandler => async (
-  _,
+  ctx,
   searchRequest
 ): Promise<ResponseTypes> =>
   pipe(
@@ -92,7 +93,10 @@ export const GetOfflineMerchantsHandler = (
     TE.chainW(
       flow(OfflineMerchants.decode, TE.fromEither, TE.mapLeft(errorsToError))
     ),
-    TE.bimap(e => ResponseErrorInternal(e.message), ResponseSuccessJson),
+    TE.bimap(e => {
+      ctx.log.error(`${logPrefix}|ERROR=${e.message}`);
+      return ResponseErrorInternal(e.message);
+    }, ResponseSuccessJson),
     TE.toUnion
   )();
 

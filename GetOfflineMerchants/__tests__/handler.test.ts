@@ -105,6 +105,12 @@ const aSearchRequestBody = {
   }
 };
 
+const mockContext = {
+  log: {
+    error: console.log
+  }
+} as any;
+
 beforeEach(() => {
   jest.clearAllMocks();
 });
@@ -112,7 +118,7 @@ beforeEach(() => {
 describe("GetOfflineMerchantsHandler", () => {
   it("should return the result when no parameter is passed", async () => {
     const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
-      {} as any,
+      mockContext,
       aSearchRequestBody as OfflineMerchantSearchRequest
     );
     expect(queryMock).toBeCalledTimes(1);
@@ -131,7 +137,7 @@ describe("GetOfflineMerchantsHandler", () => {
     });
 
     const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
-      {} as any,
+      mockContext,
       {
         ...aSearchRequestBody,
         merchantName: "A Company"
@@ -149,7 +155,7 @@ describe("GetOfflineMerchantsHandler", () => {
     });
 
     const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
-      {} as any,
+      mockContext,
       {
         ...aSearchRequestBody,
         productCategories: [
@@ -172,7 +178,7 @@ describe("GetOfflineMerchantsHandler", () => {
     });
 
     const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
-      {} as any,
+      mockContext,
       {
         ...aSearchRequestBody,
         productCategories: [
@@ -197,7 +203,7 @@ describe("GetOfflineMerchantsHandler", () => {
     });
 
     const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
-      {} as any,
+      mockContext,
       {
         ...aSearchRequestBody,
         page: 2,
@@ -215,7 +221,7 @@ describe("GetOfflineMerchantsHandler", () => {
       return anEmptyArrayPromise;
     });
     const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
-      {} as any,
+      mockContext,
       {
         ...aSearchRequestBody,
         ordering: OrderingEnum.alphabetic
@@ -232,7 +238,7 @@ describe("GetOfflineMerchantsHandler", () => {
       return anEmptyArrayPromise;
     });
     const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
-      {} as any,
+      mockContext,
       {
         ...aSearchRequestBody,
         ordering: OrderingEnum.distance
@@ -251,7 +257,7 @@ describe("GetOfflineMerchantsHandler", () => {
     );
 
     const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
-      {} as any,
+      mockContext,
       {
         ...aSearchRequestBody,
         page: 0,
