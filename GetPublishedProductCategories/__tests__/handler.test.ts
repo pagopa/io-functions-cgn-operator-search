@@ -11,11 +11,13 @@ const anEmptyArrayPromise = new Promise(resolve => {
 });
 
 const firstPublishedProductCategoryModel = {
-  product_category: ProductCategoryEnumModelType.cultureAndEntertainment
+  product_category: ProductCategoryEnumModelType.cultureAndEntertainment,
+  new_discounts: 1
 };
 
 const secondPublishedProductCategoryModel = {
-  product_category: ProductCategoryEnumModelType.sports
+  product_category: ProductCategoryEnumModelType.sports,
+  new_discounts: 2
 };
 
 const aPublishedProductCategoryList = [
@@ -27,6 +29,13 @@ const anExpectedResponse = {
   items: [
     ProductCategoryEnum.cultureAndEntertainment,
     ProductCategoryEnum.sports
+  ],
+  itemsWithNewDiscountsCount: [
+    {
+      productCategory: ProductCategoryEnum.cultureAndEntertainment,
+      newDiscounts: 1
+    },
+    { productCategory: ProductCategoryEnum.sports, newDiscounts: 2 }
   ]
 };
 

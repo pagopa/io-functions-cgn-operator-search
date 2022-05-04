@@ -12,4 +12,5 @@ export default class OfflineMerchantModel extends Model {
   public readonly latitude!: number | undefined;
   public readonly longitude!: number | undefined;
   public readonly distance!: number | undefined;
+  public readonly new_discounts!: boolean;
 }

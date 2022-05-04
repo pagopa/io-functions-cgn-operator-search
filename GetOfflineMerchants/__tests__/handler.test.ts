@@ -22,7 +22,8 @@ const anOfflineMerchant = {
   product_categories: [
     ProductCategoryEnumModelType.cultureAndEntertainment,
     ProductCategoryEnumModelType.sports
-  ]
+  ],
+  new_discounts: true
 };
 
 const anOfflineMerchantList = [
@@ -57,7 +58,8 @@ const anOfflineMerchantResponse = {
   productCategories: [
     ProductCategoryEnum.cultureAndEntertainment,
     ProductCategoryEnum.sports
-  ]
+  ],
+  newDiscounts: true
 };
 
 const anExpectedResponse = {

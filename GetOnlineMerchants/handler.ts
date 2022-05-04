@@ -77,6 +77,7 @@ export const GetOnlineMerchantsHandler = (
           discountCodeType: DiscountCodeTypeFromModel(
             onlineMerchant.discount_code_type
           ),
+          newDiscounts: onlineMerchant.new_discounts,
           productCategories: pipe(
             [...onlineMerchant.product_categories],
             AR.map(ProductCategoryFromModel)

@@ -11,4 +11,5 @@ export default class OnlineMerchantModel extends Model {
   >;
   public readonly website_url!: string;
   public readonly discount_code_type!: DiscountCodeTypeEnumModel;
+  public readonly new_discounts!: boolean;
 }

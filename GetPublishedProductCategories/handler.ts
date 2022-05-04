@@ -40,10 +40,16 @@ export const GetPublishedProductCategoriesHandler = (
     ),
     TE.map(
       flow(
-        AR.map(productCategoryModel =>
-          ProductCategoryFromModel(productCategoryModel.product_category)
-        ),
-        productCategories => ({ items: productCategories })
+        AR.map(productCategoryModel => ({
+          newDiscounts: productCategoryModel.new_discounts,
+          productCategory: ProductCategoryFromModel(
+            productCategoryModel.product_category
+          )
+        })),
+        productCategories => ({
+          items: productCategories.map(pc => pc.productCategory),
+          itemsWithNewDiscountsCount: productCategories
+        })
       )
     ),
     TE.chain(
