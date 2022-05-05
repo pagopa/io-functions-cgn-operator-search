@@ -229,6 +229,8 @@ definitions:
         type: string
         minLength: 1
         maxLength: 500
+      isNew:
+        type: boolean
 
   PublishedProductCategories:
     type: object
