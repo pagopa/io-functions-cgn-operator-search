@@ -24,11 +24,13 @@ paths:
       summary: List of published product categories
       description: |
         List of categories that have at least a published discount
+      parameters:
+        - $ref: '#/parameters/CountNewDiscounts'
       responses:
         "200":
           description: List of categories that have at least a published discount
           schema:
-            $ref: "#/definitions/PublishedProductCategories"
+            $ref: "#/definitions/PublishedProductCategoriesResult"
         "500":
           description: Service unavailable.
           schema:
@@ -135,6 +137,13 @@ securityDefinitions:
     in: header
     description: The API key to access this function app.
 
+parameters:
+  CountNewDiscounts:
+    type: boolean
+    name: count_new_discounts
+    in: query
+    description: Indicates whether categories should be enriched with new discounts count.
+
 definitions:
   ProblemJson:
     $ref: "https://raw.githubusercontent.com/pagopa/io-functions-commons/v17.3.0/openapi/definitions.yaml#/ProblemJson"
@@ -225,16 +234,27 @@ definitions:
     type: object
     required:
       - items
-      - itemsWithNewDiscountsCount
     properties:
       items:
         type: array
         items:
           $ref: "#/definitions/ProductCategory"
-      itemsWithNewDiscountsCount:
+
+  PublishedProductCategoriesWithNewDiscountsCount:
+    type: object
+    required:
+      - items
+    properties:
+      items:
         type: array
         items:
           $ref: "#/definitions/ProductCategoryWithNewDiscountsCount"
+
+  PublishedProductCategoriesResult:
+    x-one-of: true
+    allOf:
+      - $ref: '#/definitions/PublishedProductCategoriesWithNewDiscountsCount'
+      - $ref: '#/definitions/PublishedProductCategories'
 
   OnlineMerchants:
     type: object
@@ -346,7 +366,6 @@ definitions:
         $ref: "#/definitions/ProductCategory"
       newDiscounts:
         type: number
-        min: 0
     required:
       - productCategory
       - newDiscounts
