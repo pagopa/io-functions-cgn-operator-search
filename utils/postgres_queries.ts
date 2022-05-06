@@ -87,7 +87,8 @@ SELECT
   name,
   product_categories,
   website_url,
-  discount_code_type
+  discount_code_type,
+  new_discounts
 FROM online_merchant
 WHERE 1 = 1
   ${nameFilterQueryPart(nameFilter)}
@@ -104,6 +105,7 @@ SELECT
   name,
   product_categories,
   full_address AS address,
+  new_discounts,
   latitude,
   longitude${pipe(
     searchRequest.userCoordinates,
@@ -237,5 +239,6 @@ WHERE bucket_code_k in (:bucket_code_k_list)`;
 
 export const SelectPublishedProductCategories = `
 SELECT
-  product_category
+  product_category,
+  new_discounts
 FROM published_product_category`;
