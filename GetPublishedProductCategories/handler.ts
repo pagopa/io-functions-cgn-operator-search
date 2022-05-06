@@ -56,13 +56,16 @@ export const GetPublishedProductCategoriesHandler = (
           )
         })),
         productCategories =>
-          O.fold(() => false, identity)(maybeCountNewDiscounts)
-            ? {
-                items: productCategories
-              }
-            : {
-                items: productCategories.map(pc => pc.productCategory)
-              }
+          pipe(
+            maybeCountNewDiscounts,
+            O.chain(O.fromPredicate(identity)),
+            O.map(() => ({
+              items: productCategories
+            })),
+            O.getOrElseW(() => ({
+              items: productCategories.map(pc => pc.productCategory)
+            }))
+          )
       )
     ),
     TE.chain(
