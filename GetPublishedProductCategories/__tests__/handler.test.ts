@@ -1,8 +1,6 @@
 /* tslint:disable: no-any */
-import { DiscountCodeTypeEnum } from "../../generated/definitions/DiscountCodeType";
-import { OnlineMerchantSearchRequest } from "../../generated/definitions/OnlineMerchantSearchRequest";
+import * as O from "fp-ts/lib/Option";
 import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory";
-import { DiscountCodeTypeEnumModel } from "../../models/DiscountCodeTypes";
 import { ProductCategoryEnumModelType } from "../../models/ProductCategories";
 import { GetPublishedProductCategoriesHandler } from "../handler";
 
@@ -25,12 +23,15 @@ const aPublishedProductCategoryList = [
   secondPublishedProductCategoryModel
 ];
 
-const anExpectedResponse = {
+const anExpectedResponseWithOnlyCategories = {
   items: [
     ProductCategoryEnum.cultureAndEntertainment,
     ProductCategoryEnum.sports
-  ],
-  itemsWithNewDiscountsCount: [
+  ]
+};
+
+const anExpectedResponseWithNewDiscountsCount = {
+  items: [
     {
       productCategory: ProductCategoryEnum.cultureAndEntertainment,
       newDiscounts: 1
@@ -51,15 +52,15 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-describe("GetPublishedProductCategoriesHandler", () => {
-  it("should return the result if no errors occur", async () => {
+describe("GetPublishedProductCategoriesHandler |> maybeCountNewDiscounts = None", () => {
+  it("should return the result with only categories array if no errors occur", async () => {
     const response = await GetPublishedProductCategoriesHandler(
       cgnOperatorDbMock as any
-    )();
+    )(O.none);
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
     if (response.kind === "IResponseSuccessJson") {
-      expect(response.value).toEqual(anExpectedResponse);
+      expect(response.value).toEqual(anExpectedResponseWithOnlyCategories);
     }
   });
 
@@ -73,7 +74,46 @@ describe("GetPublishedProductCategoriesHandler", () => {
 
     const response = await GetPublishedProductCategoriesHandler(
       cgnOperatorDbMock as any
-    )();
+    )(O.none);
+    expect(queryMock).toBeCalledTimes(1);
+    expect(response.kind).toBe("IResponseErrorInternal");
+  });
+});
+
+describe("GetPublishedProductCategoriesHandler |> maybeCountNewDiscounts = Some(boolean)", () => {
+  it("should return the result with counts if no errors occur and param is true", async () => {
+    const response = await GetPublishedProductCategoriesHandler(
+      cgnOperatorDbMock as any
+    )(O.some(true));
+    expect(queryMock).toBeCalledTimes(1);
+    expect(response.kind).toBe("IResponseSuccessJson");
+    if (response.kind === "IResponseSuccessJson") {
+      expect(response.value).toEqual(anExpectedResponseWithNewDiscountsCount);
+    }
+  });
+
+  it("should return the result with only categories array if no errors occur and param is false", async () => {
+    const response = await GetPublishedProductCategoriesHandler(
+      cgnOperatorDbMock as any
+    )(O.some(false));
+    expect(queryMock).toBeCalledTimes(1);
+    expect(response.kind).toBe("IResponseSuccessJson");
+    if (response.kind === "IResponseSuccessJson") {
+      expect(response.value).toEqual(anExpectedResponseWithOnlyCategories);
+    }
+  });
+
+  it("should return an InternalServerError when there is an issue quering the db", async () => {
+    queryMock.mockImplementationOnce(
+      (_, __) =>
+        new Promise(resolve => {
+          throw Error("fail to connect to db");
+        })
+    );
+
+    const response = await GetPublishedProductCategoriesHandler(
+      cgnOperatorDbMock as any
+    )(O.some(true));
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseErrorInternal");
   });
