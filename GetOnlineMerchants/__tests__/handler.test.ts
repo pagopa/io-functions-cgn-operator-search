@@ -18,7 +18,8 @@ const anOnlineMerchant = {
   product_categories: [
     ProductCategoryEnumModelType.cultureAndEntertainment,
     ProductCategoryEnumModelType.sports
-  ]
+  ],
+  new_discounts: true
 };
 
 const anOnlineMerchantList = [
@@ -46,7 +47,8 @@ const anOnlineMerchantResponse = {
   name: anOnlineMerchant.name,
   websiteUrl: anOnlineMerchant.website_url,
   discountCodeType: DiscountCodeTypeEnum.static,
-  productCategories: [ProductCategoryEnum.cultureAndEntertainment, ProductCategoryEnum.sports]
+  productCategories: [ProductCategoryEnum.cultureAndEntertainment, ProductCategoryEnum.sports],
+  newDiscounts: true
 };
 
 const anExpectedResponse = {

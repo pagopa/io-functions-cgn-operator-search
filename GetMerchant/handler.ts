@@ -143,6 +143,7 @@ export const GetMerchantHandler = (
               discountUrl: pipe(O.fromNullable(d.discount_url), O.toUndefined),
               endDate: d.end_date,
               id: d.discount_k,
+              isNew: d.is_new,
               landingPageReferrer: pipe(
                 maybeFromExternalHeader,
                 O.fold(

@@ -210,6 +210,7 @@ SELECT
     d.landing_page_url,
     d.landing_page_referrer,
     d.discount_url,
+    (d.start_date >= NOW() - INTERVAL '15 days') AS is_new,
     array_agg(d.product_category) AS product_categories
 FROM discounts_with_categories d
 GROUP BY 1,2,3,4,5,6,7,8,9,10,11`;

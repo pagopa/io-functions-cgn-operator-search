@@ -82,6 +82,7 @@ export const GetOfflineMerchantsHandler = (
               O.map(Math.round),
               O.toUndefined
             ),
+            newDiscounts: offlineMerchant.new_discounts,
             productCategories: offlineMerchant.product_categories.map(pc =>
               ProductCategoryFromModel(pc)
             )

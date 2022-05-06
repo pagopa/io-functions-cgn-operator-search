@@ -43,6 +43,7 @@ const aDiscountModelWithStaticCode = {
     ProductCategoryEnumModelType.learning
   ],
   start_date: new Date("2020-01-01"),
+  is_new: false,
   static_code: "xxx",
   landing_page_url: undefined,
   landing_page_referrer: undefined
@@ -61,6 +62,7 @@ const aDiscountModelWithLandingPage = {
     ProductCategoryEnumModelType.learning
   ],
   start_date: new Date("2020-01-01"),
+  is_new: false,
   static_code: undefined,
   landing_page_url: "xxx",
   landing_page_referrer: "xxx"
@@ -93,6 +95,7 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
       discountUrl: discount.discount_url,
       id: "a_discount_id",
       startDate: discount.start_date,
+      isNew: discount.is_new,
       staticCode: withoutStaticCode ? undefined : discount.static_code,
       landingPageUrl: withoutStaticCode ? undefined : discount.landing_page_url,
       landingPageReferrer: withoutStaticCode
