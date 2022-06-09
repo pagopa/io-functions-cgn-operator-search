@@ -8,7 +8,7 @@ export const sequelizePostgresOptions: () => Options = () => ({
   },
   pool: {
     idle: 5000,
-    max: 20,
+    max: getConfigOrThrow().CGN_POSTGRES_POOL_MAX_CONNECTIONS,
     min: 5
   },
   ssl: getConfigOrThrow().isPostgresSslEnabled
