@@ -76,7 +76,7 @@ const errorOrConfig: t.Validation<IConfig> = IConfig.decode({
     process.env.CGN_POSTGRES_POOL_MAX_CONNECTIONS,
     IntegerFromString.decode,
     E.map(_ => _ as NonNegativeInteger),
-    E.getOrElse(() => 20 as NonNegativeInteger)
+    E.getOrElse(() => 30 as NonNegativeInteger)
   ),
   REDIS_CLUSTER_ENABLED: pipe(
     O.fromNullable(process.env.REDIS_CLUSTER_ENABLED),
