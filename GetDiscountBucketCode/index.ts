@@ -7,19 +7,12 @@ import { AzureContextTransport } from "@pagopa/io-functions-commons/dist/src/uti
 import { setAppContext } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import createAzureFunctionHandler from "@pagopa/express-azure-functions/dist/src/createAzureFunctionsHandler";
 
-import { Sequelize } from "sequelize";
-
 import { getConfigOrThrow } from "../utils/config";
-import { sequelizePostgresOptions } from "../utils/sequelize-options";
 import { REDIS_CLIENT } from "../utils/redis";
+import { cgnOperatorDb } from "../client/sequelize";
 import { GetDiscountBucketCode } from "./handler";
 
 const config = getConfigOrThrow();
-
-const cgnOperatorDb = new Sequelize(
-  config.CGN_POSTGRES_DB_RO_URI,
-  sequelizePostgresOptions()
-);
 
 // eslint-disable-next-line functional/no-let
 let logger: Context["log"] | undefined;
