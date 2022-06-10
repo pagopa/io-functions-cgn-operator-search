@@ -113,16 +113,22 @@ const mockContext = {
   }
 } as any;
 
+const queryWithTimeTrackerMock = jest
+  .fn()
+  .mockImplementation((_, query: string, params) =>
+    cgnOperatorDbMock.query(query, params)
+  );
+
 beforeEach(() => {
   jest.clearAllMocks();
 });
 
 describe("GetOfflineMerchantsHandler", () => {
   it("should return the result when no parameter is passed", async () => {
-    const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
-      mockContext,
-      aSearchRequestBody as OfflineMerchantSearchRequest
-    );
+    const response = await GetOfflineMerchantsHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
+    )(mockContext, aSearchRequestBody as OfflineMerchantSearchRequest);
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
     if (response.kind === "IResponseSuccessJson") {
@@ -138,13 +144,13 @@ describe("GetOfflineMerchantsHandler", () => {
       return anEmptyArrayPromise;
     });
 
-    const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
-      mockContext,
-      {
-        ...aSearchRequestBody,
-        merchantName: "A Company"
-      } as OfflineMerchantSearchRequest
-    );
+    const response = await GetOfflineMerchantsHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
+    )(mockContext, {
+      ...aSearchRequestBody,
+      merchantName: "A Company"
+    } as OfflineMerchantSearchRequest);
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
   });
@@ -156,16 +162,16 @@ describe("GetOfflineMerchantsHandler", () => {
       return anEmptyArrayPromise;
     });
 
-    const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
-      mockContext,
-      {
-        ...aSearchRequestBody,
-        productCategories: [
-          ProductCategoryEnum.learning,
-          ProductCategoryEnum.cultureAndEntertainment
-        ]
-      } as OfflineMerchantSearchRequest
-    );
+    const response = await GetOfflineMerchantsHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
+    )(mockContext, {
+      ...aSearchRequestBody,
+      productCategories: [
+        ProductCategoryEnum.learning,
+        ProductCategoryEnum.cultureAndEntertainment
+      ]
+    } as OfflineMerchantSearchRequest);
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
   });
@@ -179,20 +185,20 @@ describe("GetOfflineMerchantsHandler", () => {
       return anEmptyArrayPromise;
     });
 
-    const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
-      mockContext,
-      {
-        ...aSearchRequestBody,
-        productCategories: [
-          ProductCategoryEnum.travelling,
-          ProductCategoryEnum.bankingServices,
-          ProductCategoryEnum.sports,
-          ProductCategoryEnum.learning,
-          ProductCategoryEnum.sports,
-          ProductCategoryEnum.health
-        ]
-      } as OfflineMerchantSearchRequest
-    );
+    const response = await GetOfflineMerchantsHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
+    )(mockContext, {
+      ...aSearchRequestBody,
+      productCategories: [
+        ProductCategoryEnum.travelling,
+        ProductCategoryEnum.bankingServices,
+        ProductCategoryEnum.sports,
+        ProductCategoryEnum.learning,
+        ProductCategoryEnum.sports,
+        ProductCategoryEnum.health
+      ]
+    } as OfflineMerchantSearchRequest);
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
   });
@@ -204,14 +210,14 @@ describe("GetOfflineMerchantsHandler", () => {
       return anEmptyArrayPromise;
     });
 
-    const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
-      mockContext,
-      {
-        ...aSearchRequestBody,
-        page: 2,
-        pageSize: 10
-      } as OfflineMerchantSearchRequest
-    );
+    const response = await GetOfflineMerchantsHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
+    )(mockContext, {
+      ...aSearchRequestBody,
+      page: 2,
+      pageSize: 10
+    } as OfflineMerchantSearchRequest);
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
   });
@@ -222,13 +228,13 @@ describe("GetOfflineMerchantsHandler", () => {
 
       return anEmptyArrayPromise;
     });
-    const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
-      mockContext,
-      {
-        ...aSearchRequestBody,
-        ordering: OrderingEnum.alphabetic
-      } as OfflineMerchantSearchRequest
-    );
+    const response = await GetOfflineMerchantsHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
+    )(mockContext, {
+      ...aSearchRequestBody,
+      ordering: OrderingEnum.alphabetic
+    } as OfflineMerchantSearchRequest);
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
   });
@@ -239,13 +245,13 @@ describe("GetOfflineMerchantsHandler", () => {
 
       return anEmptyArrayPromise;
     });
-    const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
-      mockContext,
-      {
-        ...aSearchRequestBody,
-        ordering: OrderingEnum.distance
-      } as OfflineMerchantSearchRequest
-    );
+    const response = await GetOfflineMerchantsHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
+    )(mockContext, {
+      ...aSearchRequestBody,
+      ordering: OrderingEnum.distance
+    } as OfflineMerchantSearchRequest);
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
   });
@@ -258,14 +264,14 @@ describe("GetOfflineMerchantsHandler", () => {
         })
     );
 
-    const response = await GetOfflineMerchantsHandler(cgnOperatorDbMock as any)(
-      mockContext,
-      {
-        ...aSearchRequestBody,
-        page: 0,
-        pageSize: 20
-      } as OfflineMerchantSearchRequest
-    );
+    const response = await GetOfflineMerchantsHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
+    )(mockContext, {
+      ...aSearchRequestBody,
+      page: 0,
+      pageSize: 20
+    } as OfflineMerchantSearchRequest);
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseErrorInternal");
   });

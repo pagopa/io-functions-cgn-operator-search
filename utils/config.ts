@@ -34,6 +34,7 @@ export type IConfig = t.TypeOf<typeof IConfig>;
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const IConfig = t.intersection([
   t.interface({
+    APPINSIGHTS_INSTRUMENTATIONKEY: NonEmptyString,
     AzureWebJobsStorage: NonEmptyString,
 
     CDN_MERCHANT_IMAGES_BASE_URL: NonEmptyString,
@@ -42,6 +43,8 @@ export const IConfig = t.intersection([
 
     CGN_POSTGRES_DB_ADMIN_URI: NonEmptyString,
     CGN_POSTGRES_DB_RO_URI: NonEmptyString,
+
+    QUERY_TIME_TRACKING_THRESHOLD_MILLISECONDS: NonNegativeInteger,
     isPostgresSslEnabled: t.boolean,
 
     isProduction: t.boolean
@@ -70,6 +73,12 @@ const errorOrConfig: t.Validation<IConfig> = IConfig.decode({
       )
     ),
     E.fold(identity, identity)
+  ),
+  QUERY_TIME_TRACKING_THRESHOLD_MILLISECONDS: pipe(
+    process.env.QUERY_TIME_TRACKING_THRESHOLD_MILLISECONDS,
+    IntegerFromString.decode,
+    E.map(_ => _ as NonNegativeInteger),
+    E.getOrElse(() => 5000 as NonNegativeInteger)
   ),
   REDIS_CLUSTER_ENABLED: pipe(
     O.fromNullable(process.env.REDIS_CLUSTER_ENABLED),

@@ -10,6 +10,8 @@ import createAzureFunctionHandler from "@pagopa/express-azure-functions/dist/src
 import { getConfigOrThrow } from "../utils/config";
 import { REDIS_CLIENT } from "../utils/redis";
 import { cgnOperatorDb } from "../client/sequelize";
+import { initTelemetryClient } from "../utils/appinsights";
+import { withTelemetryTimeTracking } from "../utils/sequelize";
 import { GetDiscountBucketCode } from "./handler";
 
 const config = getConfigOrThrow();
@@ -25,13 +27,19 @@ winston.add(contextTransport);
 const app = express();
 secureExpressApp(app);
 
+const queryTimeTracker = withTelemetryTimeTracking(
+  initTelemetryClient(config.APPINSIGHTS_INSTRUMENTATIONKEY),
+  config.QUERY_TIME_TRACKING_THRESHOLD_MILLISECONDS
+);
+
 // Add express route
 app.get(
   "/api/v1/cgn/operator-search/discount-bucket-code/:discountId",
   GetDiscountBucketCode(
     cgnOperatorDb,
     REDIS_CLIENT,
-    config.CGN_BUCKET_CODE_LOCK_LIMIT
+    config.CGN_BUCKET_CODE_LOCK_LIMIT,
+    queryTimeTracker
   )
 );
 

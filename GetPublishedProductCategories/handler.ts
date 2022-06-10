@@ -23,6 +23,7 @@ import { SelectPublishedProductCategories } from "../utils/postgres_queries";
 import { errorsToError } from "../utils/conversions";
 import { PublishedProductCategoriesResult } from "../generated/definitions/PublishedProductCategoriesResult";
 import { OptionalQueryParamMiddleware } from "../middlewares/optional_query_param";
+import { withTelemetryTimeTracking } from "../utils/sequelize";
 
 type ResponseTypes =
   | IResponseSuccessJson<PublishedProductCategoriesResult>
@@ -33,18 +34,23 @@ type IGetPublishedProductCategoriesHandler = (
 ) => Promise<ResponseTypes>;
 
 export const GetPublishedProductCategoriesHandler = (
-  cgnOperatorDb: Sequelize
+  cgnOperatorDb: Sequelize,
+  queryWithTimeTracker: ReturnType<typeof withTelemetryTimeTracking>
 ): IGetPublishedProductCategoriesHandler => async (
   maybeCountNewDiscounts: O.Option<boolean>
 ): Promise<ResponseTypes> =>
   pipe(
     TE.tryCatch(
       () =>
-        cgnOperatorDb.query(SelectPublishedProductCategories, {
-          model: PublishedProductCategoryModel,
-          raw: true,
-          type: QueryTypes.SELECT
-        }),
+        queryWithTimeTracker(
+          cgnOperatorDb.query,
+          SelectPublishedProductCategories,
+          {
+            model: PublishedProductCategoryModel,
+            raw: true,
+            type: QueryTypes.SELECT
+          }
+        ),
       E.toError
     ),
     TE.map(
@@ -80,9 +86,13 @@ export const GetPublishedProductCategoriesHandler = (
   )();
 
 export const GetPublishedProductCategories = (
-  cgnOperatorDb: Sequelize
+  cgnOperatorDb: Sequelize,
+  queryWithTimeTracker: ReturnType<typeof withTelemetryTimeTracking>
 ): express.RequestHandler => {
-  const handler = GetPublishedProductCategoriesHandler(cgnOperatorDb);
+  const handler = GetPublishedProductCategoriesHandler(
+    cgnOperatorDb,
+    queryWithTimeTracker
+  );
   const middlewaresWrap = withRequestMiddlewares(
     OptionalQueryParamMiddleware("count_new_discounts", BooleanFromString)
   );

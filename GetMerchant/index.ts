@@ -9,6 +9,8 @@ import createAzureFunctionHandler from "@pagopa/express-azure-functions/dist/src
 
 import { getConfigOrThrow } from "../utils/config";
 import { cgnOperatorDb } from "../client/sequelize";
+import { initTelemetryClient } from "../utils/appinsights";
+import { withTelemetryTimeTracking } from "../utils/sequelize";
 import { GetMerchant } from "./handler";
 
 const config = getConfigOrThrow();
@@ -24,11 +26,17 @@ winston.add(contextTransport);
 const app = express();
 secureExpressApp(app);
 
+const queryTimeTracker = withTelemetryTimeTracking(
+  initTelemetryClient(config.APPINSIGHTS_INSTRUMENTATIONKEY),
+  config.QUERY_TIME_TRACKING_THRESHOLD_MILLISECONDS
+);
+
 // Add express route
 app.get(
   "/api/v1/cgn/operator-search/merchants/:merchantId",
   GetMerchant(
     cgnOperatorDb,
+    queryTimeTracker,
     config.CDN_MERCHANT_IMAGES_BASE_URL,
     config.CGN_EXTERNAL_SOURCE_HEADER_NAME
   )

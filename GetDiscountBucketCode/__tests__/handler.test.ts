@@ -61,6 +61,11 @@ const cgnOperatorDbMock = {
     .mockImplementation(() => Promise.resolve(transactionMock))
 };
 
+const queryWithTimeTrackerMock = jest
+  .fn()
+  .mockImplementation((_, query: string, params) =>
+    cgnOperatorDbMock.query(query, params)
+  );
 const anExpectedResponse: DiscountBucketCode = { code: aBucketCode };
 
 beforeEach(() => {
@@ -82,7 +87,8 @@ describe("GetDiscountBucketCodeHandler", () => {
     const response = await GetDiscountBucketCodeHandler(
       cgnOperatorDbMock as any,
       {} as any,
-      100 as NonNegativeInteger
+      100 as NonNegativeInteger,
+      queryWithTimeTrackerMock
     )({} as any, aDiscountFk);
 
     expect(popFromListMock).toBeCalledTimes(1);
@@ -106,7 +112,8 @@ describe("GetDiscountBucketCodeHandler", () => {
     const response = await GetDiscountBucketCodeHandler(
       cgnOperatorDbMock as any,
       {} as any,
-      100 as NonNegativeInteger
+      100 as NonNegativeInteger,
+      queryWithTimeTrackerMock
     )({} as any, aDiscountFk);
 
     expect(popFromListMock).toBeCalledTimes(1);
@@ -129,7 +136,8 @@ describe("GetDiscountBucketCodeHandler", () => {
     const response = await GetDiscountBucketCodeHandler(
       cgnOperatorDbMock as any,
       {} as any,
-      100 as NonNegativeInteger
+      100 as NonNegativeInteger,
+      queryWithTimeTrackerMock
     )({} as any, aDiscountFk);
 
     expect(popFromListMock).toBeCalledTimes(1);
@@ -151,7 +159,8 @@ describe("GetDiscountBucketCodeHandler", () => {
     const response = await GetDiscountBucketCodeHandler(
       cgnOperatorDbMock as any,
       {} as any,
-      100 as NonNegativeInteger
+      100 as NonNegativeInteger,
+      queryWithTimeTrackerMock
     )({} as any, aDiscountFk);
     expect(response.kind).toBe("IResponseErrorNotFound");
     expect(transactionMock.rollback).toBeCalledTimes(1);
@@ -168,7 +177,8 @@ describe("GetDiscountBucketCodeHandler", () => {
     const response = await GetDiscountBucketCodeHandler(
       cgnOperatorDbMock as any,
       {} as any,
-      100 as NonNegativeInteger
+      100 as NonNegativeInteger,
+      queryWithTimeTrackerMock
     )({} as any, aDiscountFk);
     expect(response.kind).toBe("IResponseErrorInternal");
     expect(transactionMock.rollback).toBeCalledTimes(1);
@@ -190,7 +200,8 @@ describe("GetDiscountBucketCodeHandler", () => {
     const response = await GetDiscountBucketCodeHandler(
       cgnOperatorDbMock as any,
       {} as any,
-      100 as NonNegativeInteger
+      100 as NonNegativeInteger,
+      queryWithTimeTrackerMock
     )({} as any, aDiscountFk);
     expect(response.kind).toBe("IResponseErrorInternal");
     expect(transactionMock.rollback).toBeCalledTimes(1);
@@ -212,7 +223,8 @@ describe("GetDiscountBucketCodeHandler", () => {
     const response = await GetDiscountBucketCodeHandler(
       cgnOperatorDbMock as any,
       {} as any,
-      100 as NonNegativeInteger
+      100 as NonNegativeInteger,
+      queryWithTimeTrackerMock
     )({} as any, aDiscountFk);
     expect(response.kind).toBe("IResponseErrorInternal");
     expect(transactionMock.rollback).toBeCalledTimes(1);
