@@ -7,8 +7,12 @@ import { AzureContextTransport } from "@pagopa/io-functions-commons/dist/src/uti
 import { setAppContext } from "@pagopa/io-functions-commons/dist/src/utils/middlewares/context_middleware";
 import createAzureFunctionHandler from "@pagopa/express-azure-functions/dist/src/createAzureFunctionsHandler";
 import { cgnOperatorDb } from "../client/sequelize";
+import { withTelemetryTimeTracking } from "../utils/sequelize";
+import { initTelemetryClient } from "../utils/appinsights";
+import { getConfigOrThrow } from "../utils/config";
 import { GetOnlineMerchants } from "./handler";
 
+const config = getConfigOrThrow();
 // eslint-disable-next-line functional/no-let
 let logger: Context["log"] | undefined;
 const contextTransport = new AzureContextTransport(() => logger, {
@@ -20,10 +24,15 @@ winston.add(contextTransport);
 const app = express();
 secureExpressApp(app);
 
+const queryTimeTracker = withTelemetryTimeTracking(
+  initTelemetryClient(config.APPINSIGHTS_INSTRUMENTATIONKEY),
+  config.QUERY_TIME_TRACKING_THRESHOLD_MILLISECONDS
+);
+
 // Add express route
 app.post(
   "/api/v1/cgn/operator-search/online-merchants",
-  GetOnlineMerchants(cgnOperatorDb)
+  GetOnlineMerchants(cgnOperatorDb, queryTimeTracker)
 );
 
 const azureFunctionHandler = createAzureFunctionHandler(app);

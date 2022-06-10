@@ -29,6 +29,7 @@ import { OnlineMerchantSearchRequest } from "../generated/definitions/OnlineMerc
 import { selectOnlineMerchantsQuery } from "../utils/postgres_queries";
 import { errorsToError } from "../utils/conversions";
 import { DiscountCodeTypeFromModel } from "../models/DiscountCodeTypes";
+import { withTelemetryTimeTracking } from "../utils/sequelize";
 
 type ResponseTypes =
   | IResponseSuccessJson<OnlineMerchants>
@@ -40,7 +41,8 @@ type IGetOnlineMerchantsHandler = (
 ) => Promise<ResponseTypes>;
 
 export const GetOnlineMerchantsHandler = (
-  cgnOperatorDb: Sequelize
+  cgnOperatorDb: Sequelize,
+  queryWithTimeTracker: ReturnType<typeof withTelemetryTimeTracking>
 ): IGetOnlineMerchantsHandler => async (
   _,
   searchRequest
@@ -48,7 +50,8 @@ export const GetOnlineMerchantsHandler = (
   pipe(
     TE.tryCatch(
       () =>
-        cgnOperatorDb.query(
+        queryWithTimeTracker(
+          cgnOperatorDb.query,
           selectOnlineMerchantsQuery(
             O.fromNullable(searchRequest.merchantName),
             O.fromNullable(searchRequest.productCategories),
@@ -95,9 +98,13 @@ export const GetOnlineMerchantsHandler = (
   )();
 
 export const GetOnlineMerchants = (
-  cgnOperatorDb: Sequelize
+  cgnOperatorDb: Sequelize,
+  queryWithTimeTracker: ReturnType<typeof withTelemetryTimeTracking>
 ): express.RequestHandler => {
-  const handler = GetOnlineMerchantsHandler(cgnOperatorDb);
+  const handler = GetOnlineMerchantsHandler(
+    cgnOperatorDb,
+    queryWithTimeTracker
+  );
 
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),

@@ -38,6 +38,7 @@ import {
   SelectMerchantAddressListQuery,
   SelectMerchantProfileQuery
 } from "../utils/postgres_queries";
+import { withTelemetryTimeTracking } from "../utils/sequelize";
 
 type ResponseTypes =
   | IResponseSuccessJson<Merchant>
@@ -52,17 +53,22 @@ type IGetMerchantHandler = (
 
 const addressesTask = (
   cgnOperatorDb: Sequelize,
+  queryWithTimeTracker: ReturnType<typeof withTelemetryTimeTracking>,
   profileId: number
 ): TE.TaskEither<IResponseErrorInternal, ReadonlyArray<AddressModel>> =>
   pipe(
     TE.tryCatch(
       () =>
-        cgnOperatorDb.query(SelectMerchantAddressListQuery, {
-          model: AddressModel,
-          raw: true,
-          replacements: { profile_key: profileId },
-          type: QueryTypes.SELECT
-        }),
+        queryWithTimeTracker(
+          cgnOperatorDb.query,
+          SelectMerchantAddressListQuery,
+          {
+            model: AddressModel,
+            raw: true,
+            replacements: { profile_key: profileId },
+            type: QueryTypes.SELECT
+          }
+        ),
       E.toError
     ),
     TE.mapLeft(e => ResponseErrorInternal(e.message))
@@ -70,17 +76,22 @@ const addressesTask = (
 
 const discountsTask = (
   cgnOperatorDb: Sequelize,
+  queryWithTimeTracker: ReturnType<typeof withTelemetryTimeTracking>,
   merchantId: string
 ): TE.TaskEither<IResponseErrorInternal, ReadonlyArray<DiscountModel>> =>
   pipe(
     TE.tryCatch(
       () =>
-        cgnOperatorDb.query(SelectDiscountsByMerchantQuery, {
-          model: DiscountModel,
-          raw: true,
-          replacements: { agreement_key: merchantId },
-          type: QueryTypes.SELECT
-        }),
+        queryWithTimeTracker(
+          cgnOperatorDb.query,
+          SelectDiscountsByMerchantQuery,
+          {
+            model: DiscountModel,
+            raw: true,
+            replacements: { agreement_key: merchantId },
+            type: QueryTypes.SELECT
+          }
+        ),
       E.toError
     ),
     TE.mapLeft(e => ResponseErrorInternal(e.message))
@@ -94,6 +105,7 @@ const allNationalAddressesArray = [
 
 export const GetMerchantHandler = (
   cgnOperatorDb: Sequelize,
+  queryWithTimeTracker: ReturnType<typeof withTelemetryTimeTracking>,
   cdnBaseUrl: string
 ): IGetMerchantHandler => async (
   _,
@@ -103,7 +115,7 @@ export const GetMerchantHandler = (
   pipe(
     TE.tryCatch(
       () =>
-        cgnOperatorDb.query(SelectMerchantProfileQuery, {
+        queryWithTimeTracker(cgnOperatorDb.query, SelectMerchantProfileQuery, {
           model: MerchantProfileModel,
           raw: true,
           replacements: { merchant_id: merchantId },
@@ -120,8 +132,16 @@ export const GetMerchantHandler = (
     TE.chainW(merchant =>
       pipe(
         {
-          addresses: addressesTask(cgnOperatorDb, merchant.profile_k),
-          discounts: discountsTask(cgnOperatorDb, merchantId)
+          addresses: addressesTask(
+            cgnOperatorDb,
+            queryWithTimeTracker,
+            merchant.profile_k
+          ),
+          discounts: discountsTask(
+            cgnOperatorDb,
+            queryWithTimeTracker,
+            merchantId
+          )
         },
         AP.sequenceS(TE.ApplicativePar),
         TE.map(({ addresses, discounts }) => ({
@@ -212,10 +232,15 @@ export const GetMerchantHandler = (
 
 export const GetMerchant = (
   cgnOperatorDb: Sequelize,
+  queryWithTimeTracker: ReturnType<typeof withTelemetryTimeTracking>,
   cdnBaseUrl: NonEmptyString,
   fromExternalHeaderName: NonEmptyString
 ): express.RequestHandler => {
-  const handler = GetMerchantHandler(cgnOperatorDb, cdnBaseUrl);
+  const handler = GetMerchantHandler(
+    cgnOperatorDb,
+    queryWithTimeTracker,
+    cdnBaseUrl
+  );
 
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),

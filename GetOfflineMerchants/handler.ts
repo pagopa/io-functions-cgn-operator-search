@@ -27,6 +27,7 @@ import OfflineMerchantModel from "../models/OfflineMerchantModel";
 import { OfflineMerchantSearchRequest } from "../generated/definitions/OfflineMerchantSearchRequest";
 import { selectOfflineMerchantsQuery } from "../utils/postgres_queries";
 import { errorsToError } from "../utils/conversions";
+import { withTelemetryTimeTracking } from "../utils/sequelize";
 
 type ResponseTypes =
   | IResponseSuccessJson<OfflineMerchants>
@@ -39,6 +40,7 @@ type IGetOfflineMerchantsHandler = (
 
 export const GetOfflineMerchantsHandler = (
   cgnOperatorDb: Sequelize,
+  queryWithTimeTracker: ReturnType<typeof withTelemetryTimeTracking>,
   logPrefix: string = "GetOfflineMerchantsHandler"
 ): IGetOfflineMerchantsHandler => async (
   ctx,
@@ -47,18 +49,22 @@ export const GetOfflineMerchantsHandler = (
   pipe(
     TE.tryCatch(
       () =>
-        cgnOperatorDb.query(selectOfflineMerchantsQuery(searchRequest), {
-          model: OfflineMerchantModel,
-          raw: true,
-          replacements: {
-            name_filter: `%${pipe(
-              O.fromNullable(searchRequest.merchantName),
-              O.fold(() => "", identity),
-              toLowerCase
-            )}%`
-          },
-          type: QueryTypes.SELECT
-        }),
+        queryWithTimeTracker(
+          cgnOperatorDb.query,
+          selectOfflineMerchantsQuery(searchRequest),
+          {
+            model: OfflineMerchantModel,
+            raw: true,
+            replacements: {
+              name_filter: `%${pipe(
+                O.fromNullable(searchRequest.merchantName),
+                O.fold(() => "", identity),
+                toLowerCase
+              )}%`
+            },
+            type: QueryTypes.SELECT
+          }
+        ),
       E.toError
     ),
     TE.map(
@@ -102,9 +108,13 @@ export const GetOfflineMerchantsHandler = (
   )();
 
 export const GetOfflineMerchants = (
-  cgnOperatorDb: Sequelize
+  cgnOperatorDb: Sequelize,
+  queryWithTimeTracker: ReturnType<typeof withTelemetryTimeTracking>
 ): express.RequestHandler => {
-  const handler = GetOfflineMerchantsHandler(cgnOperatorDb);
+  const handler = GetOfflineMerchantsHandler(
+    cgnOperatorDb,
+    queryWithTimeTracker
+  );
 
   const middlewaresWrap = withRequestMiddlewares(
     ContextMiddleware(),

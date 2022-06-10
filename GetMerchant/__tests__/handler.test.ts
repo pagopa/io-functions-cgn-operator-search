@@ -134,6 +134,11 @@ const queryMock = jest.fn().mockImplementation((query: string, params) => {
 });
 
 const cgnOperatorDbMock = { query: queryMock };
+const queryWithTimeTrackerMock = jest
+  .fn()
+  .mockImplementation((_, query: string, params) =>
+    cgnOperatorDbMock.query(query, params)
+  );
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -141,11 +146,11 @@ beforeEach(() => {
 
 describe("GetMerchantHandler", () => {
   it("should return a merchant given its ID, together with the address list and the published discount list", async () => {
-    const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
-      {} as any,
-      anAgreementId,
-      O.none
-    );
+    const response = await GetMerchantHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock,
+      ""
+    )({} as any, anAgreementId, O.none);
     expect(response.kind).toBe("IResponseSuccessJson");
     expect(queryMock).toBeCalledTimes(3);
     if (response.kind === "IResponseSuccessJson") {
@@ -154,11 +159,11 @@ describe("GetMerchantHandler", () => {
   });
 
   it("should return a merchant given its ID, without static code in discounts if external header is present", async () => {
-    const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
-      {} as any,
-      anAgreementId,
-      O.some("header" as NonEmptyString)
-    );
+    const response = await GetMerchantHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock,
+      ""
+    )({} as any, anAgreementId, O.some("header" as NonEmptyString));
     expect(response.kind).toBe("IResponseSuccessJson");
     expect(queryMock).toBeCalledTimes(3);
     if (response.kind === "IResponseSuccessJson") {
@@ -190,11 +195,11 @@ describe("GetMerchantHandler", () => {
       }
     });
 
-    const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
-      {} as any,
-      anAgreementId,
-      anExternalHeader
-    );
+    const response = await GetMerchantHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock,
+      ""
+    )({} as any, anAgreementId, anExternalHeader);
     expect(queryMock).toBeCalledTimes(3);
     expect(response.kind).toBe("IResponseSuccessJson");
     if (response.kind === "IResponseSuccessJson") {
@@ -214,11 +219,11 @@ describe("GetMerchantHandler", () => {
       });
     });
 
-    const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
-      {} as any,
-      anAgreementId,
-      anExternalHeader
-    );
+    const response = await GetMerchantHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock,
+      ""
+    )({} as any, anAgreementId, anExternalHeader);
     expect(response.kind).toBe("IResponseErrorNotFound");
     expect(queryMock).toBeCalledTimes(1);
   });
@@ -232,11 +237,11 @@ describe("GetMerchantHandler", () => {
       });
     });
 
-    const response = await GetMerchantHandler(cgnOperatorDbMock as any, "")(
-      {} as any,
-      anAgreementId,
-      anExternalHeader
-    );
+    const response = await GetMerchantHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock,
+      ""
+    )({} as any, anAgreementId, anExternalHeader);
     expect(response.kind).toBe("IResponseErrorInternal");
     expect(queryMock).toBeCalledTimes(1);
   });

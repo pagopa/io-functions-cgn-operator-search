@@ -1,5 +1,8 @@
 /* tslint:disable: no-any */
-import { DiscountCodeType, DiscountCodeTypeEnum } from "../../generated/definitions/DiscountCodeType";
+import {
+  DiscountCodeType,
+  DiscountCodeTypeEnum
+} from "../../generated/definitions/DiscountCodeType";
 import { OnlineMerchantSearchRequest } from "../../generated/definitions/OnlineMerchantSearchRequest";
 import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory";
 import { DiscountCodeTypeEnumModel } from "../../models/DiscountCodeTypes";
@@ -47,7 +50,10 @@ const anOnlineMerchantResponse = {
   name: anOnlineMerchant.name,
   websiteUrl: anOnlineMerchant.website_url,
   discountCodeType: DiscountCodeTypeEnum.static,
-  productCategories: [ProductCategoryEnum.cultureAndEntertainment, ProductCategoryEnum.sports],
+  productCategories: [
+    ProductCategoryEnum.cultureAndEntertainment,
+    ProductCategoryEnum.sports
+  ],
   newDiscounts: true
 };
 
@@ -81,6 +87,12 @@ const queryMock = jest.fn().mockImplementation((_, __) => {
 
 const cgnOperatorDbMock = { query: queryMock };
 
+const queryWithTimeTrackerMock = jest
+  .fn()
+  .mockImplementation((_, query: string, params) =>
+    cgnOperatorDbMock.query(query, params)
+  );
+
 const searchRequestBody = {};
 
 beforeEach(() => {
@@ -89,10 +101,10 @@ beforeEach(() => {
 
 describe("GetOnlineMerchantsHandler", () => {
   it("should return the result when no parameter is passed", async () => {
-    const response = await GetOnlineMerchantsHandler(cgnOperatorDbMock as any)(
-      {} as any,
-      searchRequestBody as OnlineMerchantSearchRequest
-    );
+    const response = await GetOnlineMerchantsHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
+    )({} as any, searchRequestBody as OnlineMerchantSearchRequest);
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
     if (response.kind === "IResponseSuccessJson") {
@@ -108,10 +120,10 @@ describe("GetOnlineMerchantsHandler", () => {
       return anEmptyArrayPromise;
     });
 
-    const response = await GetOnlineMerchantsHandler(cgnOperatorDbMock as any)(
-      {} as any,
-      {merchantName: "A Company"} as OnlineMerchantSearchRequest
-    );
+    const response = await GetOnlineMerchantsHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
+    )({} as any, { merchantName: "A Company" } as OnlineMerchantSearchRequest);
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
   });
@@ -123,9 +135,17 @@ describe("GetOnlineMerchantsHandler", () => {
       return anEmptyArrayPromise;
     });
 
-    const response = await GetOnlineMerchantsHandler(cgnOperatorDbMock as any)(
+    const response = await GetOnlineMerchantsHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
+    )(
       {} as any,
-       {productCategories: [ProductCategoryEnum.health, ProductCategoryEnum.cultureAndEntertainment]} as OnlineMerchantSearchRequest 
+      {
+        productCategories: [
+          ProductCategoryEnum.health,
+          ProductCategoryEnum.cultureAndEntertainment
+        ]
+      } as OnlineMerchantSearchRequest
     );
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
@@ -140,15 +160,21 @@ describe("GetOnlineMerchantsHandler", () => {
       return anEmptyArrayPromise;
     });
 
-    const response = await GetOnlineMerchantsHandler(cgnOperatorDbMock as any)(
+    const response = await GetOnlineMerchantsHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
+    )(
       {} as any,
-      {productCategories: [ProductCategoryEnum.travelling,
-        ProductCategoryEnum.sports,
-        ProductCategoryEnum.home,
-        ProductCategoryEnum.learning,
-        ProductCategoryEnum.sports,
-        ProductCategoryEnum.health]} as OnlineMerchantSearchRequest 
-
+      {
+        productCategories: [
+          ProductCategoryEnum.travelling,
+          ProductCategoryEnum.sports,
+          ProductCategoryEnum.home,
+          ProductCategoryEnum.learning,
+          ProductCategoryEnum.sports,
+          ProductCategoryEnum.health
+        ]
+      } as OnlineMerchantSearchRequest
     );
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
@@ -161,10 +187,10 @@ describe("GetOnlineMerchantsHandler", () => {
       return anEmptyArrayPromise;
     });
 
-    const response = await GetOnlineMerchantsHandler(cgnOperatorDbMock as any)(
-      {} as any,
-      {page: 2, pageSize: 10} as OnlineMerchantSearchRequest 
-    );
+    const response = await GetOnlineMerchantsHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
+    )({} as any, { page: 2, pageSize: 10 } as OnlineMerchantSearchRequest);
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
   });
@@ -177,10 +203,10 @@ describe("GetOnlineMerchantsHandler", () => {
         })
     );
 
-    const response = await GetOnlineMerchantsHandler(cgnOperatorDbMock as any)(
-      {} as any,
-      {page: 0, pageSize: 20} as OnlineMerchantSearchRequest 
-    );
+    const response = await GetOnlineMerchantsHandler(
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
+    )({} as any, { page: 0, pageSize: 20 } as OnlineMerchantSearchRequest);
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseErrorInternal");
   });

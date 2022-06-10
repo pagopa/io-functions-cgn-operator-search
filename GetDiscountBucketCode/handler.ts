@@ -31,6 +31,7 @@ import {
   UpdateDiscountBucketCodeSetUsed
 } from "../utils/postgres_queries";
 import { popFromList, pushInList } from "../utils/redis_storage";
+import { withTelemetryTimeTracking } from "../utils/sequelize";
 
 type ResponseTypes =
   | IResponseSuccessJson<DiscountBucketCode>
@@ -55,7 +56,8 @@ const commitTransaction = (
 const getAndUpdateCodes = (
   cgnOperatorDb: Sequelize,
   discountId: string,
-  bucketCodeLockLimit: NonNegativeInteger
+  bucketCodeLockLimit: NonNegativeInteger,
+  queryWithTimeTracker: ReturnType<typeof withTelemetryTimeTracking>
 ): TE.TaskEither<
   IResponseErrorInternal | IResponseErrorNotFound,
   ReadonlyArray<DiscountBucketCodeModel>
@@ -67,16 +69,20 @@ const getAndUpdateCodes = (
       pipe(
         TE.tryCatch(
           () =>
-            cgnOperatorDb.query(SelectDiscountBucketCodeByDiscount, {
-              model: DiscountBucketCodeModel,
-              raw: true,
-              replacements: {
-                discount_fk: discountId,
-                limit: bucketCodeLockLimit
-              },
-              transaction: t,
-              type: QueryTypes.SELECT
-            }),
+            queryWithTimeTracker(
+              cgnOperatorDb.query,
+              SelectDiscountBucketCodeByDiscount,
+              {
+                model: DiscountBucketCodeModel,
+                raw: true,
+                replacements: {
+                  discount_fk: discountId,
+                  limit: bucketCodeLockLimit
+                },
+                transaction: t,
+                type: QueryTypes.SELECT
+              }
+            ),
           E.toError
         ),
         TE.mapLeft(err => ResponseErrorInternal(err.message)),
@@ -135,7 +141,8 @@ const getAndUpdateCodes = (
 export const GetDiscountBucketCodeHandler = (
   cgnOperatorDb: Sequelize,
   redisClient: RedisClient,
-  bucketCodeLockLimit: NonNegativeInteger
+  bucketCodeLockLimit: NonNegativeInteger,
+  queryWithTimeTracker: ReturnType<typeof withTelemetryTimeTracking>
 ): IGetDiscountBucketCodeHandler => async (
   _,
   discountId
@@ -146,7 +153,12 @@ export const GetDiscountBucketCodeHandler = (
     // we fallback to default behaviour by fetching codes with Sequelize
     TE.orElse(() =>
       pipe(
-        getAndUpdateCodes(cgnOperatorDb, discountId, 1 as NonNegativeInteger),
+        getAndUpdateCodes(
+          cgnOperatorDb,
+          discountId,
+          1 as NonNegativeInteger,
+          queryWithTimeTracker
+        ),
         TE.map(resultCodes => [...resultCodes]),
         TE.map(
           flow(
@@ -161,7 +173,12 @@ export const GetDiscountBucketCodeHandler = (
         () =>
           // No codes recognized so we try to fetch an other chunk of codes and store them to Redis
           pipe(
-            getAndUpdateCodes(cgnOperatorDb, discountId, bucketCodeLockLimit),
+            getAndUpdateCodes(
+              cgnOperatorDb,
+              discountId,
+              bucketCodeLockLimit,
+              queryWithTimeTracker
+            ),
             TE.map(resultCodes => [...resultCodes]),
             TE.chainW(
               flow(
@@ -197,12 +214,14 @@ export const GetDiscountBucketCodeHandler = (
 export const GetDiscountBucketCode = (
   cgnOperatorDb: Sequelize,
   redisClient: RedisClient,
-  bucketCodeLockLimit: NonNegativeInteger
+  bucketCodeLockLimit: NonNegativeInteger,
+  queryWithTimeTracker: ReturnType<typeof withTelemetryTimeTracking>
 ): express.RequestHandler => {
   const handler = GetDiscountBucketCodeHandler(
     cgnOperatorDb,
     redisClient,
-    bucketCodeLockLimit
+    bucketCodeLockLimit,
+    queryWithTimeTracker
   );
 
   const middlewaresWrap = withRequestMiddlewares(

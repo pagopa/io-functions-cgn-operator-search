@@ -8,8 +8,12 @@ import { setAppContext } from "@pagopa/io-functions-commons/dist/src/utils/middl
 import createAzureFunctionHandler from "@pagopa/express-azure-functions/dist/src/createAzureFunctionsHandler";
 
 import { cgnOperatorDb } from "../client/sequelize";
+import { withTelemetryTimeTracking } from "../utils/sequelize";
+import { initTelemetryClient } from "../utils/appinsights";
+import { getConfigOrThrow } from "../utils/config";
 import { GetPublishedProductCategories } from "./handler";
 
+const config = getConfigOrThrow();
 // eslint-disable-next-line functional/no-let
 let logger: Context["log"] | undefined;
 const contextTransport = new AzureContextTransport(() => logger, {
@@ -21,10 +25,15 @@ winston.add(contextTransport);
 const app = express();
 secureExpressApp(app);
 
+const queryTimeTracker = withTelemetryTimeTracking(
+  initTelemetryClient(config.APPINSIGHTS_INSTRUMENTATIONKEY),
+  config.QUERY_TIME_TRACKING_THRESHOLD_MILLISECONDS
+);
+
 // Add express route
 app.get(
   "/api/v1/cgn/operator-search/published-product-categories",
-  GetPublishedProductCategories(cgnOperatorDb)
+  GetPublishedProductCategories(cgnOperatorDb, queryTimeTracker)
 );
 
 const azureFunctionHandler = createAzureFunctionHandler(app);

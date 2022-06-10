@@ -48,6 +48,12 @@ const queryMock = jest.fn().mockImplementation((_, __) => {
 
 const cgnOperatorDbMock = { query: queryMock };
 
+const queryWithTimeTrackerMock = jest
+  .fn()
+  .mockImplementation((_, query: string, params) =>
+    cgnOperatorDbMock.query(query, params)
+  );
+
 beforeEach(() => {
   jest.clearAllMocks();
 });
@@ -55,7 +61,8 @@ beforeEach(() => {
 describe("GetPublishedProductCategoriesHandler |> maybeCountNewDiscounts = None", () => {
   it("should return the result with only categories array if no errors occur", async () => {
     const response = await GetPublishedProductCategoriesHandler(
-      cgnOperatorDbMock as any
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
     )(O.none);
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
@@ -73,7 +80,8 @@ describe("GetPublishedProductCategoriesHandler |> maybeCountNewDiscounts = None"
     );
 
     const response = await GetPublishedProductCategoriesHandler(
-      cgnOperatorDbMock as any
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
     )(O.none);
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseErrorInternal");
@@ -83,7 +91,8 @@ describe("GetPublishedProductCategoriesHandler |> maybeCountNewDiscounts = None"
 describe("GetPublishedProductCategoriesHandler |> maybeCountNewDiscounts = Some(boolean)", () => {
   it("should return the result with counts if no errors occur and param is true", async () => {
     const response = await GetPublishedProductCategoriesHandler(
-      cgnOperatorDbMock as any
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
     )(O.some(true));
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
@@ -94,7 +103,8 @@ describe("GetPublishedProductCategoriesHandler |> maybeCountNewDiscounts = Some(
 
   it("should return the result with only categories array if no errors occur and param is false", async () => {
     const response = await GetPublishedProductCategoriesHandler(
-      cgnOperatorDbMock as any
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
     )(O.some(false));
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseSuccessJson");
@@ -112,7 +122,8 @@ describe("GetPublishedProductCategoriesHandler |> maybeCountNewDiscounts = Some(
     );
 
     const response = await GetPublishedProductCategoriesHandler(
-      cgnOperatorDbMock as any
+      cgnOperatorDbMock as any,
+      queryWithTimeTrackerMock
     )(O.some(true));
     expect(queryMock).toBeCalledTimes(1);
     expect(response.kind).toBe("IResponseErrorInternal");
