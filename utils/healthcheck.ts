@@ -1,4 +1,3 @@
-import { CosmosClient } from "@azure/cosmos";
 import { readableReport } from "@pagopa/ts-commons/lib/reporters";
 import {
   common as azurestorageCommon,
@@ -17,9 +16,9 @@ import * as TE from "fp-ts/lib/TaskEither";
 
 import { sequenceT } from "fp-ts/lib/Apply";
 import fetch from "node-fetch";
-import { QueryTypes, Sequelize } from "sequelize";
+import { QueryTypes } from "sequelize";
+import { cgnOperatorDb } from "../client/sequelize";
 import { getConfig, IConfig } from "./config";
-import { sequelizePostgresOptions } from "./sequelize-options";
 
 type ProblemSource =
   | "AzureCosmosDB"
@@ -64,38 +63,6 @@ export const checkConfigHealth = (): HealthCheck<"Config", IConfig> =>
         formatProblem("Config", readableReport([e]))
       )
     )
-  );
-
-/**
- * Return a CosmosClient
- */
-export const buildCosmosClient = (
-  dbUri: string,
-  dbKey?: string
-): CosmosClient =>
-  new CosmosClient({
-    endpoint: dbUri,
-    key: dbKey
-  });
-
-/**
- * Check the application can connect to an Azure CosmosDb instances
- *
- * @param dbUri uri of the database
- * @param dbUri connection string for the storage
- *
- * @returns either true or an array of error messages
- */
-export const checkAzureCosmosDbHealth = (
-  dbUri: string,
-  dbKey?: string
-): HealthCheck<"AzureCosmosDB", true> =>
-  pipe(
-    TE.tryCatch(async () => {
-      const client = buildCosmosClient(dbUri, dbKey);
-      return client.getDatabaseAccount();
-    }, toHealthProblems("AzureCosmosDB")),
-    TE.map(_ => true)
   );
 
 /**
@@ -158,17 +125,16 @@ export const checkUrlHealth = (url: string): HealthCheck<"Url", true> =>
  *
  * @returns either true or an array of error messages
  */
-export const checkPostgresHealth = (
-  dbUri: string
-): HealthCheck<"PostgresDB", true> =>
+export const checkPostgresHealth = (): HealthCheck<"PostgresDB", true> =>
   pipe(
-    TE.tryCatch(() => {
-      const cgnOperatorDb = new Sequelize(dbUri, sequelizePostgresOptions());
-      return cgnOperatorDb.query(`SELECT 1`, {
-        raw: true,
-        type: QueryTypes.SELECT
-      });
-    }, toHealthProblems("PostgresDB")),
+    TE.tryCatch(
+      () =>
+        cgnOperatorDb.query(`SELECT 1`, {
+          raw: true,
+          type: QueryTypes.SELECT
+        }),
+      toHealthProblems("PostgresDB")
+    ),
     TE.map(_ => true)
   );
 
@@ -186,11 +152,9 @@ export const checkApplicationHealth = (): HealthCheck<ProblemSource, true> => {
     void 0,
     TE.of,
     TE.chain(_ => checkConfigHealth()),
-    TE.chain(config =>
+    TE.chain(_ =>
       // run each taskEither and collect validation errors from each one of them, if any
-      sequenceT(applicativeValidation)(
-        checkPostgresHealth(config.CGN_POSTGRES_DB_RO_URI)
-      )
+      sequenceT(applicativeValidation)(checkPostgresHealth())
     ),
     TE.map(_ => true)
   );
