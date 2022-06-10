@@ -9,7 +9,7 @@ import * as express from "express";
 import { pipe } from "fp-ts/lib/function";
 import * as TE from "fp-ts/lib/TaskEither";
 import * as packageJson from "../package.json";
-import { checkApplicationHealth, HealthCheck } from "../utils/healthcheck";
+import { HealthCheck } from "../utils/healthcheck";
 
 interface IInfo {
   readonly name: string;
@@ -38,8 +38,8 @@ export const InfoHandler = (
     TE.toUnion
   )();
 
-export const Info = (): express.RequestHandler => {
-  const handler = InfoHandler(checkApplicationHealth());
+export const Info = (healthCheck: HealthCheck): express.RequestHandler => {
+  const handler = InfoHandler(healthCheck);
 
   return wrapRequestHandler(handler);
 };
