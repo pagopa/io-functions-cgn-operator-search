@@ -7,9 +7,9 @@ export const sequelizePostgresOptions: () => Options = () => ({
     ssl: getConfigOrThrow().isPostgresSslEnabled
   },
   pool: {
-    idle: 5000,
+    idle: 10000,
     max: 20,
-    min: 5
+    min: 0
   },
   ssl: getConfigOrThrow().isPostgresSslEnabled
 });
