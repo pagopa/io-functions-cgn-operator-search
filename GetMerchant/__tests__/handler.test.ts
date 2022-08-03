@@ -68,9 +68,29 @@ const aDiscountModelWithLandingPage = {
   landing_page_referrer: "xxx"
 };
 
+const aDiscountModelWithLandingPageNoReferrer = {
+  condition: null,
+  description: "something something",
+  discount_k: "a_discount_id",
+  discount_url: "xxx",
+  discount_value: 20,
+  end_date: new Date("2021-01-01"),
+  name: "name 1",
+  product_categories: [
+    ProductCategoryEnumModelType.cultureAndEntertainment,
+    ProductCategoryEnumModelType.learning
+  ],
+  start_date: new Date("2020-01-01"),
+  is_new: false,
+  static_code: undefined,
+  landing_page_url: "xxx",
+  landing_page_referrer: undefined
+};
+
 const aDiscountModelList = [
   aDiscountModelWithStaticCode,
-  aDiscountModelWithLandingPage
+  aDiscountModelWithLandingPage,
+  aDiscountModelWithLandingPageNoReferrer
 ];
 
 const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
