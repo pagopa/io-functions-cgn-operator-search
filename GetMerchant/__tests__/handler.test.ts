@@ -2,7 +2,7 @@
 
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
 import { withoutUndefinedValues } from "@pagopa/ts-commons/lib/types";
-import { pipe } from "fp-ts/lib/function";
+import { identity, pipe } from "fp-ts/lib/function";
 import * as O from "fp-ts/lib/Option";
 import { DiscountCodeTypeEnum } from "../../generated/definitions/DiscountCodeType";
 import { ProductCategoryEnum } from "../../generated/definitions/ProductCategory";
@@ -37,7 +37,7 @@ const aDiscountModelWithStaticCode = {
   discount_url: "xxx",
   discount_value: 20,
   end_date: new Date("2021-01-01"),
-  name: "name 1",
+  name: "name 0",
   product_categories: [
     ProductCategoryEnumModelType.cultureAndEntertainment,
     ProductCategoryEnumModelType.learning
@@ -75,7 +75,7 @@ const aDiscountModelWithLandingPageNoReferrer = {
   discount_url: "xxx",
   discount_value: 20,
   end_date: new Date("2021-01-01"),
-  name: "name 1",
+  name: "name 2",
   product_categories: [
     ProductCategoryEnumModelType.cultureAndEntertainment,
     ProductCategoryEnumModelType.learning
@@ -93,7 +93,7 @@ const aDiscountModelList = [
   aDiscountModelWithLandingPageNoReferrer
 ];
 
-const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
+const anExpectedResponse = (withHiddenData: boolean = false) => ({
   description: aMerchantProfileWithStaticDiscountTypeModel.description,
   name: aMerchantProfileWithStaticDiscountTypeModel.name,
   id: anAgreementId,
@@ -116,11 +116,22 @@ const anExpectedResponse = (withoutStaticCode: boolean = false) => ({
       id: "a_discount_id",
       startDate: discount.start_date,
       isNew: discount.is_new,
-      staticCode: withoutStaticCode ? undefined : discount.static_code,
-      landingPageUrl: withoutStaticCode ? undefined : discount.landing_page_url,
-      landingPageReferrer: withoutStaticCode
+      staticCode: withHiddenData ? undefined : discount.static_code,
+      landingPageUrl: withHiddenData ? undefined : discount.landing_page_url,
+      landingPageReferrer: withHiddenData
         ? undefined
-        : discount.landing_page_referrer,
+        : pipe(
+            discount.landing_page_url,
+            O.fromNullable,
+            O.chain(__ =>
+              pipe(
+                discount.landing_page_referrer,
+                O.fromNullable,
+                O.fold(() => O.some("-"), O.some)
+              )
+            ),
+            O.toUndefined
+          ),
       productCategories: [
         ProductCategoryEnum.cultureAndEntertainment,
         ProductCategoryEnum.learning
