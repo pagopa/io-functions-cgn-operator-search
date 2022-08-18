@@ -149,8 +149,15 @@ export const GetMerchantHandler = (
                 O.fold(
                   () =>
                     pipe(
-                      d.landing_page_referrer,
+                      d.landing_page_url,
                       O.fromNullable,
+                      O.chain(__ =>
+                        pipe(
+                          d.landing_page_referrer,
+                          O.fromNullable,
+                          O.fold(() => O.some("-"), O.some)
+                        )
+                      ),
                       O.toUndefined
                     ),
                   () => undefined
