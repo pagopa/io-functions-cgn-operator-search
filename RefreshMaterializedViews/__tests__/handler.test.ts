@@ -3,7 +3,7 @@ import * as E from "fp-ts/lib/Either";
 
 const queryMock = jest.fn().mockImplementation((query, __) => {
   expect(query).toBe(
-    "REFRESH MATERIALIZED VIEW CONCURRENTLY online_merchant; REFRESH MATERIALIZED VIEW CONCURRENTLY offline_merchant"
+    "REFRESH MATERIALIZED VIEW CONCURRENTLY online_merchant; REFRESH MATERIALIZED VIEW CONCURRENTLY offline_merchant; REFRESH MATERIALIZED VIEW CONCURRENTLY published_product_category"
   );
 
   return new Promise(resolve => {
