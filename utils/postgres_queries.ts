@@ -152,8 +152,7 @@ FROM profile p
 JOIN agreement a ON (p.agreement_fk = a.agreement_k)
 WHERE agreement_fk = :merchant_id
   AND a.state = 'APPROVED'
-  AND a.start_date <= CURRENT_DATE
-  AND CURRENT_DATE <= a.end_date`;
+  AND a.start_date <= CURRENT_DATE`;
 
 export const SelectMerchantAddressListQuery = `
 SELECT 
