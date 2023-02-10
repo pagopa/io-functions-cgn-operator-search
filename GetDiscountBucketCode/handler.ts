@@ -21,7 +21,7 @@ import {
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
-import { RedisClient } from "redis";
+import { RedisClient } from "../utils/redis";
 import { NonNegativeInteger } from "@pagopa/ts-commons/lib/numbers";
 import DiscountBucketCodeModel from "../models/DiscountBucketCodeModel";
 import { DiscountBucketCode } from "../generated/definitions/DiscountBucketCode";
