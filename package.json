@@ -65,7 +65,7 @@
     "node-fetch": "^2.6.0",
     "pg": "^8.6.0",
     "pg-hstore": "^2.3.3",
-    "redis": "^3.0.2",
+    "redis": "^3.1.2",
     "redis-clustr": "^1.7.0",
     "sequelize": "^6.6.2",
     "winston": "^3.2.1"
