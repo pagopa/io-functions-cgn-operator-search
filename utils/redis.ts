@@ -1,60 +1,49 @@
 import { identity, pipe } from "fp-ts/lib/function";
 import * as O from "fp-ts/lib/Option";
 import * as redis from "redis";
+import RedisClustr = require("redis-clustr");
 import { getConfigOrThrow } from "./config";
-
 const config = getConfigOrThrow();
-const DEFAULT_REDIS_PORT = "6379";
 
-export type RedisClient = redis.RedisClientType | redis.RedisClusterType;
-
-export const createSimpleRedisClient = async (
+const createSimpleRedisClient = (
   redisUrl: string,
   password?: string,
   port?: string,
   useTls: boolean = true
-): Promise<RedisClient> => {
+): redis.RedisClient => {
+  const DEFAULT_REDIS_PORT = "6379";
+
   const redisPort: number = parseInt(port || DEFAULT_REDIS_PORT, 10);
-  const redisClient = redis.createClient<
-    redis.RedisDefaultModules,
-    Record<string, never>,
-    Record<string, never>
-  >({
-    password,
-    socket: {
-      port: redisPort,
-      tls: useTls
-    },
-    url: redisUrl
+  return redis.createClient({
+    auth_pass: password,
+    host: redisUrl,
+    port: redisPort,
+    tls: useTls ? { servername: redisUrl } : undefined
   });
-  await redisClient.connect();
-  return redisClient;
 };
 
-export const createClusterRedisClient = async (
+const createClusterRedisClient = (
   redisUrl: string,
   password?: string,
   port?: string
-): Promise<RedisClient> => {
+): redis.RedisClient => {
+  const DEFAULT_REDIS_PORT = "6379";
+
   const redisPort: number = parseInt(port || DEFAULT_REDIS_PORT, 10);
-  const redisClient = redis.createCluster<
-    redis.RedisDefaultModules,
-    Record<string, never>,
-    Record<string, never>
-  >({
-    defaults: {
-      legacyMode: true,
-      password
-    },
-    rootNodes: [
-      {
-        url: `${redisUrl}:${redisPort}`
+  return new RedisClustr({
+    redisOptions: {
+      auth_pass: password,
+      tls: {
+        servername: redisUrl
       }
-    ],
-    useReplicas: true
-  });
-  await redisClient.connect();
-  return redisClient;
+    },
+    servers: [
+      {
+        host: redisUrl,
+        port: redisPort
+      }
+    ]
+  }) as redis.RedisClient; // Casting RedisClustr with missing typings to RedisClient (same usage).
 };
 
 export const REDIS_CLIENT = pipe(

@@ -21,6 +21,7 @@ import {
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
+import { RedisClient } from "redis";
 import { NonNegativeInteger } from "@pagopa/ts-commons/lib/numbers";
 import DiscountBucketCodeModel from "../models/DiscountBucketCodeModel";
 import { DiscountBucketCode } from "../generated/definitions/DiscountBucketCode";
@@ -29,7 +30,6 @@ import {
   SelectDiscountBucketCodeByDiscount,
   UpdateDiscountBucketCodeSetUsed
 } from "../utils/postgres_queries";
-import { RedisClient } from "../utils/redis";
 import { popFromList, pushInList } from "../utils/redis_storage";
 
 type ResponseTypes =

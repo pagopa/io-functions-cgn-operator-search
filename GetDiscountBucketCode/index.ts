@@ -25,23 +25,21 @@ winston.add(contextTransport);
 const app = express();
 secureExpressApp(app);
 
+// Add express route
+app.get(
+  "/api/v1/cgn/operator-search/discount-bucket-code/:discountId",
+  GetDiscountBucketCode(
+    cgnOperatorDb,
+    REDIS_CLIENT,
+    config.CGN_BUCKET_CODE_LOCK_LIMIT
+  )
+);
+
+const azureFunctionHandler = createAzureFunctionHandler(app);
+
 // Binds the express app to an Azure Function handler
-const httpStart = async (context: Context): Promise<void> => {
+const httpStart = (context: Context): void => {
   logger = context.log;
-  const redisClient = await REDIS_CLIENT;
-
-  // Add express route
-  app.get(
-    "/api/v1/cgn/operator-search/discount-bucket-code/:discountId",
-    GetDiscountBucketCode(
-      cgnOperatorDb,
-      redisClient,
-      config.CGN_BUCKET_CODE_LOCK_LIMIT
-    )
-  );
-
-  const azureFunctionHandler = createAzureFunctionHandler(app);
-
   setAppContext(app, context);
   azureFunctionHandler(context);
 };
