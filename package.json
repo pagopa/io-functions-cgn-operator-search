@@ -3,7 +3,7 @@
   "description": "",
   "author": "IO team",
   "repository": "https://github.com/pagopa/io-functions-cgn-operator-search",
-  "version": "2.9.5",
+  "version": "2.9.6",
   "license": "MIT",
   "scripts": {
     "prebuild": "shx rm -rf dist && yarn generate",
@@ -38,7 +38,6 @@
     "@types/sequelize": "^4.28.10",
     "@types/vfile-message": "^2.0.0",
     "auto-changelog": "2.2.1",
-    "danger": "^10.3.0",
     "dependency-check": "^4.1.0",
     "dotenv-cli": "^3.1.0",
     "eslint-plugin-prettier": "^3.3.1",
