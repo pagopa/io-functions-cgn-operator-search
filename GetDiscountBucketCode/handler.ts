@@ -21,7 +21,6 @@ import {
   ResponseSuccessJson
 } from "@pagopa/ts-commons/lib/responses";
 import { NonEmptyString } from "@pagopa/ts-commons/lib/strings";
-import { RedisClient } from "redis";
 import { NonNegativeInteger } from "@pagopa/ts-commons/lib/numbers";
 import DiscountBucketCodeModel from "../models/DiscountBucketCodeModel";
 import { DiscountBucketCode } from "../generated/definitions/DiscountBucketCode";
@@ -30,6 +29,7 @@ import {
   SelectDiscountBucketCodeByDiscount,
   UpdateDiscountBucketCodeSetUsed
 } from "../utils/postgres_queries";
+import { RedisClientFactory } from "../utils/redis";
 import { popFromList, pushInList } from "../utils/redis_storage";
 
 type ResponseTypes =
@@ -134,14 +134,11 @@ const getAndUpdateCodes = (
 
 export const GetDiscountBucketCodeHandler = (
   cgnOperatorDb: Sequelize,
-  redisClient: RedisClient,
+  redisClientFactory: RedisClientFactory,
   bucketCodeLockLimit: NonNegativeInteger
-): IGetDiscountBucketCodeHandler => async (
-  _,
-  discountId
-): Promise<ResponseTypes> =>
+): IGetDiscountBucketCodeHandler => (_, discountId): Promise<ResponseTypes> =>
   pipe(
-    popFromList(redisClient, discountId),
+    popFromList(redisClientFactory, discountId),
     // if popFromList fails it means Redis is currently unavailable so
     // we fallback to default behaviour by fetching codes with Sequelize
     TE.orElse(() =>
@@ -169,7 +166,7 @@ export const GetDiscountBucketCodeHandler = (
                 AR.splitAt(1),
                 ([[firstCode], codesToSave]) =>
                   pipe(
-                    pushInList(redisClient, discountId, codesToSave),
+                    pushInList(redisClientFactory, discountId, codesToSave),
                     TE.map(() => firstCode),
                     // if Push fails we accept to burn a bunch of codes and just give back one without storing them on Redis.
                     TE.orElse(() => TE.of(firstCode))
@@ -196,12 +193,12 @@ export const GetDiscountBucketCodeHandler = (
 
 export const GetDiscountBucketCode = (
   cgnOperatorDb: Sequelize,
-  redisClient: RedisClient,
+  redisClientFactory: RedisClientFactory,
   bucketCodeLockLimit: NonNegativeInteger
 ): express.RequestHandler => {
   const handler = GetDiscountBucketCodeHandler(
     cgnOperatorDb,
-    redisClient,
+    redisClientFactory,
     bucketCodeLockLimit
   );
 
