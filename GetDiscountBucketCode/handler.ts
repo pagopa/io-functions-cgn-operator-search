@@ -136,10 +136,7 @@ export const GetDiscountBucketCodeHandler = (
   cgnOperatorDb: Sequelize,
   redisClientFactory: RedisClientFactory,
   bucketCodeLockLimit: NonNegativeInteger
-): IGetDiscountBucketCodeHandler => (
-  _,
-  discountId
-): Promise<ResponseTypes> =>
+): IGetDiscountBucketCodeHandler => (_, discountId): Promise<ResponseTypes> =>
   pipe(
     popFromList(redisClientFactory, discountId),
     // if popFromList fails it means Redis is currently unavailable so
