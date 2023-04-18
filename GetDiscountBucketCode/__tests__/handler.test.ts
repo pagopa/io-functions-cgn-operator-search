@@ -72,8 +72,8 @@ const popFromListMock = jest
   .mockImplementation(() => TE.of(O.some(aBucketCode)));
 
 const pushInListMock = jest.fn().mockImplementation(() => TE.of(true));
-jest.spyOn(redisStorage, "popFromList").mockImplementation(popFromListMock);
 
+jest.spyOn(redisStorage, "popFromList").mockImplementation(popFromListMock);
 jest.spyOn(redisStorage, "pushInList").mockImplementation(pushInListMock);
 
 describe("GetDiscountBucketCodeHandler", () => {
