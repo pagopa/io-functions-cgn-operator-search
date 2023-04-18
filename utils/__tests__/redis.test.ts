@@ -26,7 +26,8 @@ describe("RedisClientFactory", () => {
         REDIS_CLUSTER_ENABLED: isClusterEnabled
       });
 
-      // override the connection methods
+      // override the connection methods to return test clients
+      // with properties injected for testing purposes
       let instanceNumber = 0;
       Object.assign(redisClientFactory, {
         createSimpleRedisClient: async () =>
