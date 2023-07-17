@@ -153,6 +153,7 @@ definitions:
       - discounts
       - supportType
       - supportValue
+      - allNationalAddresses
     properties:
       id:
         type: string
@@ -184,6 +185,8 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/Address" 
+      allNationalAddresses:
+        type: boolean
   SupportType:
     type: string
     enum:

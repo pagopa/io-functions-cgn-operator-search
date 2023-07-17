@@ -191,6 +191,7 @@ export const GetMerchantHandler = (
     TE.map(({ addresses, discounts, merchant }) =>
       withoutUndefinedValues({
         addresses,
+        allNationalAddresses: merchant.all_national_addresses,
         description: merchant.description,
         discountCodeType: pipe(
           O.fromNullable(merchant.discount_code_type),
