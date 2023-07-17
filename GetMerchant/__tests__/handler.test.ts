@@ -97,12 +97,12 @@ const aDiscountModelList = [
 ];
 
 const anExpectedResponse = (withHiddenData: boolean = false) => ({
-  allNationalAddresses: false,
+  allNationalAddresses: aMerchantProfileWithStaticDiscountTypeModel.all_national_addresses,
   description: aMerchantProfileWithStaticDiscountTypeModel.description,
   name: aMerchantProfileWithStaticDiscountTypeModel.name,
   id: anAgreementId,
-  supportType: "EMAILADDRESS",
-  supportValue: "-",
+  supportType: aMerchantProfileWithStaticDiscountTypeModel.support_type,
+  supportValue: aMerchantProfileWithStaticDiscountTypeModel.support_value,
   imageUrl: `/${aMerchantProfileWithStaticDiscountTypeModel.image_url}`,
   websiteUrl: aMerchantProfileWithStaticDiscountTypeModel.website_url,
   discountCodeType: DiscountCodeTypeEnum.static,
