@@ -7,6 +7,8 @@ export default class MerchantProfileModel extends Model {
   public readonly image_url!: string | undefined;
   public readonly name!: string;
   public readonly profile_k!: number;
+  public readonly support_type!: string;
+  public readonly support_value!: string;
   public readonly all_national_addresses!: boolean;
   public readonly website_url!: string | undefined;
   public readonly discount_code_type!: DiscountCodeTypeEnumModel | undefined;
