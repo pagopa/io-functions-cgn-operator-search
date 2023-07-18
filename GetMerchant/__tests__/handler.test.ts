@@ -19,7 +19,10 @@ const aMerchantProfileWithStaticDiscountTypeModel = {
   name: "PagoPa",
   profile_k: 123,
   website_url: "https://pagopa.it",
-  discount_code_type: DiscountCodeTypeEnumModel.static
+  discount_code_type: DiscountCodeTypeEnumModel.static,
+  support_type: "EMAILADDRESS",
+  support_value: "-",
+  all_national_addresses: false
 };
 const aMerchantProfileModelList = [aMerchantProfileWithStaticDiscountTypeModel];
 
@@ -94,9 +97,12 @@ const aDiscountModelList = [
 ];
 
 const anExpectedResponse = (withHiddenData: boolean = false) => ({
+  allNationalAddresses: aMerchantProfileWithStaticDiscountTypeModel.all_national_addresses,
   description: aMerchantProfileWithStaticDiscountTypeModel.description,
   name: aMerchantProfileWithStaticDiscountTypeModel.name,
   id: anAgreementId,
+  supportType: aMerchantProfileWithStaticDiscountTypeModel.support_type,
+  supportValue: aMerchantProfileWithStaticDiscountTypeModel.support_value,
   imageUrl: `/${aMerchantProfileWithStaticDiscountTypeModel.image_url}`,
   websiteUrl: aMerchantProfileWithStaticDiscountTypeModel.website_url,
   discountCodeType: DiscountCodeTypeEnum.static,

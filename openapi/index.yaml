@@ -7,16 +7,13 @@ info:
     url: https://forum.italia.it/c/progetto-io
   x-logo:
     url: https://io.italia.it/assets/img/io-logo-blue.svg
-  description: >
-    Documentation of the IO operator search API here.
+  description: "Documentation of the IO operator search API here."
 host: search.cgn.italia.it
 basePath: "/api/v1/cgn/operator-search"
 schemes:
   - https
-
 security:
   - ApiKey: []
-
 paths:
   /published-product-categories:
     get:
@@ -154,6 +151,9 @@ definitions:
       - id
       - name
       - discounts
+      - supportType
+      - supportValue
+      - allNationalAddresses
     properties:
       id:
         type: string
@@ -165,6 +165,11 @@ definitions:
         type: string
         minLength: 1
       websiteUrl:
+        type: string
+        minLength: 1
+      supportType:
+        $ref: "#/definitions/SupportType"
+      supportValue:
         type: string
         minLength: 1
       discountCodeType:
@@ -179,8 +184,15 @@ definitions:
       addresses:
         type: array
         items:
-          $ref: "#/definitions/Address"
-
+          $ref: "#/definitions/Address" 
+      allNationalAddresses:
+        type: boolean
+  SupportType:
+    type: string
+    enum:
+    - WEBSITE
+    - PHONENUMBER
+    - EMAILADDRESS
   Discount:
     type: object
     required:

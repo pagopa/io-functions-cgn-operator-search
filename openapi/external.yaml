@@ -1,4 +1,4 @@
-swagger: '2.0'
+swagger: "2.0"
 info:
   version: 1.0.0
   title: IO Functions CGN operator search
@@ -7,9 +7,7 @@ info:
     url: https://forum.italia.it/c/progetto-io
   x-logo:
     url: https://io.italia.it/assets/img/io-logo-blue.svg
-  description: 'Documentation of the IO operator search API here.
-
-    '
+  description: "Documentation of the IO operator search API here."
 host: "api.io.pagopa.it"
 basePath: "/api/v1/operator-search/cgn"
 schemes:
@@ -21,9 +19,8 @@ paths:
     get:
       operationId: getPublishedProductCategories
       summary: List of published product categories
-      description: 'List of categories that have at least a published discount
-
-        '
+      description: |
+        List of categories that have at least a published discount
       responses:
         '200':
           description: List of categories that have at least a published discount
@@ -115,9 +112,12 @@ definitions:
   Merchant:
     type: object
     required:
-    - id
-    - name
-    - discounts
+      - id
+      - name
+      - discounts
+      - supportType
+      - supportValue
+      - allNationalAddresses
     properties:
       id:
         type: string
@@ -131,19 +131,32 @@ definitions:
       websiteUrl:
         type: string
         minLength: 1
+      supportType:
+        $ref: "#/definitions/SupportType"
+      supportValue:
+        type: string
+        minLength: 1
       discountCodeType:
-        "$ref": "#/definitions/DiscountCodeType"
+        $ref: "#/definitions/DiscountCodeType"
       imageUrl:
         type: string
         minLength: 1
       discounts:
         type: array
         items:
-          "$ref": "#/definitions/Discount"
+          $ref: "#/definitions/Discount"
       addresses:
         type: array
         items:
-          "$ref": "#/definitions/Address"
+          $ref: "#/definitions/Address" 
+      allNationalAddresses:
+        type: boolean
+  SupportType:
+    type: string
+    enum:
+    - WEBSITE
+    - PHONENUMBER
+    - EMAILADDRESS
   Discount:
     type: object
     required:
