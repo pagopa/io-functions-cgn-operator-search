@@ -77,7 +77,24 @@ export const GetOnlineMerchantsHandler = (
           discountCodeType: DiscountCodeTypeFromModel(
             onlineMerchant.discount_code_type
           ),
-          newDiscounts: onlineMerchant.new_discounts,
+          newDiscounts:
+            onlineMerchant.new_discounts &&
+            pipe(
+              O.fromNullable(searchRequest.productCategories),
+              O.map(filter_categories =>
+                pipe(
+                  O.fromNullable(onlineMerchant.categories_with_new_discounts),
+                  O.map(
+                    categories_with_new_discounts =>
+                      categories_with_new_discounts.filter(v =>
+                        filter_categories.includes(ProductCategoryFromModel(v))
+                      ).length > 0
+                  ),
+                  O.getOrElse(() => false) // there are no categories with new discounts
+                )
+              ),
+              O.getOrElse(() => true) // no category filter => maintain the queried flag
+            ),
           productCategories: pipe(
             [...onlineMerchant.product_categories],
             AR.map(ProductCategoryFromModel)

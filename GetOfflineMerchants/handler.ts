@@ -82,7 +82,28 @@ export const GetOfflineMerchantsHandler = (
               O.map(Math.round),
               O.toUndefined
             ),
-            newDiscounts: offlineMerchant.new_discounts,
+            newDiscounts:
+              offlineMerchant.new_discounts &&
+              pipe(
+                O.fromNullable(searchRequest.productCategories),
+                O.map(filter_categories =>
+                  pipe(
+                    O.fromNullable(
+                      offlineMerchant.categories_with_new_discounts
+                    ),
+                    O.map(
+                      categories_with_new_discounts =>
+                        categories_with_new_discounts.filter(v =>
+                          filter_categories.includes(
+                            ProductCategoryFromModel(v)
+                          )
+                        ).length > 0
+                    ),
+                    O.getOrElse(() => false) // there are no categories with new discounts
+                  )
+                ),
+                O.getOrElse(() => true) // no category filter => maintain the queried flag
+              ),
             productCategories: offlineMerchant.product_categories.map(pc =>
               ProductCategoryFromModel(pc)
             )

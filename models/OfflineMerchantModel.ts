@@ -13,4 +13,7 @@ export default class OfflineMerchantModel extends Model {
   public readonly longitude!: number | undefined;
   public readonly distance!: number | undefined;
   public readonly new_discounts!: boolean;
+  public readonly categories_with_new_discounts?: ReadonlyArray<
+    ProductCategoryEnumModelType
+  >;
 }
