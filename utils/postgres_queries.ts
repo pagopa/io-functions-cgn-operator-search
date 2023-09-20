@@ -88,7 +88,8 @@ SELECT
   product_categories,
   website_url,
   discount_code_type,
-  new_discounts
+  new_discounts,
+  categories_with_new_discounts
 FROM online_merchant
 WHERE 1 = 1
   ${nameFilterQueryPart(nameFilter)}
@@ -106,6 +107,7 @@ SELECT
   product_categories,
   full_address AS address,
   new_discounts,
+  categories_with_new_discounts,
   latitude,
   longitude${pipe(
     searchRequest.userCoordinates,
